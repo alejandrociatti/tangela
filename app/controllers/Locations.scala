@@ -23,14 +23,17 @@ object Locations extends Controller{
   }
 
   def getCountryIdByName(countryName:String):Future[ws.Response] = {
-    WS.url("https://api.angel.co/1/search?type=LocationTag&query=" + countryName).get()
+    WS.url("https://api.angel.co/1/search?type=LocationTag&query=$countryName").get()
   }
 
   def getChildrenOf(countryId:Long) = Action.async {
     WS.url(ANGELAPI+"/tags/$countryId/children").get().map{response =>
       println(response.json.toString())
-      Ok(response.json)
+      val ids = response.json.\\("id")
+      val names = response.json.\\("display_name")
+      Ok(Json.toJson(Map(ids, names)))
     }
   }
+
 
 }
