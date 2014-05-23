@@ -12,7 +12,7 @@ import ExecutionContext.Implicits.global
  * Date: 22/05/14
  * Time: 20:52
  */
-object Location extends Controller{
+object Locations extends Controller{
 
   def getCountryIdByName(countryName:String):Future[ws.Response] = {
     WS.url("https://api.angel.co/1/search?type=LocationTag&query=" + countryName).get()
