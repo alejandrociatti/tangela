@@ -1,0 +1,37 @@
+@main("demo")(sidebar()) {
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <select name="country" id="country" class="form-control">
+                            @for(country: Location <- Location.mockLocations){
+                                <option value="@country.angelId">@country.name</option>
+                            }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" list="locations" class="form-control"/>
+                            <datalist id="locations">
+                                <option value=""></option>
+                            </datalist>
+                        </div>
+
+                        <button class="btn btn-default">Go</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            Results go here...
+        </div>
+    </div><!-- /.row -->
+
+}
