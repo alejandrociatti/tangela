@@ -16,7 +16,4 @@ case class Location(id: Pk[Long] = NotAssigned, name: String, angelId:Long) {
 
 object Location{
 
-  def mockLocations = {
-    Seq(new Location(NotAssigned,"Argentina", 1613), new Location(NotAssigned,"Brazil",1622))
-  }
 }

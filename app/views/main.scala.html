@@ -1,4 +1,4 @@
-@(title: String)(sidebar:Html)(content: Html)
+@(title: String)(sidebar:Html)(content: Html)(javascript:Html)
 
 
 <!DOCTYPE html>
@@ -63,6 +63,8 @@
         <!-- JavaScript -->
         <script src="@routes.Assets.at("bootstrap/js/jquery-1.9.0.min.js")"></script>
         <script src="@routes.Assets.at("bootstrap/js/bootstrap.js")"></script>
+        @javascript
+
 
     </body>
 </html>
