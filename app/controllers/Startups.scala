@@ -62,7 +62,7 @@ object Startups extends Controller{
 
       val total = (response.json \ "total").as[Int]
 
-      Ok(Json.toJson(total))    //rendereame re piola el total papaaa
+      Ok(views.html.fundraisingCount(total))
     }
   }
 
