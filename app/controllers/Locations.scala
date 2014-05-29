@@ -23,12 +23,11 @@ object Locations extends Controller{
   }
 
   def getCountriesByString(countryName:String) = Action.async {
-    WS.url(Application.AngelApi + "/search?type=LocationTag&query=" + countryName).get().map{ response =>
+    WS.url(Application.AngelApi +s"/search?type=LocationTag&query=$countryName").get().map{ response =>
       val ids : Seq[JsValue] = response.json \\ "id"
       val names : Seq[JsValue] = response.json \\ "name"
 
       var seqAux = Seq.empty[Map[String, String]]
-
 
       for(i <- 0 until names.size) {
         seqAux = seqAux .+:(Map("id"->ids(i).as[Int].toString, "name"->names(i).as[String]))
@@ -43,7 +42,7 @@ object Locations extends Controller{
   }
 
   /*def getChildrenOf(countryId:Long) = Action.async {
-    WS.url(Application.AngelApi+"/tags/$countryId/children").get().map{response =>
+    WS.url(Application.AngelApi+s"/tags/$countryId/children").get().map{response =>
       println(response.json.toString())
       val ids = response.json.\\("id")
       val names = response.json.\\("display_name")

@@ -9,21 +9,23 @@ var demoAppModule = angular.module('DemoApp', ['app.controllers']);
 
 var demoCtrlModule = angular.module('app.controllers', ['app.services']);
 
-demoCtrlModule.controller('demoCtrl', ['$scope','locationAccess',
-    function ($scope, locationAccess) {
+demoCtrlModule.controller('sblDemoCtrl', ['$scope','dataAccess',
+    function ($scope, dataAccess) {
         $scope.sent = false;
 
         $scope.searchLocation = function(){
-            locationAccess.getLocationsByName($scope.locationName, function(locations){
+            dataAccess.getLocationsByName($scope.locationName, function(locations){
                 console.log(locations);
                 $scope.locations = locations;
+                $scope.$apply();
             })
         };
 
         $scope.searchStartups = function(){
-            locationAccess.getStartupsByLocation($scope.locationId, function(startups){
+            dataAccess.getStartupsByLocation($scope.locationId, function(startups){
                 console.log(startups);
                 $scope.startups = startups;
+                $scope.$apply();
             })
         };
 
@@ -31,4 +33,10 @@ demoCtrlModule.controller('demoCtrl', ['$scope','locationAccess',
             console.log($scope.area);
         }
     }]);
+
+demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
+    function ($scope, dataAccess) {
+
+    }
+]);
 
