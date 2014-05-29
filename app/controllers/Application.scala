@@ -12,7 +12,7 @@ object Application extends Controller {
   }
   
   def startupsByLocation = Action {
-    Ok(views.html.startupsByLocation())
+    Ok(views.html.demo())
   }
 
   def javascriptRoutes = Action { implicit request =>
