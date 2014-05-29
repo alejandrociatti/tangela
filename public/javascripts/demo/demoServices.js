@@ -23,8 +23,8 @@ angular.module('app.services', []).factory('locationAccess', function() {
                 error: errorHandler
             })
         },
-        searchStartups: function(locationId, successHandler, errorHandler) {
-            jsRoutes.controllers.Locations.getCountriesByString(locationName).ajax({
+        getStartupsByLocation: function(locationId, successHandler, errorHandler) {
+            jsRoutes.controllers.Startups.getStartupsByLocationId(locationId).ajax({
                 method: 'GET',
                 responseType:"application/json",
                 success: successHandler,
