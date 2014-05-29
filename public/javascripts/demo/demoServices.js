@@ -32,25 +32,23 @@ angular.module('app.services', []).factory('dataAccess', function() {
             })
         },
         getStartupNetInfo: function(startupId, successHandler, errorHandler){
-            //TODO: jsRoute al metodo de JoacOooOooOoOoO
-            var data = {"id":6702,"name":"AngelList","follower_count":2849};
-            successHandler(data);
-        },
-        getRolesNetInfo: function(startupId, successHandler, errorHandler){
-            //TODO: jsRoute al metodo de Quitox
-            var data = [{role: "employee",name: "Michael Daugherty", id: 190284,follower_count: 265},{role: "employee",name: "Kai Gradert",id: 17350,follower_count: 149}];
-            successHandler(data);
-        },
-        getNumberOfFoundersByStartupId: function(startupId, successHandler, errorHandler) {
-            jsRoutes.controllers.Startups.getNumberOfFoundersByStartupId(startupId).ajax({
+            jsRoutes.controllers.Startups.getStartupNetInfo(startupId).ajax({
                 method: 'GET',
                 responseType: "application/json",
                 success: successHandler,
                 error: errorHandler
             });
         },
-        getRolesOfStartup: function(startupId, successHandler, errorHandler) {
+        getRolesNetInfo: function(startupId, successHandler, errorHandler) {
             jsRoutes.controllers.Startups.getRolesOfStartup(startupId).ajax({
+                method: 'GET',
+                responseType: "application/json",
+                success: successHandler,
+                error: errorHandler
+            });
+        },
+        getNumberOfFoundersByStartupId: function(startupId, successHandler, errorHandler) {
+            jsRoutes.controllers.Startups.getNumberOfFoundersByStartupId(startupId).ajax({
                 method: 'GET',
                 responseType: "application/json",
                 success: successHandler,

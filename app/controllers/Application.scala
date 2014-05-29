@@ -23,7 +23,8 @@ object Application extends Controller {
         routes.javascript.Locations.getChildrenOf,
         routes.javascript.Startups.getStartupsByLocationId,
         routes.javascript.Startups.getNumberOfFoundersByStartupId,
-        routes.javascript.Startups.getRolesOfStartup
+        routes.javascript.Startups.getRolesOfStartup,
+        routes.javascript.Startups.getStartupNetInfo
       )
     ).as("text/javascript")
   }
