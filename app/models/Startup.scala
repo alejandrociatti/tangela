@@ -9,10 +9,3 @@ case class Startup(id: Pk[Long] = NotAssigned, name: String) {
 
 }
 
-case class Location(id: Pk[Long] = NotAssigned, name: String, angelId:Long) {
-
-}
-
-object Location{
-
-}

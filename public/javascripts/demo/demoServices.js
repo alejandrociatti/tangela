@@ -5,7 +5,7 @@
  * Time: 00:09
  */
 
-angular.module('app.services', []).factory('locationAccess', function() {
+angular.module('app.services', []).factory('dataAccess', function() {
     return {
         getChildrenOf: function(countryId, successHandler, errorHandler) {
             jsRoutes.controllers.Locations.getChildrenOf(countryId).ajax({
@@ -16,7 +16,7 @@ angular.module('app.services', []).factory('locationAccess', function() {
             });
         },
         getLocationsByName: function(locationName, successHandler, errorHandler) {
-            jsRoutes.controllers.Locations.getCountriesByString(locationName).ajax({
+            jsRoutes.controllers.Locations.getCountriesByString(encodeURIComponent(locationName)).ajax({
                 method: 'GET',
                 responseType:"application/json",
                 success: successHandler,

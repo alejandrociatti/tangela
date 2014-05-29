@@ -19,6 +19,7 @@ object Application extends Controller {
     Ok(
       Routes.javascriptRouter("jsRoutes")(
         routes.javascript.Locations.getCountriesByString,
+        routes.javascript.Locations.getCountries,
         routes.javascript.Startups.getStartupsByLocationId
       )
     ).as("text/javascript")
