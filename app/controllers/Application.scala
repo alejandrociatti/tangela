@@ -8,7 +8,7 @@ object Application extends Controller {
 
 
   def index = Action {
-    Ok(views.html.demo())
+    Ok(views.html.index())
   }
   
   def startupsByLocation = Action {
