@@ -31,7 +31,7 @@ object Locations extends Controller{
       println(response.json.toString())
       val ids = response.json.\\("id")
       val names = response.json.\\("display_name")
-      Ok(Json.toJson(Map(ids, names)))
+      Ok(Json.toJson(ids))
     }
   }
 
