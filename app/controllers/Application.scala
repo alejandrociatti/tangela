@@ -5,8 +5,12 @@ import play.api.mvc._
 
 object Application extends Controller {
 
-  def demo = Action {
+  def index = Action {
     Ok(views.html.demo())
+  }
+  
+  def startupsByLocation = Action {
+    Ok(views.html.startupsByLocation())
   }
 
   def javascriptRoutes = Action { implicit request =>

@@ -1,0 +1,53 @@
+@main("Startups by location")(sidebar()) {
+
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h1> Startups <small> View startups from a given location </small></h1>
+        </div>
+    </div><!-- /.row -->
+    <div class="row" ng-app="DemoApp" ng-controller="demoCtrl">
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <form role="form"  ng-submit="searchLocation()">
+                        <div class="form-group">
+                            <label>Search location
+                                <input name="locationName" ng-model="locationName" type="text"/>
+                            </label>
+                        </div>
+                        <input type="submit"/>
+                    </form>
+                    <form>
+                        <div class="form-group input-group">
+                            <span class="input-group-addon"> @@ </span>
+                            <input type="text" list="locations" class="form-control" placeholder="Location" ng-model="area"/>
+                            <label id="locations" ng-repeat="location1 in locations">
+                                <input type="radio" value="{{location1.id}}" name="location id" ng-model="locationId"/>{{location1.name}}
+                            </label>
+                        </div>
+
+                        <button class="btn btn-default" ng-click="submit()">Go</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    Results go here...
+                </div>
+            </div>
+        </div>
+    </div><!-- /.row -->
+
+}{
+    <script src="@routes.Application.javascriptRoutes"></script>
+    <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoCtrl.js")"></script>
+
+}

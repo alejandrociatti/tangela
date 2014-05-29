@@ -29,9 +29,9 @@ object Locations extends Controller{
   def getChildrenOf(countryId:Long) = Action.async {
     WS.url(ANGELAPI+"/tags/$countryId/children").get().map{response =>
       println(response.json.toString())
-      val ids = response.json.\\("id")
-      val names = response.json.\\("display_name")
-      Ok(Json.toJson(Map(ids, names)))
+      val ids = response.json \\ "id"
+      val names = response.json \\ "display_name"
+      Ok(Json toJson ids)
     }
   }
 

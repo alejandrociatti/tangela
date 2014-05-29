@@ -10,8 +10,13 @@ var demoAppModule = angular.module('DemoApp', ['app.controllers']);
 var demoCtrlModule = angular.module('app.controllers', ['app.services']);
 
 demoCtrlModule.controller('demoCtrl', ['$scope',
-    function ($scope) {
+    function ($scope, locationAccess) {
         $scope.sent = false;
+
+        $scope.searchLocation = function(event){
+
+            locationAccess.getLocationsByName($scope.locationName,function(){$scope.locations})
+        };
 
         $scope.submit = function(){
             console.log($scope.area);

@@ -1,7 +1,6 @@
 package models
 
 import anorm.{NotAssigned, Pk}
-import play.api.libs.json.Json
 
 /**
  * Created by Javi on 5/15/14.

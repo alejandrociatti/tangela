@@ -14,6 +14,14 @@ angular.module('app.services', []).factory('locationAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getLocationsByName: function(locationName, successHandler, errorHandler) {
+            jsRoutes.controllers.Locations.getCountriesByString(locationName).ajax({
+                method: 'GET',
+                responseType:"application/json",
+                success: successHandler,
+                error: errorHandler
+            })
         }
     };
 });
