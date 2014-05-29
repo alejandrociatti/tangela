@@ -29,6 +29,22 @@ demoCtrlModule.controller('sblDemoCtrl', ['$scope','dataAccess',
             })
         };
 
+        $scope.searchNumberOfFounders= function(){
+            console.log("holaaaa");
+            dataAccess.getNumberOfFoundersByStartupId($scope.startupId, function(number){
+                console.log(number);
+                $scope.numberOfFounders= number;
+                $scope.$apply();
+            })
+        };
+
+        $scope.searchRolesOfStartup= function(){
+            dataAccess.getRolesOfStartup($scope.startupId, function(persons){
+                $scope.roles= persons;
+                $scope.$apply();
+            })
+        };
+
         $scope.submit = function(){
             console.log($scope.area);
         }
