@@ -28,7 +28,7 @@ object Locations extends Controller{
   }
 
   def loadCountriesToDB = {
-    val countries = Json.parse(scala.io.Source.fromFile("public/data/countries.json").getLines().mkString)
+    val countries = Json.parse(scala.io.Source.fromFile("public/data/countries-reduced.json").getLines().mkString)
     val names:Seq[JsValue] = countries \\ "name"
     for(i <- 0 until names.size){
       //Next line turns strings like "Sri Lanka" to sri-lanka, so country names match their AngelList 'slugs'
@@ -55,7 +55,7 @@ object Locations extends Controller{
       var seqAux = Seq.empty[Map[String, String]]
 
       for(i <- 0 until names.size) {
-        seqAux = seqAux .+:(Map("id"->ids(i).as[Int].toString, "name"->names(i).as[String]))
+        seqAux = seqAux .+:(Map( "id" -> ids(i).as[Long].toString, "name"->names(i).as[String]))
       }
 
       seqAux = seqAux.reverse
@@ -66,14 +66,18 @@ object Locations extends Controller{
     }
   }
 
-  /*def getChildrenOf(countryId:Long) = Action.async {
+  def getChildrenOf(countryId:Long) = Action.async {
     WS.url(Application.AngelApi+s"/tags/$countryId/children").get().map{response =>
       println(response.json.toString())
-      val ids = response.json.\\("id")
-      val names = response.json.\\("display_name")
-      Ok(Json.toJson(ids))
+      val ids:Seq[JsValue] = response.json \\ "id"
+      val names:Seq[JsValue] = response.json \\ "display_name"
+      var seqAux = Seq.empty[Map[String, String]]
+      for(i <- 0 until ids.size){
+        seqAux = seqAux .+:(Map("id"->ids(i).as[Long].toString, "name"->names(i).as[String]))
+      }
+      Ok(Json.toJson(seqAux))
     }
-  }*/
+  }
 
 
 }

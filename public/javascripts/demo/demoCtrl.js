@@ -37,6 +37,34 @@ demoCtrlModule.controller('sblDemoCtrl', ['$scope','dataAccess',
 demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
     function ($scope, dataAccess) {
 
+        $scope.loadChildren = function(){
+            dataAccess.getChildrenOf($scope.country, function(data){
+                console.log(data);
+                $scope.children = data;
+                $scope.$apply();
+            },
+            function(error){
+                console.log(error);
+            });
+        };
+
+        $scope.submit = function(){
+            var locationId = $scope.country;
+            if($scope.area){
+                var i = $scope.children.length;
+                while(i--){
+                    if($scope.children[i].name === $scope.area){
+                        locationId = $scope.children[i].id;
+                        break;
+                    }
+                }
+            }
+            (locationId) && dataAccess.getStartupsByLocation(locationId, function(startups){
+                $scope.startups = startups;
+                $scope.$apply();
+            });
+        };
+
     }
 ]);
 

@@ -7,20 +7,28 @@
 
                     <form role="form">
                         <div class="form-group">
-                            <label for="country">Country</label>
-                            <select name="country" id="country" class="form-control" ng-model="country">
-                                <option value=""> </option>
-                            @* for(country: Location <- Locations.getCountriesMOCK){
-                                <option value="@country.angelId">@country.name</option>
-                            } *@
-                            </select>
+                            <label for="country" class="control-label">Country</label>
+                            <div class="input-group">
+                                <select name="country" id="country" class="form-control" ng-model="country">
+                                    <option value=""> </option>
+                                    @for(country: Location <- Location.getCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                </select>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" ng-click="loadChildren()">Load</button>
+                                </span>
+                            </div>
                         </div>
-                        <div class="form-group input-group">
-                            <span class="input-group-addon"> @@ </span>
-                            <input type="text" list="locations" class="form-control" placeholder="Location" ng-model="area"/>
-                            <datalist id="locations">
-                                <option value="Buenos Aires" data-id="1963">1963</option>
-                            </datalist>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"> @@ </span>
+                                <input type="text" list="locations" class="form-control" placeholder="Location" ng-model="area"/>
+                                <datalist id="locations">
+                                    <option ng-repeat="child in children" value="{{child.name}}">{{child.id}}</option>
+                                </datalist>
+                            </div>
+                            <p class="help-block">With location you can be more specific.</p>
                         </div>
 
                         <button class="btn btn-default" ng-click="submit()">Go</button>
@@ -31,9 +39,24 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="panel panel-default">
+            <div class="panel panel-default" ng-show="startups.length">
                 <div class="panel-body">
-                    Results go here...
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="startup in startups">
+                                <td>{{startup.id}}</td>
+                                <td>{{startup.name}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
         </div>
