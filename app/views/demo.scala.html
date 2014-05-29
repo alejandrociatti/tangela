@@ -10,9 +10,9 @@
                             <label for="country">Country</label>
                             <select name="country" id="country" class="form-control" ng-model="country">
                                 <option value=""> </option>
-                            @for(country: Location <- Locations.getCountriesMOCK){
+                            @* for(country: Location <- Locations.getCountriesMOCK){
                                 <option value="@country.angelId">@country.name</option>
-                            }
+                            } *@
                             </select>
                         </div>
                         <div class="form-group input-group">

@@ -7,12 +7,13 @@ GET        /                                 controllers.Application.index
 GET        /startups-by-location             controllers.Application.startupsByLocation
 
 #Locations
-GET        /locations/:countryName           controllers.Locations.getCountriesByString(countryName: String)
+GET        /locations/name/:countryName      controllers.Locations.getCountriesByString(countryName: String)
 GET        /locations/id/:countryId          controllers.Startups.getStartupsByLocationId(countryId: Int)
+GET        /locations/country-list           controllers.Locations.getCountries
 
-#Sturtups
-GET        /sturtups/:id                     controllers.Startups.getStartupById(id: Long)
-GET        /startups/totalfundraising        controllers.Startups.getNumberOfStartupsFundraising()
+#Startups
+GET        /startups/id/:id                   controllers.Startups.getStartupById(id: Long)
+GET        /startups/total-fundraising        controllers.Startups.getNumberOfStartupsFundraising()
 
 # Javascript routes for AJAX
 GET        /assets/javascripts/routes        controllers.Application.javascriptRoutes
