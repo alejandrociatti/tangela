@@ -22,6 +22,14 @@ angular.module('app.services', []).factory('locationAccess', function() {
                 success: successHandler,
                 error: errorHandler
             })
+        },
+        searchStartups: function(locationId, successHandler, errorHandler) {
+            jsRoutes.controllers.Locations.getCountriesByString(locationName).ajax({
+                method: 'GET',
+                responseType:"application/json",
+                success: successHandler,
+                error: errorHandler
+            })
         }
     };
 });

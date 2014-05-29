@@ -4,7 +4,7 @@
 
 # Home page
 GET         /                               controllers.Application.index
-GET         /startups-by-location           controllers.Application.index
+GET         /startups-by-location           controllers.Application.startupsByLocation
 
 #Locations
 GET        /locations/:countryName           controllers.Locations.getCountriesByString(countryName: String)
