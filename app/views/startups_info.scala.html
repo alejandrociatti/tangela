@@ -1,0 +1,47 @@
+@main("demos")(sidebar()) {
+
+    <div class="row" ng-app="DemoApp" ng-controller="sblDemoCtrl">
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="startupId">Startup</label>
+                            <input type="number" name="startupId" id="startupId" class="form-control" ng-model="startupId"/>
+                        </div>
+
+                        <button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Startup</button>
+                        <button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>Cantidad de fundadores del startupid {{startupId}}</dt>
+                        <dd>{{numberOfFounders}}</dd>
+                    </dl>
+                </div>
+                <div ng-repeat="roole in roles">
+                    <dl class="dl-horizontal">
+                        <dt>{{roole.name}}</dt>
+                        <dd>{{roole.role}} , {{roole.id}} , {{roole.follower_count}}</dd>
+
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.row -->
+
+}{
+    <script src="@routes.Application.javascriptRoutes"></script>
+    <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoCtrl.js")"></script>
+
+}

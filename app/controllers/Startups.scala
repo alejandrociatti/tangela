@@ -16,6 +16,7 @@ import play.api.libs.ws.WS
 import play.api.mvc.{Controller, Action}
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import com.fasterxml.jackson.annotation.JsonValue
 
 /**
  * Created by Javi on 5/16/14.
@@ -75,6 +76,42 @@ object Startups extends Controller{
       Ok(Json.toJson(fundraising))
 
       
+    }
+  }
+
+
+
+  def getNumberOfFoundersByStartupId(startupId: Long) = Action.async {
+    WS.url(ANGELAPI+"/startups/"+ startupId +"/roles?role=founder" ).get().map{ response =>
+
+      val founders:JsArray= (response.json \ "startup_roles").as[JsArray]
+      val numberOfFounders:Int= founders.value.size
+
+      Ok(numberOfFounders.toString)
+    }
+  }
+
+  def getRolesOfStartup(startupId: Long) = Action.async {
+    WS.url(ANGELAPI+"/startups/"+startupId+"/roles").get().map{ response =>
+
+      val roles:JsArray = (response.json \ "startup_roles").as[JsArray]
+      println("Holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa    "+ roles.toString())
+
+      var seqAux= Seq.empty[Map[String, String]]
+
+      for(role <- roles.value){
+        val roleString:String= (role \ "role").as[String]
+        val user= (role \ "tagged").as[JsValue]
+        val id:Int= (user \ "id").as[Int]
+        val name:String= (user \ "name").as[String]
+        val followers:Int = (user \ "follower_count").as[Int]
+
+        seqAux= seqAux.+:(Map("id"->id.toString, "name"->name, "role"->roleString, "follower_count"->followers.toString))
+      }
+
+      seqAux= seqAux.reverse
+      println(Json.toJson(seqAux))
+      Ok(Json.toJson(seqAux))
     }
   }
 }
