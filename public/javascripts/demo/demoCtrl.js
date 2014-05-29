@@ -65,6 +65,47 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
             });
         };
 
+        $scope.showNetwork = function(startupId){
+            var s = new sigma('network-container');
+            var edgeId = 0;
+
+            dataAccess.getStartupNetInfo(startupId, function(startup){
+                s.graph.addNode({
+                    id: 'n'+startupId,
+                    label: startup.name,
+                    size: startup.follower_count/10,
+                    x: Math.random(),
+                    y: Math.random(),
+                    color: '#b32e2b'
+                });
+            });
+
+            dataAccess.getRolesNetInfo(startupId, function(roles){
+                var i = roles.length;
+                while(i--){
+                    s.graph.addNode({
+                        id: 'n'+roles[i].id,
+                        label: roles[i].name+' '+ roles[i].role,
+                        size: roles[i].follower_count/100,
+                        x: Math.random(),
+                        y: Math.random(),
+                        color:'#2bb372'
+                    });
+                    s.graph.addEdge({
+                        id: 'e'+(edgeId++),
+                        source: 'n'+startupId,
+                        target: 'n'+roles[i].id,
+                        color: '#2b6cb3'
+                    });
+                }
+                s.startForceAtlas2();
+                setTimeout(function(){
+                    s.stopForceAtlas2();
+                }, 3000);
+            });
+
+        };
+
     }
 ]);
 

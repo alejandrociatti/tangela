@@ -30,6 +30,16 @@ angular.module('app.services', []).factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             })
+        },
+        getStartupNetInfo: function(startupId, successHandler, errorHandler){
+            //TODO: jsRoute al metodo de JoacOooOooOoOoO
+            var data = {"id":6702,"name":"AngelList","follower_count":2849};
+            successHandler(data);
+        },
+        getRolesNetInfo: function(startupId, successHandler, errorHandler){
+            //TODO: jsRoute al metodo de Quitox
+            var data = [{role: "employee",name: "Michael Daugherty", id: 190284,follower_count: 265},{role: "employee",name: "Kai Gradert",id: 17350,follower_count: 149}];
+            successHandler(data);
         }
     };
 });

@@ -47,12 +47,18 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
+                                <th class="icon-spacer"></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="startup in startups">
                                 <td>{{startup.id}}</td>
                                 <td>{{startup.name}}</td>
+                                <td>
+                                    <a href="#network-container" data="{{startup.id}}" ng-click="showNetwork(startup.id)">
+                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -62,9 +68,25 @@
         </div>
     </div><!-- /.row -->
 
+    <div class="row">
+
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body network-wrapper">
+                    <div id="network-container">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.row -->
+
 }{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/sigma/sigma.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/sigma/plugins/sigma.layout.forceAtlas2.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoCtrl.js")"></script>
 
