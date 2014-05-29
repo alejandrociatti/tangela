@@ -57,6 +57,15 @@ object Startups extends Controller{
     }
   }
 
+  def getNumberOfStartupsFundraising() = Action.async {
+    WS.url(Application.AngelApi + "/startups?filter=raising").get().map{ response =>
+
+      val total = (response.json \ "total").as[Int]
+
+      Ok(Json.toJson(total))    //rendereame re piola el total papaaa
+    }
+  }
+
   def getStartupById(sturtupId: Long) = Action.async {
     val url: String = ANGELAPI + "/startups/" + sturtupId
     println(url)
