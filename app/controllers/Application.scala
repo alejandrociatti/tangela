@@ -16,7 +16,7 @@ object Application extends Controller {
   def javascriptRoutes = Action { implicit request =>
     Ok(
       Routes.javascriptRouter("jsRoutes")(
-        routes.javascript.Locations.getChildrenOf
+        routes.javascript.Locations.getCountriesByString
       )
     ).as("text/javascript")
   }

@@ -7,7 +7,7 @@ GET         /                               controllers.Application.index
 GET         /startups-by-location           controllers.Application.index
 
 #Locations
-GET         /locations/:id                  controllers.Locations.getChildrenOf(id:Long)
+GET        /locations/:countryName           controllers.Locations.getCountriesByString(countryName: String)
 
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes      controllers.Application.javascriptRoutes
