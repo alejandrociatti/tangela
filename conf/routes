@@ -8,6 +8,7 @@ GET         /startups-by-location           controllers.Application.startupsByLo
 
 #Locations
 GET        /locations/:countryName           controllers.Locations.getCountriesByString(countryName: String)
+GET        /locations/id/:countryId          controllers.Startups.getStartupsByLocationId(countryId: Int)
 
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes      controllers.Application.javascriptRoutes

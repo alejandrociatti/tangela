@@ -17,14 +17,13 @@ import scala.collection
  * Time: 20:52
  */
 object Locations extends Controller{
-  val AngelApi = "https://api.angel.co/1"
 
   def getCountriesMOCK = {
     Seq(new Location(NotAssigned,"Argentina", 1613), new Location(NotAssigned,"Brazil",1622))
   }
 
   def getCountriesByString(countryName:String) = Action.async {
-    WS.url(AngelApi + "/search?type=LocationTag&query=" + countryName).get().map{ response =>
+    WS.url(Application.AngelApi + "/search?type=LocationTag&query=" + countryName).get().map{ response =>
       val ids : Seq[JsValue] = response.json \\ "id"
       val names : Seq[JsValue] = response.json \\ "name"
 
@@ -44,7 +43,7 @@ object Locations extends Controller{
   }
 
   /*def getChildrenOf(countryId:Long) = Action.async {
-    WS.url(AngelApi+"/tags/$countryId/children").get().map{response =>
+    WS.url(Application.AngelApi+"/tags/$countryId/children").get().map{response =>
       println(response.json.toString())
       val ids = response.json.\\("id")
       val names = response.json.\\("display_name")
