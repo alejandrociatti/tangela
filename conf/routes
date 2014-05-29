@@ -7,6 +7,7 @@ GET        /                     controllers.Application.demo
 
 #Locations
 GET        /locations/:countryName           controllers.Locations.getCountriesByString(countryName: String)
+GET        /locations/id/:countryId          controllers.Startups.getStartupsByLocationId(countryId: Int)
 
 #Sturtups
 GET        /sturtups/:id                    controllers.Startups.getStartupById(id: Long)
