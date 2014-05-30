@@ -7,6 +7,12 @@ GET        /                                       controllers.Application.index
 GET        /startups-by-location                   controllers.Application.startupsByLocation
 GET        /startups-info                          controllers.Application.startupsInfo
 
+# Log in
+GET         /login                              controllers.Authentication.login
+POST        /login                              controllers.Authentication.authenticate
+GET         /logout                             controllers.Authentication.logout
+
+
 #Locations
 GET        /locations/name/:countryName            controllers.Locations.getCountriesByString(countryName: String)
 GET        /locations/country-list                 controllers.Locations.getCountries
