@@ -1,0 +1,28 @@
+@(loginForm: Form[(String, String)])
+
+@main("Login")(loginSidebar()) {
+
+    <div class="row ">
+            <div class="col-lg-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            Sing In
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                    @helper.form(routes.Authentication.authenticate, 'role -> "form") {
+                        <div class="form-group">
+                            <label for="email">Username</label>
+                            <input id="email" name="email" class="form-control" type="text"/>
+                            <label for="password">Password</label>
+                            <input id="password" name="password" class="form-control"type="text"/>
+                        </div>
+                        <input type="submit" class="btn btn-default"/>
+                    }
+                    </div>
+                </div>
+            </div>
+    </div>
+} {
+}

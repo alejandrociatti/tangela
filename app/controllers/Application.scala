@@ -3,15 +3,15 @@ package controllers
 import play.api._
 import play.api.mvc._
 
-object Application extends Controller {
+object Application extends Controller with Secured{
   val AngelApi = "https://api.angel.co/1"
 
 
-  def index = Action {
+  def index = withAuth { username => implicit request =>
     Ok(views.html.index())
   }
   
-  def startupsByLocation = Action {
+  def startupsByLocation = withAuth { username => implicit request =>
     Ok(views.html.startupsByLocation())
   }
 

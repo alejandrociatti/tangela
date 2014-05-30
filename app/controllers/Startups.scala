@@ -20,7 +20,7 @@ import ExecutionContext.Implicits.global
 /**
  * Created by Javi on 5/16/14.
  */
-object Startups extends Controller{
+object Startups extends Controller with Secured{
 
   val ANGELAPI = "https://api.angel.co/1"
 
@@ -57,14 +57,14 @@ object Startups extends Controller{
     }
   }
 
-  def getNumberOfStartupsFundraising() = Action.async {
+  def getNumberOfStartupsFundraising() = withAsyncAuth( username => implicit request =>
     WS.url(Application.AngelApi + "/startups?filter=raising").get().map{ response =>
 
       val total = (response.json \ "total").as[Int]
 
       Ok(views.html.fundraisingCount(total))
     }
-  }
+  )
 
   def getStartupById(sturtupId: Long) = Action.async {
     val url: String = ANGELAPI + "/startups/" + sturtupId
