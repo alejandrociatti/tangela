@@ -29,7 +29,7 @@ object Application extends Controller with Secured{
     ).as("text/javascript")
   }
 
-  def startupsInfo() = Action {
-    Ok(views.html.startups_info())
+  def startupsInfo = Action {
+    Ok(views.html.startupInfo())
   }
 }

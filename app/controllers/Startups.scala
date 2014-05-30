@@ -41,19 +41,10 @@ object Startups extends Controller with Secured{
    */
   def getStartupNetInfo(startupId:Long) = Action.async {
     WS.url(Application.AngelApi + s"/startups/$startupId").get().map{ response =>
-
-      val success= response.json \\ "success"
       val resp:JsValue = response.json.as[JsValue]
-      if(success.size == 0) {
-        val followers: Int = (resp \ "follower_count").as[Int]
-        val name: String = (resp \ "name").as[String]
-
-        var seq = Seq.empty[Map[String, String]]
-        seq= seq.+:(Map("id"->startupId.toString, "follower_count"->followers.toString, "name"->name))
-        Ok(Json.toJson(seq))
-      } else {
-        Ok(Json.toJson(Map("id"->startupId.toString,"follower_count"->"1000","name"->"SelectedStartup")))
-      }
+      val followers: Int = (resp \ "follower_count").as[Int]
+      val name: String = (resp \ "name").as[String]
+      Ok(Json.toJson(Map("id"->startupId.toString, "follower_count"->followers.toString, "name"->name)))
     }
   }
 

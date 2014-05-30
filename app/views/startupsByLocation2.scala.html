@@ -1,0 +1,71 @@
+@main("Startups by location")(sidebar()) {
+
+<div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1> Startups <small> View startups from a given location </small></h1>
+        </div>
+    </div> <!-- /.row -->
+    <div class="row" ng-app="DemoApp" ng-controller="sblDemoCtrl">
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <form role="form" ng-submit="searchLocation()">
+                        <div class="form-group">
+                            <label for="locationName">Search location</label>
+                            <input id="locationName" name="locationName" class="form-control" ng-model="locationName" type="text"/>
+                        </div>
+                        <input type="submit" class="btn btn-default"/>
+                    </form>
+                    <form role="form" ng-submit="searchStartups()">
+                        <h3>Locations:</h3>
+                        <div class="form-group">
+                            <div class="radio" ng-repeat="location1 in locations">
+                                <label>
+                                    <input type="radio" value="{{location1.id}}" name="locationId" ng-model="$parent.locationId"/>
+                                    {{location1.name}}
+                                </label>
+                            </div>
+                        </div>
+                        <input type="submit" class="btn btn-default"/>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Startups
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="startup in startups">
+                                <td>{{startup.id}}</td>
+                                <td>{{startup.name}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+} {
+    <script src="@routes.Application.javascriptRoutes"></script>
+    <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoCtrl.js")"></script>
+
+}

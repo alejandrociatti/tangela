@@ -82,15 +82,20 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
         };
 
         $scope.showNetwork = function(startupId){
-            $('#network-continer').empty();
+            $('#network-container').empty();
             var s = new sigma('network-container');
             var edgeId = 0;
 
             dataAccess.getStartupNetInfo(startupId, function(startup){
+                while(startup.follower_count > 100) startup.follower_count = startup.follower_count/10;
+                console.log(startup);
+                console.log('id: ns'+startupId);
+                console.log('label: '+ startup.name);
+                console.log('size: '+ startup.follower_count);
                 s.graph.addNode({
                     id: 'ns'+startupId,
                     label: startup.name,
-                    size: startup.follower_count/10,
+                    size: startup.follower_count,
                     x: Math.random(),
                     y: Math.random(),
                     color: '#b32e2b'
