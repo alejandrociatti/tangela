@@ -15,6 +15,10 @@ object Application extends Controller with Secured{
     Ok(views.html.startupsByLocation())
   }
 
+  def startupsInfo() = Action {
+    Ok(views.html.startupsInfo())
+  }
+
   def javascriptRoutes = Action { implicit request =>
     Ok(
       Routes.javascriptRouter("jsRoutes")(
@@ -27,9 +31,5 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupNetInfo
       )
     ).as("text/javascript")
-  }
-
-  def startupsInfo() = Action {
-    Ok(views.html.startups_info())
   }
 }

@@ -1,34 +1,37 @@
 @main("Startups by location")(sidebar()) {
 
-<div>
-    <div class="row">
-        <div class="col-lg-12">
-            <h1> Startups <small> View startups from a given location </small></h1>
-        </div>
-    </div> <!-- /.row -->
-    <div class="row" ng-app="DemoApp" ng-controller="sblDemoCtrl">
+    <div class="row" ng-app="DemoApp" ng-controller="aacDemoCtrl">
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-body">
 
-                    <form role="form" ng-submit="searchLocation()">
+                    <form role="form">
                         <div class="form-group">
-                            <label for="locationName">Search location</label>
-                            <input id="locationName" name="locationName" class="form-control" ng-model="locationName" type="text"/>
-                        </div>
-                        <input type="submit" class="btn btn-default"/>
-                    </form>
-                    <form role="form" ng-submit="searchStartups()">
-                        <h3>Locations:</h3>
-                        <div class="form-group">
-                            <div class="radio" ng-repeat="location1 in locations">
-                                <label>
-                                    <input type="radio" value="{{location1.id}}" name="locationId" ng-model="$parent.locationId"/>
-                                    {{location1.name}}
-                                </label>
+                            <label for="country" class="control-label">Country</label>
+                            <div class="input-group">
+                                <select name="country" id="country" class="form-control" ng-model="country">
+                                    <option value=""> </option>
+                                    @for(country: Location <- Location.getCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                </select>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" ng-click="loadChildren()">Load</button>
+                                </span>
                             </div>
                         </div>
-                        <input type="submit" class="btn btn-default"/>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"> @@ </span>
+                                <input type="text" list="locations" class="form-control" placeholder="Location" ng-model="area"/>
+                                <datalist id="locations">
+                                    <option ng-repeat="child in children" value="{{child.name}}">{{child.id}}</option>
+                                </datalist>
+                            </div>
+                            <p class="help-block">With location you can be more specific.</p>
+                        </div>
+
+                        <button class="btn btn-default" ng-click="submit()">Go</button>
                     </form>
 
                 </div>
@@ -36,35 +39,54 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h2 class="panel-title">
-                        Startups
-                    </h2>
-                </div>
+            <div class="panel panel-default" ng-show="startups.length">
                 <div class="panel-body">
+
                     <table class="table table-bordered">
                         <thead>
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
+                                <th class="icon-spacer"></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="startup in startups">
                                 <td>{{startup.id}}</td>
                                 <td>{{startup.name}}</td>
+                                <td>
+                                    <a href="#network-container" data="{{startup.id}}" ng-click="showNetwork(startup.id)">
+                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
+
                 </div>
             </div>
         </div>
-    </div>
-</div>
-} {
+    </div><!-- /.row -->
+
+    <div class="row">
+
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body network-wrapper">
+                    <div id="network-container">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.row -->
+
+}{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/sigma/sigma.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/sigma/plugins/sigma.layout.forceAtlas2.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoCtrl.js")"></script>
 
