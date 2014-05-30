@@ -29,26 +29,30 @@ demoCtrlModule.controller('sblDemoCtrl', ['$scope','dataAccess',
             })
         };
 
+
+        $scope.submit = function(){
+            console.log($scope.area);
+        }
+    }]);
+
+demoCtrlModule.controller('startupInfoCtrl', ['$scope', 'dataAccess',
+    function ($scope, dataAccess) {
+
         $scope.searchNumberOfFounders= function(){
-            console.log("holaaaa");
             dataAccess.getNumberOfFoundersByStartupId($scope.startupId, function(number){
-                console.log(number);
                 $scope.numberOfFounders= number;
                 $scope.$apply();
             })
         };
 
         $scope.searchRolesOfStartup= function(){
-            dataAccess.getRolesOfStartup($scope.startupId, function(persons){
+            dataAccess.getRolesNetInfo($scope.startupId, function(persons){
                 $scope.roles= persons;
                 $scope.$apply();
             })
         };
-
-        $scope.submit = function(){
-            console.log($scope.area);
-        }
-    }]);
+    }]
+);
 
 demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
     function ($scope, dataAccess) {
