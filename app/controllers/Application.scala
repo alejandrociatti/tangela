@@ -30,6 +30,6 @@ object Application extends Controller with Secured{
   }
 
   def startupsInfo = Action {
-    Ok(views.html.startupInfo())
+    Ok(views.html.startupsInfo())
   }
 }
