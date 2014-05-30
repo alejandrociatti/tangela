@@ -4,7 +4,7 @@ import play.api.data.Forms._
 import anorm.{Pk, NotAssigned}
 import play.api.data.Form
 import models.Startup
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.WS
@@ -17,6 +17,9 @@ import play.api.mvc.{Controller, Action}
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import com.fasterxml.jackson.annotation.JsonValue
+import models.Startup
+import play.api.libs.json.JsArray
+import scala.concurrent.duration.Duration
 
 /**
  * Created by Javi on 5/16/14.
@@ -65,11 +68,31 @@ object Startups extends Controller with Secured{
         }
       }
 
-      seqAux = seqAux.reverse
+      var futures = Seq.empty[Future[_]]
+
+      for (i <- 2 until pages){
+        futures = futures.+:(getFutureStartupsByPage(i))
+      }
+
+      Await.result(Future.sequence[Any, Seq](futures),Duration.Inf)
+
+      def getFutureStartupsByPage(i: Int) = {
+          WS.url(Application.AngelApi + "/tags/" + countryId + "/startups?page=" + i).get().map { response =>
+            val startups: JsArray = (response.json \ "startups").as[JsArray]
+
+            startups.value.filter { startup => !(startup \ "hidden").as[Boolean] }.map { startup =>
+                val id: Int = (startup \ "id").as[Int]
+                val name: String = (startup \ "name").as[String]
+                seqAux = seqAux.+:(Map("id" -> id.toString, "name" -> name))
+            }
+          }
+      }
 
       Ok(Json.toJson(seqAux))
     }
   }
+
+
 
   def getNumberOfStartupsFundraising() = withAsyncAuth( username => implicit request =>
     WS.url(Application.AngelApi + "/startups?filter=raising").get().map{ response =>
