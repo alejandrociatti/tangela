@@ -26,6 +26,8 @@ import scala.concurrent.duration.Duration
  */
 object Startups extends Controller with Secured{
 
+  val ANGELAPI = "https://api.angel.co/1"
+
   val startupForm = Form(
     mapping(
       "id" -> ignored(NotAssigned:Pk[Long]),
@@ -37,15 +39,22 @@ object Startups extends Controller with Secured{
    * Responds with a JSON containing the minimum amount of information
    * required to show given startup in a network graph.
    */
-  def getStartupNetInfo(startupId:Long) = Action {
-//    WS.url(Application.AngelApi + s"/startups/$startupId").get().map{ response =>
-//      val id = (response.json \ "id").as[String]
-//      val followers = (response.json \ "follower_count").as[String]
-//      val name = (response.json \ "name").as[String]
-//      TODO: Fix this ?? We need this response: {"id":"startup_id","follower_count":"X","name":"startup_name"}
-//      Ok(Json.toJson(Map("id"->id, "follower_count"->followers, "name"->name)))
-//    }
-    Ok(Json.toJson(Map("id"->startupId.toString,"follower_count"->"1000","name"->"SelectedStartup")))
+  def getStartupNetInfo(startupId:Long) = Action.async {
+    WS.url(Application.AngelApi + s"/startups/$startupId").get().map{ response =>
+
+      val success= response.json \\ "success"
+      val resp:JsValue = response.json.as[JsValue]
+      if(success.size == 0) {
+        val followers: Int = (resp \ "follower_count").as[Int]
+        val name: String = (resp \ "name").as[String]
+
+        var seq = Seq.empty[Map[String, String]]
+        seq= seq.+:(Map("id"->startupId.toString, "follower_count"->followers.toString, "name"->name))
+        Ok(Json.toJson(seq))
+      } else {
+        Ok(Json.toJson(Map("id"->startupId.toString,"follower_count"->"1000","name"->"SelectedStartup")))
+      }
+    }
   }
 
   def getStartupsByLocationId(countryId:Long) = Action.async {
@@ -103,21 +112,40 @@ object Startups extends Controller with Secured{
     }
   )
 
-  //TODO: Que hace esto? porque fundraising si el nombre del metodo dice otra cosa ?
   def getStartupById(startupId: Long) = Action.async {
-    WS.url(Application.AngelApi + s"/startups/$startupId").get().map{ response =>
-      val fundraising = response.json.\\("fundraising")
-      Ok(Json.toJson(fundraising))
+    val url: String = ANGELAPI + s"/startups/$startupId"
+    println(url)
+    WS.url(url).get().map{ response =>
+      println(response.json.toString())
+
+      val success= response.json \\ "success"
+      if(success.size == 0) {
+        val fundraising = response.json.\\("fundraising")
+        Ok(Json.toJson(fundraising))
+      } else {
+        Ok("No existe el StartUp")
+      }
+
+      
     }
   }
+
+
 
   def getNumberOfFoundersByStartupId(startupId: Long) = Action.async {
     WS.url(Application.AngelApi+s"/startups/$startupId/roles?role=founder" ).get().map{ response =>
 
-      val founders:JsArray= (response.json \ "startup_roles").as[JsArray]
-      val numberOfFounders:Int= founders.value.size
+      val success= response.json \\ "success"
 
-      Ok(numberOfFounders.toString)
+      if(success.size == 0) {
+
+        val founders: JsArray = (response.json \ "startup_roles").as[JsArray]
+        val numberOfFounders: Int = founders.value.size
+
+        Ok(numberOfFounders.toString)
+      } else {
+        Ok("No existe el startup")
+      }
     }
   }
 
@@ -126,18 +154,30 @@ object Startups extends Controller with Secured{
 
       val roles:JsArray = (response.json \ "startup_roles").as[JsArray]
 
-      var seqAux= Seq.empty[Map[String, String]]
+      val success= response.json \\ "success"
 
-      for(role <- roles.value){
-        val roleString:String= (role \ "role").as[String]
-        val user= (role \ "tagged").as[JsValue]
-        val id:Int= (user \ "id").as[Int]
-        val name:String= (user \ "name").as[String]
-        val followers:Int = (user \ "follower_count").as[Int]
+      if(success.size == 0) {
 
-        seqAux= seqAux.+:(Map("id"->id.toString, "name"->name, "role"->roleString, "follower_count"->followers.toString))
+        val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+
+        var seqAux = Seq.empty[Map[String, String]]
+
+        for (role <- roles.value) {
+          val roleString: String = (role \ "role").as[String]
+          val user = (role \ "tagged").as[JsValue]
+          val id: Int = (user \ "id").as[Int]
+          val name: String = (user \ "name").as[String]
+          val followers: Int = (user \ "follower_count").as[Int]
+
+          seqAux = seqAux.+:(Map("id" -> id.toString, "name" -> name, "role" -> roleString, "follower_count" -> followers.toString))
+        }
+
+        seqAux = seqAux.reverse
+        println(Json.toJson(seqAux))
+        Ok(Json.toJson(seqAux))
+      } else {
+        Ok("""{["name": "No", "role":"existe", "id": "el ", "follower_count": "StartUp"]}"""")
       }
-      Ok(Json.toJson(seqAux))
     }
   }
 }
