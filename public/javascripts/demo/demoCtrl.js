@@ -82,12 +82,13 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
         };
 
         $scope.showNetwork = function(startupId){
+            $('#network-continer').empty();
             var s = new sigma('network-container');
             var edgeId = 0;
 
             dataAccess.getStartupNetInfo(startupId, function(startup){
                 s.graph.addNode({
-                    id: 'n'+startupId,
+                    id: 'ns'+startupId,
                     label: startup.name,
                     size: startup.follower_count/10,
                     x: Math.random(),
@@ -99,18 +100,18 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
             dataAccess.getRolesNetInfo(startupId, function(roles){
                 var i = roles.length;
                 while(i--){
-                    s.graph.addNode({
-                        id: 'n'+roles[i].id,
-                        label: roles[i].name+' '+ roles[i].role,
-                        size: roles[i].follower_count/100,
-                        x: Math.random(),
-                        y: Math.random(),
-                        color:'#2bb372'
+                    s.graph.addNode({                               //.dropNode('nr'+roles[i].id)
+                            id: 'nr'+roles[i].id+roles[i].role,
+                            label: roles[i].name+' '+ roles[i].role,
+                            size: roles[i].follower_count/100,
+                            x: Math.random(),
+                            y: Math.random(),
+                            color:'#2bb372'
                     });
                     s.graph.addEdge({
                         id: 'e'+(edgeId++),
-                        source: 'n'+startupId,
-                        target: 'n'+roles[i].id,
+                        source: 'ns'+startupId,
+                        target: 'nr'+roles[i].id+roles[i].role,
                         color: '#2b6cb3'
                     });
                 }
