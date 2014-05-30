@@ -20,9 +20,16 @@ object Application extends Controller with Secured{
       Routes.javascriptRouter("jsRoutes")(
         routes.javascript.Locations.getCountriesByString,
         routes.javascript.Locations.getCountries,
-        routes.javascript.Startups.getStartupsByLocationId
+        routes.javascript.Locations.getChildrenOf,
+        routes.javascript.Startups.getStartupsByLocationId,
+        routes.javascript.Startups.getNumberOfFoundersByStartupId,
+        routes.javascript.Startups.getRolesOfStartup,
+        routes.javascript.Startups.getStartupNetInfo
       )
     ).as("text/javascript")
   }
 
+  def startupsInfo() = Action {
+    Ok(views.html.startups_info())
+  }
 }

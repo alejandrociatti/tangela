@@ -30,6 +30,30 @@ angular.module('app.services', []).factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             })
+        },
+        getStartupNetInfo: function(startupId, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.getStartupNetInfo(startupId).ajax({
+                method: 'GET',
+                responseType: "application/json",
+                success: successHandler,
+                error: errorHandler
+            });
+        },
+        getRolesNetInfo: function(startupId, successHandler, errorHandler) {
+            jsRoutes.controllers.Startups.getRolesOfStartup(startupId).ajax({
+                method: 'GET',
+                responseType: "application/json",
+                success: successHandler,
+                error: errorHandler
+            });
+        },
+        getNumberOfFoundersByStartupId: function(startupId, successHandler, errorHandler) {
+            jsRoutes.controllers.Startups.getNumberOfFoundersByStartupId(startupId).ajax({
+                method: 'GET',
+                responseType: "application/json",
+                success: successHandler,
+                error: errorHandler
+            });
         }
     };
 });

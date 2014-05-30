@@ -3,8 +3,9 @@
 # ~~~~
 
 # Home page
-GET         /                                   controllers.Application.index
-GET         /startups-by-location               controllers.Application.startupsByLocation
+GET        /                                       controllers.Application.index
+GET        /startups-by-location                   controllers.Application.startupsByLocation
+GET        /startups-info                          controllers.Application.startupsInfo
 
 # Log in
 GET         /login                              controllers.Authentication.login
@@ -13,16 +14,20 @@ GET         /logout                             controllers.Authentication.logou
 
 
 #Locations
-GET         /locations/name/:countryName        controllers.Locations.getCountriesByString(countryName: String)
-GET         /locations/id/:countryId            controllers.Startups.getStartupsByLocationId(countryId: Int)
-GET         /locations/country-list             controllers.Locations.getCountries
+GET        /locations/name/:countryName            controllers.Locations.getCountriesByString(countryName: String)
+GET        /locations/country-list                 controllers.Locations.getCountries
+GET        /locations/children/:countryId          controllers.Locations.getChildrenOf(countryId :Long)
 
 #Startups
-GET         /startups/id/:id                    controllers.Startups.getStartupById(id: Long)
-GET         /startups/total-fundraising         controllers.Startups.getNumberOfStartupsFundraising()
+GET        /startups/location/id/:countryId        controllers.Startups.getStartupsByLocationId(countryId: Int)
+GET        /startups/id/:id                        controllers.Startups.getStartupById(id: Long)
+GET        /startups/total-fundraising             controllers.Startups.getNumberOfStartupsFundraising()
+GET        /startups/founders/:startupId           controllers.Startups.getNumberOfFoundersByStartupId(startupId: Long)
+GET        /startups/roles/:startupId              controllers.Startups.getRolesOfStartup(startupId: Long)
+GET         /startups/id/min/:id                   controllers.Startups.getStartupNetInfo(id:Long)
 
 # Javascript routes for AJAX
-GET         /assets/javascripts/routes          controllers.Application.javascriptRoutes
+GET        /assets/javascripts/routes              controllers.Application.javascriptRoutes
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                       controllers.Assets.at(path="/public", file)
+GET        /assets/*file                           controllers.Assets.at(path="/public", file)
