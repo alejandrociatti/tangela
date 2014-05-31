@@ -23,6 +23,7 @@ object Location{
     DB.withConnection{implicit connection =>
       SQL("""
          SELECT * FROM Location WHERE kind={kind}
+         ORDER BY name
           """).on("kind" -> Kind.COUNTRY.toString).as(locationParser *)
     }
   }

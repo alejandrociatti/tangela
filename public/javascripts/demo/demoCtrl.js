@@ -54,8 +54,8 @@ demoCtrlModule.controller('startupInfoCtrl', ['$scope', 'dataAccess',
     }]
 );
 
-demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
-    function ($scope, dataAccess) {
+demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
+    function ($scope, dataAccess, graphUtil) {
 
         $scope.loadChildren = function(){
             dataAccess.getChildrenOf($scope.country, function(data){
@@ -92,44 +92,41 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess',
 
             dataAccess.getStartupNetInfo(startupId, function(startup){
                 while(startup.follower_count > 100) startup.follower_count = startup.follower_count/10;
-                console.log(startup);
-                console.log('id: ns'+startupId);
-                console.log('label: '+ startup.name);
-                console.log('size: '+ startup.follower_count);
                 s.graph.addNode({
                     id: 'ns'+startupId,
                     label: startup.name,
-                    size: startup.follower_count,
+                    size: graphUtil.getStartupSize(startup.follower_count),
                     x: Math.random(),
                     y: Math.random(),
                     color: '#b32e2b'
                 });
-            });
 
-            dataAccess.getRolesNetInfo(startupId, function(roles){
-                var i = roles.length;
-                while(i--){
-                    s.graph.addNode({                               //.dropNode('nr'+roles[i].id)
+                dataAccess.getRolesNetInfo(startupId, function(roles){
+                    var i = roles.length;
+                    while(i--){
+                        s.graph.addNode({                               //.dropNode('nr'+roles[i].id)
                             id: 'nr'+roles[i].id+roles[i].role,
                             label: roles[i].name+' '+ roles[i].role,
-                            size: roles[i].follower_count/100,
+                            size: graphUtil.getRoleSize(roles[i].follower_count),
                             x: Math.random(),
                             y: Math.random(),
                             color:'#2bb372'
-                    });
-                    s.graph.addEdge({
-                        id: 'e'+(edgeId++),
-                        source: 'ns'+startupId,
-                        target: 'nr'+roles[i].id+roles[i].role,
-                        color: '#2b6cb3'
-                    });
-                }
-                s.startForceAtlas2();
-                setTimeout(function(){
-                    s.stopForceAtlas2();
-                }, 3000);
-            });
+                        });
+                        s.graph.addEdge({
+                            id: 'e'+(edgeId++),
+                            source: 'ns'+startupId,
+                            target: 'nr'+roles[i].id+roles[i].role,
+                            color: '#2b6cb3'
+                        });
+                    }
+                    s.startForceAtlas2();
+                    setTimeout(function(){
+                        s.stopForceAtlas2();
+                    }, 3000);
+                    console.log(s.graph.nodes())
+                });
 
+            });
         };
 
     }

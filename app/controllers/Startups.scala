@@ -48,6 +48,11 @@ object Startups extends Controller with Secured{
     }
   }
 
+  /**
+   * This method searches for every startup tagged with a given LocationTag
+   * @param countryId id of the LocationTag
+   * @return JSON response containing an array of {id, name} of each startup
+   */
   def getStartupsByLocationId(countryId:Long) = Action.async {
     WS.url(Application.AngelApi + "/tags/" + countryId + "/startups").get().map{ response =>
       val pages:Int = (response.json \ "last_page" ).as[Int]
@@ -56,21 +61,17 @@ object Startups extends Controller with Secured{
 
       var seqAux = Seq.empty[Map[String, String]]
 
-      var hidden:Boolean = false
-      for(start <- startups.value){
-
-        hidden = (start \ "hidden").as[Boolean]
-
-        if(!hidden){
-            val id:Int = (start \ "id").as[Int]
-            val name:String = (start \ "name").as[String]
-            seqAux = seqAux .+:(Map("id"->id.toString, "name"->name))
-        }
+      startups.value.filter{ startup => !(startup \ "hidden").as[Boolean] }.map{startup =>
+        val id:Int = (startup \ "id").as[Int]
+        val name:String = (startup \ "name").as[String]
+        seqAux = seqAux .+:(Map("id"->id.toString, "name"->name))
       }
 
       var futures = Seq.empty[Future[_]]
 
-      for (i <- 2 until pages){
+      //AAC: I can confirm this is working with a small amount of pages (2 until 20)
+      //TODO: Ensure that this can cope with any amount of pages
+      for (i <- 2 until 20){
         futures = futures.+:(getFutureStartupsByPage(i))
       }
 
