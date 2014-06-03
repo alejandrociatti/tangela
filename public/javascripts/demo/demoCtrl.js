@@ -57,7 +57,7 @@ demoCtrlModule.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
     function ($scope, dataAccess, graphUtil) {
         $scope.childrenSelectMsg = 'Select a country first.';
-        $scope.children = [];
+        $scope.startups = [];
 
         $scope.loadChildren = function(){
             $scope.children = [];
