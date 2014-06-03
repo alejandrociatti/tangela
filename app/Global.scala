@@ -13,6 +13,11 @@ object Global extends GlobalSettings{
 
   override def onStart(app: Application) {
     super.onStart(app)
+
+    dropTablesCRON()
+  }
+
+  def dropTablesCRON() = {
     //Start On: Today at 3:00 AM (24-hour format)
     val startOn = LocalDate.now().toLocalDateTime(new LocalTime(3,00))
     //Schedule task:
@@ -26,6 +31,10 @@ object Global extends GlobalSettings{
       //TODO: 'TRUNCATE TABLE X' SQL WHEN WE HAVE THEM
       println("Cron Job just ran.")
     }
+  }
+
+  def populateCountries() = {
+
   }
 
 }

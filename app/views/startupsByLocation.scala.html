@@ -8,30 +8,28 @@
                     <form role="form">
                         <div class="form-group">
                             <label for="country" class="control-label">Country</label>
-                            <div class="input-group">
-                                <select name="country" id="country" class="form-control" ng-model="country">
-                                    <option value=""> </option>
-                                    @for(country: Location <- Location.getCountries){
-                                        <option value="@country.angelId">@country.name</option>
-                                    }
-                                </select>
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default" type="button" ng-click="loadChildren()">Load</button>
-                                </span>
-                            </div>
+                            <select name="country" id="country" class="form-control" ng-model="country" ng-change="loadChildren()">
+                                <option value="" disabled selected>Select a country...</option>
+                                @for(country: Location <- Location.getCountries){
+                                    <option value="@country.angelId">@country.name</option>
+                                }
+                            </select>
                         </div>
                         <div class="form-group">
                             <div class="input-group">
                                 <span class="input-group-addon"> @@ </span>
-                                <input type="text" list="locations" class="form-control" placeholder="Location" ng-model="area"/>
-                                <datalist id="locations">
-                                    <option ng-repeat="child in children" value="{{child.name}}">{{child.id}}</option>
-                                </datalist>
+                                <select name="location" id="location" ng-model="area" class="form-control">
+                                    <option value="" selected disabled>{{childrenSelectMsg}}</option>
+                                    <option ng-repeat="child in children" value="{{child.id}}">{{child.name}}</option>
+                                </select>
                             </div>
-                            <p class="help-block">With location you can be more specific.</p>
+                            <p class="help-block">
+                                Select a country and hit Go, <br>
+                                or you can select an area afterwards to be more specific.
+                            </p>
                         </div>
 
-                        <button class="btn btn-default" ng-click="submit()">Go</button>
+                        <button class="btn btn-default pull-right" ng-click="submit()">Go</button>
                     </form>
 
                 </div>
@@ -51,7 +49,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="startup in startups">
+                            <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
                                 <td>{{startup.id}}</td>
                                 <td>{{startup.name}}</td>
                                 <td>
@@ -62,7 +60,13 @@
                             </tr>
                         </tbody>
                     </table>
-
+                    <ul class="pagination">
+                        <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
+                        <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+                            <a href="#">{{n+1}}</a>
+                        </li>
+                        <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
+                    </ul>
                 </div>
             </div>
         </div>

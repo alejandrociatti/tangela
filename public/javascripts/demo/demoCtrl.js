@@ -56,11 +56,16 @@ demoCtrlModule.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
 demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
     function ($scope, dataAccess, graphUtil) {
+        $scope.childrenSelectMsg = 'Select a country first.';
+        $scope.children = [];
 
         $scope.loadChildren = function(){
+            $scope.children = [];
+            $scope.childrenSelectMsg = 'Loading areas...';
             dataAccess.getChildrenOf($scope.country, function(data){
                 console.log(data);
                 $scope.children = data;
+                $scope.childrenSelectMsg = 'Select area...';
                 $scope.$apply();
             },
             function(error){
@@ -129,6 +134,66 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
             });
         };
 
+        //Pagination control:
+        $scope.itemsPerPage = 5;
+        $scope.currentPage = 0;
+
+        $scope.range = function() {
+            var rangeSize = 5;
+            var ret = [];
+            var start;
+
+            start = $scope.currentPage;
+            if ( start > $scope.pageCount()-rangeSize ) {
+                start = $scope.pageCount()-rangeSize+1;
+            }
+
+            for (var i=start; i<start+rangeSize; i++) {
+                ret.push(i);
+            }
+            return ret;
+        };
+
+        $scope.prevPage = function() {
+            if ($scope.currentPage > 0) {
+                $scope.currentPage--;
+            }
+        };
+
+        $scope.setPage = function(n) {
+            $scope.currentPage = n;
+        };
+
+        $scope.nextPage = function() {
+            if ($scope.currentPage < $scope.pageCount()) {
+                $scope.currentPage++;
+            }
+        };
+
+        $scope.prevPage = function() {
+            if ($scope.currentPage > 0) {
+                $scope.currentPage--;
+            }
+        };
+
+        $scope.nextPageDisabled = function() {
+            return $scope.currentPage === $scope.pageCount() ? "disabled" : "";
+        };
+
+        $scope.prevPageDisabled = function() {
+            return $scope.currentPage === 0 ? "disabled" : "";
+        };
+
+        $scope.pageCount = function() {
+            return Math.ceil($scope.startups.length/$scope.itemsPerPage)-1;
+        };
     }
 ]);
+
+demoCtrlModule.filter('offset', function() {
+    return function(input, start) {
+        start = parseInt(start, 10);
+        return input.slice(start);
+    };
+});
 
