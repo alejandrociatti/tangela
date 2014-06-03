@@ -18,7 +18,7 @@ object Global extends GlobalSettings{
     //Schedule task:
     Akka.system.scheduler.schedule(
       //Initial delay: time remaining from now to startOn(3AM)
-      new org.joda.time.Duration(null, startOn.toDateTime).getMillis.millis,
+      new org.joda.time.Duration(startOn.toDateTime, null).getMillis.millis,
       //Once every day
       1.days
     ){
