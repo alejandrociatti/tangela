@@ -45,6 +45,16 @@ object Location{
     }
   }
 
+  def saveRelation(locationId:Long, startupId:Long) = {
+    DB.withConnection{implicit connection =>
+      SQL(
+        """
+        INSERT INTO Startup_Location(locationId, startupId)
+        VALUES({locationId},{startupId})
+        """).on("locationId" -> locationId, "startupId"->startupId).execute()
+    }
+  }
+
   private val locationParser: RowParser[Location] = {
       get[Pk[Long]]("id") ~
       get[String]("name") ~

@@ -34,10 +34,8 @@ object Locations extends Controller{
       //Next line turns strings like "Sri Lanka" to sri-lanka, so country names match their AngelList 'slugs'
       val uriName = URLEncoder.encode(names(i).as[String].replace(" ", "-").toLowerCase, "UTF-8")
       WS.url(Application.AngelApi+s"/search/slugs?type=LocationTag&query=$uriName").get().map{ response =>
-        println(response.json)
         val id = (response.json \ "id").as[Long]
         val name = (response.json \ "name").as[String]
-        println(id, name)
         val newLocation = Location(NotAssigned, name, id, models.Kind.COUNTRY)
         Location.save(newLocation)
       }
@@ -68,7 +66,6 @@ object Locations extends Controller{
 
   def getChildrenOf(countryId:Long) = Action.async {
     WS.url(Application.AngelApi+s"/tags/$countryId/children").get().map{response =>
-      println(response.json.toString())
       val ids:Seq[JsValue] = response.json \\ "id"
       val names:Seq[JsValue] = response.json \\ "display_name"
       var seqAux = Seq.empty[Map[String, String]]

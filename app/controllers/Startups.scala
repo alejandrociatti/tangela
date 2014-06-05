@@ -1,9 +1,8 @@
 package controllers
 
 import play.api.data.Forms._
-import anorm.{Pk, NotAssigned}
+import anorm.Pk
 import play.api.data.Form
-import models.Startup
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,7 +30,8 @@ object Startups extends Controller with Secured{
   val startupForm = Form(
     mapping(
       "id" -> ignored(NotAssigned:Pk[Long]),
-      "name" -> nonEmptyText
+      "name" -> nonEmptyText,
+      "angelId" -> ignored(0:Long)
     )(Startup.apply)(Startup.unapply)
   )
 
@@ -50,11 +50,11 @@ object Startups extends Controller with Secured{
 
   /**
    * This method searches for every startup tagged with a given LocationTag
-   * @param countryId id of the LocationTag
+   * @param locationId id of the LocationTag
    * @return JSON response containing an array of {id, name} of each startup
    */
-  def getStartupsByLocationId(countryId:Long) = Action.async {
-    WS.url(Application.AngelApi + "/tags/" + countryId + "/startups").get().map{ response =>
+  def getStartupsByLocationId(locationId:Long) = Action.async {
+    WS.url(Application.AngelApi + s"/tags/$locationId/startups").get().map{ response =>
       val pages:Int = (response.json \ "last_page" ).as[Int]
 
       val startups:JsArray = (response.json \ "startups").as[JsArray]
@@ -77,8 +77,8 @@ object Startups extends Controller with Secured{
 
       Await.result(Future.sequence[Any, Seq](futures),Duration.Inf)
 
-      def getFutureStartupsByPage(i: Int) = {
-          WS.url(Application.AngelApi + "/tags/" + countryId + "/startups?page=" + i).get().map { response =>
+      def getFutureStartupsByPage(page: Int) = {
+          WS.url(Application.AngelApi + s"/tags/$locationId/startups?page=$page").get().map { response =>
             val startups: JsArray = (response.json \ "startups").as[JsArray]
 
             startups.value.filter { startup => !(startup \ "hidden").as[Boolean] }.map { startup =>
@@ -88,10 +88,17 @@ object Startups extends Controller with Secured{
             }
           }
       }
-
+      //TODO: Asychronously load every startup to DB (loadStartupsByLocationIdToDB)
       Ok(Json.toJson(seqAux))
     }
   }
+
+  //TODO: implement this method
+  /**
+   * This method loads every startup on a given location to the DB
+   * @param locationId id of the LocationTag
+   */
+  def loadStartupsByLocationIdToDB(locationId:Long) = { }
 
 
 
@@ -106,9 +113,7 @@ object Startups extends Controller with Secured{
 
   def getStartupById(startupId: Long) = Action.async {
     val url: String = ANGELAPI + s"/startups/$startupId"
-    println(url)
     WS.url(url).get().map{ response =>
-      println(response.json.toString())
 
       val success= response.json \\ "success"
       if(success.size == 0) {
@@ -117,12 +122,8 @@ object Startups extends Controller with Secured{
       } else {
         Ok("No existe el StartUp")
       }
-
-      
     }
   }
-
-
 
   def getNumberOfFoundersByStartupId(startupId: Long) = Action.async {
     WS.url(Application.AngelApi+s"/startups/$startupId/roles?role=founder" ).get().map{ response =>
@@ -164,11 +165,9 @@ object Startups extends Controller with Secured{
           seqAux = seqAux.+:(Map("id" -> id.toString, "name" -> name, "role" -> roleString, "follower_count" -> followers.toString))
         }
 
-        seqAux = seqAux.reverse
-        println(Json.toJson(seqAux))
         Ok(Json.toJson(seqAux))
       } else {
-        Ok("""{["name": "No", "role":"existe", "id": "el ", "follower_count": "StartUp"]}"""")
+        Ok(Json.obj("id"->"error","msg"-> s"Startup $startupId does not exist"))
       }
     }
   }

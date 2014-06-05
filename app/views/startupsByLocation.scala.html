@@ -20,7 +20,7 @@
                                 <span class="input-group-addon"> @@ </span>
                                 <select name="location" id="location" ng-model="area" class="form-control">
                                     <option value="" selected disabled>{{childrenSelectMsg}}</option>
-                                    <option ng-repeat="child in children" value="{{child.id}}">{{child.name}}</option>
+                                    <option ng-repeat="child in children | orderBy:'name'" value="{{child.id}}">{{child.name}}</option>
                                 </select>
                             </div>
                             <p class="help-block">
