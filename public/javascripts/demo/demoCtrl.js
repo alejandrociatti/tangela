@@ -74,16 +74,10 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
         };
 
         $scope.submit = function(){
-            var locationId = $scope.country;
-            if($scope.area){
-                var i = $scope.children.length;
-                while(i--){
-                    if($scope.children[i].name === $scope.area){
-                        locationId = $scope.children[i].id;
-                        break;
-                    }
-                }
-            }
+            var locationId;
+            console.log($scope.area);
+            if($scope.area) locationId = $scope.area;
+            else locationId = $scope.country;
             (locationId) && dataAccess.getStartupsByLocation(locationId, function(startups){
                 $scope.startups = startups;
                 $scope.$apply();
