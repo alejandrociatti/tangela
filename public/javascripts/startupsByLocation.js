@@ -99,7 +99,9 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
             }
 
             for (var i=start; i<start+rangeSize; i++) {
-                ret.push(i);
+                if(i >= 0) {
+                    ret.push(i);
+                }
             }
             return ret;
         };

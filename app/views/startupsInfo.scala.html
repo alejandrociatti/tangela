@@ -17,14 +17,15 @@
                         </div>
                     </form>
 
-                    <div ng-if="!startupsResultsReached">
-                        <p>There are not startups with that name</p>
+                    <div class="alert alert-danger" ng-if="!startupsResultsReached" >
+                        <p><strong>There are not startups with that name</strong></p>
                     </div>
 
                     <form role="form">
                         <div class="form-group">
                             <label for="startupId">Options: </label>
                             <select class="form-control" name="startup" id="startupId" ng-model="startupId" ng-change="loadInfo()">
+                                <option value="" selected disabled>{{optionSelectMsg}}</option>
                                 <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
                             </select>
                             <p class="help-block">
@@ -54,7 +55,7 @@
                 </div>
                 <div class="panel-body">
                     <dl class="dl-horizontal">
-                        <dt>{{startupName}}</dt>
+                        @*<dt>{{startupId}}</dt>*@
                         <dd>{{numberOfFounders}}</dd>
                     </dl>
                 </div>

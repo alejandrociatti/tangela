@@ -13,11 +13,15 @@ var module = angular.module('app.controllers', ['app.services']);
 module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             $scope.roles= [];
+            $scope.startupsResultsReached= true;
+            $scope.optionSelectMsg = 'Search first.';
 
             $scope.searchForStartupsByName= function () {
+                $scope.optionSelectMsg = 'Loading results...';
                 dataAccess.getStartupsByName($scope.startupName, function(startupsByName){
                     $scope.startupsByName= startupsByName;
                     $scope.startupsResultsReached= startupsByName.length != 0;
+                    $scope.optionSelectMsg = 'Select a startup.';
                     $scope.$apply();
                 })
             };
@@ -57,7 +61,9 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                 }
 
                 for (var i=start; i<start+rangeSize; i++) {
-                    ret.push(i);
+                    if(i >= 0) {
+                        ret.push(i);
+                    }
                 }
                 return ret;
             };
