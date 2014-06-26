@@ -22,6 +22,11 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                 })
             };
 
+            $scope.loadInfo = function(){
+                $scope.searchNumberOfFounders();
+                $scope.searchRolesOfStartup();
+            };
+
             $scope.searchNumberOfFounders= function(){
                 dataAccess.getNumberOfFoundersByStartupId($scope.startupId, function(number){
                     $scope.numberOfFounders= number;

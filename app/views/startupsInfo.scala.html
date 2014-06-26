@@ -23,16 +23,20 @@
 
                     <form role="form">
                         <div class="form-group">
-                            <label for="startupId">Names: </label>
-                            <select class="form-control" name="startup" id="startupId" ng-model="startupId">
+                            <label for="startupId">Options: </label>
+                            <select class="form-control" name="startup" id="startupId" ng-model="startupId" ng-change="loadInfo()">
                                 <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
                             </select>
+                            <p class="help-block">
+                                Enter a startup name and hit Search, <br>
+                                then select the startup you wanted from the options list
+                            </p>
                         </div>
 
-                        <div class="btn btn-group">
-                            <button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Startup</button>
-                            <button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>
-                        </div>
+                        @*<div class="btn btn-group">*@
+                            @*<button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Founders</button>*@
+                            @*<button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>*@
+                        @*</div>*@
                     </form>
                 </div>
 
