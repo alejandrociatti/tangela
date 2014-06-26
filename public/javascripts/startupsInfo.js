@@ -29,6 +29,21 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
             $scope.loadInfo = function(){
                 $scope.searchNumberOfFounders();
                 $scope.searchRolesOfStartup();
+                $scope.searchStartupFunding();
+            };
+
+            $scope.searchStartupFunding= function(){
+                dataAccess.getStartupFunding($scope.startupId, function(fundraising){
+                    $scope.participants= JSON.parse(fundraising[0].participants);
+                    $scope.roundId= fundraising[0].id;
+                    if(fundraising[0].round_type == ""){
+                        $scope.type= "Doesn't have a type assigned";
+                    }else {
+                        $scope.type= fundraising[0].round_type;
+                    }
+                    $scope.raised= fundraising[0].amount;
+                    $scope.closeDate= fundraising[0].closed_at;
+                })
             };
 
             $scope.searchNumberOfFounders= function(){

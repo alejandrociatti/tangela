@@ -148,7 +148,6 @@ object Startups extends Controller with Secured{
     val url: String = ANGELAPI + s"/search?query=$name&type=Startup"
     WS.url(url).get().map{ response =>
       //TODO: que me busque todas las paginas y no solo la primera
-      //TODO: que en la vista me aparezcan los botones una vez que hay datos para submitear
       val success= response.json \\ "success"
       if(success.size == 0) {
         val startups: JsArray = response.json.as[JsArray]
@@ -201,7 +200,6 @@ object Startups extends Controller with Secured{
       val success = response.json \\ "success"
       if (success.size == 0) {
         val fundraising: JsArray = (response.json \ "funding").as[JsArray]
-        println(response.json)
 
         var seqFunding = Seq.empty[Map[String, String]]
         var seqParticipants = Seq.empty[Map[String, String]]

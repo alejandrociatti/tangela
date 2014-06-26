@@ -1,6 +1,8 @@
 @main("Informacion sobre Startups   ")(sidebar()) {
 
     <div class="row" ng-app="JB" ng-controller="startupInfoCtrl">
+
+
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-body">
@@ -46,22 +48,10 @@
 
             </div>
         </div>
+
+
         <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h2 class="panel-title">
-                        Number of Founders
-                    </h2>
-                </div>
-                <div class="panel-body">
-                    <dl class="dl-horizontal">
-                        @*<dt>{{startupId}}</dt>*@
-                        <dd>{{numberOfFounders}}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h2 class="panel-title">
@@ -97,7 +87,65 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Fundraising
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>Round Id: </dt>
+                        <dd>{{roundId}}</dd>
+                        <dt>Type: </dt>
+                        <dd>{{type}}</dd>
+                        <dt>Raised: </dt>
+                        <dd>{{raised}}</dd>
+                        <dt>Closed At: </dt>
+                        <dd>{{closeDate}}</dd>
+                    </dl>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align: center">Participants</th>
+                            </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="participant in participants | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <td>{{participant.name}}</td>
+                                <td>{{participant.type}}</td>
+                                <td>{{participant.id}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
+
+
+
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Number of Founders
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        @*<dt>{{startupId}}</dt>*@
+                        <dd>{{numberOfFounders}}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
     </div><!-- /.row -->
 
 }{
