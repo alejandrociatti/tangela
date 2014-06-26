@@ -14,11 +14,14 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             $scope.roles= [];
             $scope.startupsResultsReached= true;
+            $scope.optionSelectMsg = 'Search first.';
 
             $scope.searchForStartupsByName= function () {
+                $scope.optionSelectMsg = 'Loading results...';
                 dataAccess.getStartupsByName($scope.startupName, function(startupsByName){
                     $scope.startupsByName= startupsByName;
                     $scope.startupsResultsReached= startupsByName.length != 0;
+                    $scope.optionSelectMsg = 'Select a startup.';
                     $scope.$apply();
                 })
             };

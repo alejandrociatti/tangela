@@ -25,6 +25,7 @@
                         <div class="form-group">
                             <label for="startupId">Options: </label>
                             <select class="form-control" name="startup" id="startupId" ng-model="startupId" ng-change="loadInfo()">
+                                <option value="" selected disabled>{{optionSelectMsg}}</option>
                                 <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
                             </select>
                             <p class="help-block">
