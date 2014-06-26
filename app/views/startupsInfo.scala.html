@@ -17,8 +17,8 @@
                         </div>
                     </form>
 
-                    <div ng-if="!startupsResultsReached">
-                        <p>There are not startups with that name</p>
+                    <div class="alert alert-danger" ng-if="!startupsResultsReached" >
+                        <p><strong>There are not startups with that name</strong></p>
                     </div>
 
                     <form role="form">
@@ -54,7 +54,7 @@
                 </div>
                 <div class="panel-body">
                     <dl class="dl-horizontal">
-                        <dt>{{startupName}}</dt>
+                        @*<dt>{{startupId}}</dt>*@
                         <dd>{{numberOfFounders}}</dd>
                     </dl>
                 </div>

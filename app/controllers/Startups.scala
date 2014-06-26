@@ -147,7 +147,8 @@ object Startups extends Controller with Secured{
     val name: String = startupName.replaceAll("\\s", "_")
     val url: String = ANGELAPI + s"/search?query=$name&type=Startup"
     WS.url(url).get().map{ response =>
-
+      //TODO: que me busque todas las paginas y no solo la primera
+      //TODO: que en la vista me aparezcan los botones una vez que hay datos para submitear
       val success= response.json \\ "success"
       if(success.size == 0) {
         val startups: JsArray = response.json.as[JsArray]
