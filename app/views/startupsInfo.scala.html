@@ -7,35 +7,81 @@
 
                     <form role="form">
                         <div class="form-group">
-                            <label for="startupId">Startup</label>
-                            <input type="number" name="startupId" id="startupId" class="form-control" ng-model="startupId"/>
+                            <label for="startupName">Startup</label>
+                            <input type="text" name="startupName" id="startupName" placeholder="Write th startup name here ..." class="form-control" ng-model="startupName"/>
+                            <button class="btn btn-default" ng-click="searchForStartupsByName();">Buscar</button>
+                        </div>
+                        <div ng-if="!startupsResultsReached">
+                            <p>There are not startups with that name</p>
+                        </div>
+                        <div >
+                            <label for="startupId">Names: </label>
+                            <select name="startup" id="startupId" ng-model="startupId">
+                                <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
+                            </select>
+                            <div >
+                                <button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Startup</button>
+                                <button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>
+                            </div>
                         </div>
 
-                        <button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Startup</button>
-                        <button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>
                     </form>
                 </div>
 
             </div>
         </div>
-
         <div class="col-lg-6">
             <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Number of Founders
+                    </h2>
+                </div>
                 <div class="panel-body">
                     <dl class="dl-horizontal">
-                        <dt>Cantidad de fundadores del startupid {{startupId}}</dt>
+                        <dt>{{startupName}}</dt>
                         <dd>{{numberOfFounders}}</dd>
-                    </dl>
-                </div>
-                <div ng-repeat="roole in roles">
-                    <dl class="dl-horizontal">
-                        <dt>{{roole.name}}</dt>
-                        <dd>{{roole.role}} , {{roole.id}} , {{roole.follower_count}}</dd>
-
                     </dl>
                 </div>
             </div>
         </div>
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Roles
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Followers</th>
+                                <th>Role</th>
+                                <th>Id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="roole in roles | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <td>{{roole.name}}</td>
+                                <td>{{roole.follower_count}}</td>
+                                <td>{{roole.role}}</td>
+                                <td>{{roole.id}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <ul class="pagination">
+                        <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
+                        <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+                            <a href="#">{{n+1}}</a>
+                        </li>
+                        <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div><!-- /.row -->
 
 }{

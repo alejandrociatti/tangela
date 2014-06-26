@@ -24,7 +24,8 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupsByLocationId,
         routes.javascript.Startups.getNumberOfFoundersByStartupId,
         routes.javascript.Startups.getRolesOfStartup,
-        routes.javascript.Startups.getStartupNetInfo
+        routes.javascript.Startups.getStartupNetInfo,
+        routes.javascript.Startups.getStartupsByName
       )
     ).as("text/javascript")
   }
