@@ -142,6 +142,27 @@ object Startups extends Controller with Secured{
     }
   }
 
+
+  def getStartupsByName(startupName: String) = Action.async {
+    val name: String = startupName.replaceAll("\\s", "_")
+    val url: String = ANGELAPI + s"/search?query=$name&type=Startup"
+    WS.url(url).get().map{ response =>
+
+      val success= response.json \\ "success"
+      if(success.size == 0) {
+        val startups: JsArray = response.json.as[JsArray]
+        var seqAux= Seq.empty[Map[String, String]]
+        for (startup <- startups.value){
+          val id:Int= (startup \ "id").as[Int]
+          val name: String= (startup \ "name").as[String]
+          seqAux = seqAux.+:(Map("id" -> id.toString, "name" -> name))
+        }
+        Ok(Json.toJson(seqAux))
+      } else {
+        Ok("No existen startups con este nombre")
+      }
+    }
+  }
   def getRolesOfStartup(startupId: Long) = Action.async {
     WS.url(Application.AngelApi+s"/startups/$startupId/roles").get().map{ response =>
 

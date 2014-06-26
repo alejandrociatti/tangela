@@ -56,6 +56,14 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getStartupsByName: function(startupName, successHandler, errorHandler) {
+            jsRoutes.controllers.Startups.getStartupsByName(startupName).ajax({
+                method: 'GET',
+                responseType: "application/json",
+                success: successHandler,
+                error: errorHandler
+            });
         }
     };
 });
