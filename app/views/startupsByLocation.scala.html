@@ -37,10 +37,10 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="panel panel-default" ng-show="startups.length">
+            <div class="panel panel-default" ng-show="startups.length || startupsMsg">
                 <div class="panel-body">
-
-                    <table class="table table-bordered">
+                <div class="alert alert-info" ng-show="startupsMsg">{{startupsMsg}}</div>
+                    <table class="table table-bordered" ng-show="startups.length">
                         <thead>
                             <tr>
                                 <th>Id</th>
@@ -54,7 +54,7 @@
                                 <td>{{startup.name}}</td>
                                 <td>
                                     <a href="#network-container" data="{{startup.id}}" ng-click="showNetwork(startup.id)">
-                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                        <span class="glyphicon glyphicon-eye-open" tooltip="View relations"></span>
                                     </a>
                                 </td>
                             </tr>
@@ -89,6 +89,7 @@
 }{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/angular/ui-bootstrap-tpls-0.11.0.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/sigma/sigma.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/sigma/plugins/sigma.layout.forceAtlas2.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>

@@ -5,7 +5,7 @@
  * Time: 00:14
  */
 
-var demoAppModule = angular.module('DemoApp', ['app.controllers']);
+angular.module('DemoApp', ['app.controllers', 'ui.bootstrap']);
 
 var demoCtrlModule = angular.module('app.controllers', ['app.services']);
 
@@ -56,6 +56,7 @@ demoCtrlModule.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
 demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
     function ($scope, dataAccess, graphUtil) {
+        $scope.startupsMsg = '';
         $scope.childrenSelectMsg = 'Select a country first.';
         $scope.startups = [];
 
@@ -63,7 +64,6 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
             $scope.children = [];
             $scope.childrenSelectMsg = 'Loading areas...';
             dataAccess.getChildrenOf($scope.country, function(data){
-                console.log(data);
                 $scope.children = data;
                 $scope.childrenSelectMsg = 'Select area...';
                 $scope.$apply();
@@ -74,12 +74,14 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
         };
 
         $scope.submit = function(){
+            $scope.startupsMsg = 'Loading startups...';
             var locationId;
-            console.log($scope.area);
             if($scope.area) locationId = $scope.area;
             else locationId = $scope.country;
             (locationId) && dataAccess.getStartupsByLocation(locationId, function(startups){
                 $scope.startups = startups;
+                if(startups.length > 0) $scope.startupsMsg = '';
+                else $scope.startupsMsg = 'No startups were found...';
                 $scope.$apply();
             });
         };
@@ -122,7 +124,6 @@ demoCtrlModule.controller('aacDemoCtrl', ['$scope', 'dataAccess', 'graphUtil',
                     setTimeout(function(){
                         s.stopForceAtlas2();
                     }, 3000);
-                    console.log(s.graph.nodes())
                 });
 
             });
