@@ -8,23 +8,31 @@
                     <form role="form">
                         <div class="form-group">
                             <label for="startupName">Startup</label>
-                            <input type="text" name="startupName" id="startupName" placeholder="Write th startup name here ..." class="form-control" ng-model="startupName"/>
-                            <button class="btn btn-default" ng-click="searchForStartupsByName();">Buscar</button>
-                        </div>
-                        <div ng-if="!startupsResultsReached">
-                            <p>There are not startups with that name</p>
-                        </div>
-                        <div >
-                            <label for="startupId">Names: </label>
-                            <select name="startup" id="startupId" ng-model="startupId">
-                                <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
-                            </select>
-                            <div >
-                                <button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Startup</button>
-                                <button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>
+                            <div class="input-group">
+                                <input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="searchForStartupsByName();">Search</button>
+                                </span>
                             </div>
                         </div>
+                    </form>
 
+                    <div ng-if="!startupsResultsReached">
+                        <p>There are not startups with that name</p>
+                    </div>
+
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="startupId">Names: </label>
+                            <select class="form-control" name="startup" id="startupId" ng-model="startupId">
+                                <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
+                            </select>
+                        </div>
+
+                        <div class="btn btn-group">
+                            <button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Startup</button>
+                            <button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>
+                        </div>
                     </form>
                 </div>
 

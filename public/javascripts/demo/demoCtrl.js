@@ -34,10 +34,3 @@ demoCtrlModule.controller('sblDemoCtrl', ['$scope','dataAccess',
             console.log($scope.area);
         }
     }]);
-
-demoCtrlModule.filter('offset', function() {
-    return function(input, start) {
-        start = parseInt(start, 10);
-        return input.slice(start);
-    };
-});
