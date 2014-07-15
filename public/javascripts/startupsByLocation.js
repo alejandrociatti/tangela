@@ -122,12 +122,6 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
             }
         };
 
-        $scope.prevPage = function() {
-            if ($scope.currentPage > 0) {
-                $scope.currentPage--;
-            }
-        };
-
         $scope.nextPageDisabled = function() {
             return $scope.currentPage === $scope.pageCount() ? "disabled" : "";
         };
