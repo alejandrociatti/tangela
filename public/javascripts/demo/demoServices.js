@@ -64,6 +64,14 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getStartupFunding: function(startupId, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.getStartupFunding(startupId).ajax({
+                method: 'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
         }
     };
 });

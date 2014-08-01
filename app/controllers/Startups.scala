@@ -148,7 +148,6 @@ object Startups extends Controller with Secured{
     val url: String = ANGELAPI + s"/search?query=$name&type=Startup"
     WS.url(url).get().map{ response =>
       //TODO: que me busque todas las paginas y no solo la primera
-      //TODO: que en la vista me aparezcan los botones una vez que hay datos para submitear
       val success= response.json \\ "success"
       if(success.size == 0) {
         val startups: JsArray = response.json.as[JsArray]
@@ -191,6 +190,44 @@ object Startups extends Controller with Secured{
       } else {
         Ok(Json.obj("id"->"error","msg"-> s"Startup $startupId does not exist"))
       }
+    }
+  }
+
+
+  def getStartupFunding(startupId: Long) = Action.async {
+    val url: String = ANGELAPI + "/startups/" + startupId + "/funding"
+    WS.url(url).get().map{ response =>
+      val success = response.json \\ "success"
+      if (success.size == 0) {
+        val fundraising: JsArray = (response.json \ "funding").as[JsArray]
+
+        var seqFunding = Seq.empty[Map[String, String]]
+        var seqParticipants = Seq.empty[Map[String, String]]
+
+        for(fundraise <- fundraising.value){
+          val participants: JsArray = (fundraise \ "participants").as[JsArray]
+
+          val id:Int = (fundraise \ "id").as[Int]
+          val round_type:String = (fundraise \ "round_type").as[String]
+          val amount:Int = (fundraise \ "amount" ).as[Int]
+          val closed_at:String = (fundraise \ "closed_at").as[String]
+
+          for (participant <- participants.value){
+            val id:Int = (participant \ "id").as[Int]
+            val name:String = (participant \ "name").as[String]
+            val aType:String = (participant \ "type").as[String]
+            seqParticipants = seqParticipants.+:(Map("id" -> id.toString, "name" -> name, "type" -> aType))
+          }
+
+          seqFunding = seqFunding.+:(Map("id" -> id.toString, "round_type" -> round_type, "amount" -> amount.toString,
+                "closed_at" -> closed_at, "participants" -> Json.toJson(seqParticipants).toString()))
+
+        }
+        Ok(Json.toJson(seqFunding))
+      } else {
+        Ok(Json.obj("id"->"error","msg"-> s"Startup $startupId does not exist"))
+      }
+
     }
   }
 }

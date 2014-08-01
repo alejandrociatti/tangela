@@ -1,6 +1,8 @@
 @main("Informacion sobre Startups   ")(sidebar()) {
 
     <div class="row" ng-app="JB" ng-controller="startupInfoCtrl">
+
+
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-body">
@@ -28,40 +30,35 @@
                                 <option value="" selected disabled>{{optionSelectMsg}}</option>
                                 <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
                             </select>
+                        </div>
+
+                        @*<div class="btn btn-group">*@
+                        @*<button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Founders</button>*@
+                        @*<button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>*@
+                        @*</div>*@
+                    </form>
+                    <form role="form">
+                        <label for="steps">Steps:</label>
+                        <div class="alert alert-success" id="steps">
                             <p class="help-block">
                                 Enter a startup name and hit Search, <br>
                                 then select the startup you wanted from the options list. <br>
                                 <small>
-                                    You will see the number of founders and the roles from that startup on the panels to the right.
+                                    <strong>
+                                        You will see the number of founders and the roles from that startup on the panels to the right.
+                                    </strong>
                                 </small>
                             </p>
                         </div>
-
-                        @*<div class="btn btn-group">*@
-                            @*<button class="btn btn-default" ng-click="searchNumberOfFounders();">Number of Founders</button>*@
-                            @*<button class="btn btn-default" ng-click="searchRolesOfStartup();">Roles of Startup</button>*@
-                        @*</div>*@
                     </form>
                 </div>
 
             </div>
         </div>
+
+
         <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h2 class="panel-title">
-                        Number of Founders
-                    </h2>
-                </div>
-                <div class="panel-body">
-                    <dl class="dl-horizontal">
-                        @*<dt>{{startupId}}</dt>*@
-                        <dd>{{numberOfFounders}}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h2 class="panel-title">
@@ -98,6 +95,64 @@
             </div>
         </div>
 
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Fundraising
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>Round Id: </dt>
+                        <dd>{{roundId}}</dd>
+                        <dt>Type: </dt>
+                        <dd>{{type}}</dd>
+                        <dt>Raised: </dt>
+                        <dd>{{raised}}</dd>
+                        <dt>Closed At: </dt>
+                        <dd>{{closeDate}}</dd>
+                    </dl>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align: center">Participants</th>
+                            </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="participant in participants | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <td>{{participant.name}}</td>
+                                <td>{{participant.type}}</td>
+                                <td>{{participant.id}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Number of Founders
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <div class="alert alert-success" >
+                        <p style="text-align: center"><strong>{{numberOfFounders}}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div><!-- /.row -->
 
 }{
