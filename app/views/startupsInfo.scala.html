@@ -76,11 +76,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="roole in roles | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-                                <td>{{roole.name}}</td>
-                                <td>{{roole.follower_count}}</td>
-                                <td>{{roole.role}}</td>
-                                <td>{{roole.id}}</td>
+                            <tr ng-repeat="role in roles | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <td>{{role.name}}</td>
+                                <td>{{role.follower_count}}</td>
+                                <td>{{role.role}}</td>
+                                <td>{{role.id}}</td>
                             </tr>
                         </tbody>
                     </table>

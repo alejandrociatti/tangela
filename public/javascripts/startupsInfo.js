@@ -12,7 +12,7 @@ var module = angular.module('app.controllers', ['app.services']);
 
 module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
-            $scope.roles= [];
+            $scope.roles = [];
             $scope.startupsResultsReached= true;
             $scope.optionSelectMsg = 'Search first.';
 
@@ -32,9 +32,10 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                 $scope.searchStartupFunding();
             };
 
-            $scope.searchStartupFunding= function(){
+            $scope.searchStartupFunding = function(){
                 dataAccess.getStartupFunding($scope.startupId, function(fundraising){
-                    $scope.participants= JSON.parse(fundraising[0].participants);
+                    //TODO: Check this, fundraising[0] may be undefined
+                    $scope.participants = JSON.parse(fundraising[0].participants);
                     $scope.roundId= fundraising[0].id;
                     if(fundraising[0].round_type == ""){
                         $scope.type= "Doesn't have a type assigned";
@@ -116,6 +117,13 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 module.filter('offset', function() {
     return function(input, start) {
         start = parseInt(start, 10);
-        return input.slice(start);
+        /**
+         * Changed input.slice(start); in case input is undefined.
+         * This 'offset' function is used on ng-repeat directives,
+         * to change the starting element of the repeat.
+         * In this startupsInfo, it is used on $scope.roles, which for some reason was undefined.
+         * TODO: Check why typeof($scope.roles) == undefined at any given moment.
+         */
+       return (input || []).slice(start);
     };
 });
