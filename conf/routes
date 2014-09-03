@@ -26,7 +26,7 @@ GET         /startups/founders/:startupId           controllers.Startups.getNumb
 GET         /startups/roles/:startupId              controllers.Startups.getRolesOfStartup(startupId: Long)
 GET         /startups/id/min/:id                    controllers.Startups.getStartupNetInfo(id:Long)
 GET         /startups/name/:name                    controllers.Startups.getStartupsByName(name: String)
-GET         /startups/funding/:id                   controllers.Startups.getStartupFunding(id: Long)
+GET         /startups/funding/:id                    controllers.Startups.getStartupFunding(id: Long)
 
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes              controllers.Application.javascriptRoutes

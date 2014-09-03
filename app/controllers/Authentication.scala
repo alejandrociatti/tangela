@@ -21,7 +21,7 @@ object Authentication extends Controller{
   )
 
   def check(username: String, password: String) = {
-    (username == "admin" && password == "1234")
+    username == "admin" && password == "1234"
   }
 
   def login = Action { implicit request =>

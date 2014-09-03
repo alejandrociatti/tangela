@@ -13,10 +13,11 @@ var module = angular.module('app.controllers', ['app.services']);
 module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             $scope.roles = [];
+            $scope.rounds = [];
             $scope.startupsResultsReached= true;
             $scope.optionSelectMsg = 'Search first.';
 
-            $scope.searchForStartupsByName= function () {
+            $scope.searchForStartupsByName = function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 dataAccess.getStartupsByName($scope.startupName, function(startupsByName){
                     $scope.startupsByName= startupsByName;
@@ -34,8 +35,13 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
             $scope.searchStartupFunding = function(){
                 dataAccess.getStartupFunding($scope.startupId, function(fundraising){
-                    //TODO: Check this, fundraising[0] may be undefined
-                    $scope.participants = JSON.parse(fundraising[0].participants);
+                    $scope.participants = [];
+                    $scope.rounds = fundraising;
+
+                    for(var i = 0; i < fundraising.size; i++) {
+                       $scope.participants[0] = JSON.parse(fundraising[i].participants);
+                    }
+                    //todo lograr poner los participants dentro de rounds
                     $scope.roundId= fundraising[0].id;
                     if(fundraising[0].round_type == ""){
                         $scope.type= "Doesn't have a type assigned";
@@ -44,6 +50,7 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                     }
                     $scope.raised= fundraising[0].amount;
                     $scope.closeDate= fundraising[0].closed_at;
+                    $scope.$apply();
                 })
             };
 
@@ -97,6 +104,12 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
             $scope.nextPage = function() {
                 if ($scope.currentPage < $scope.pageCount()) {
                     $scope.currentPage++;
+                }
+            };
+
+            $scope.prevPage = function() {
+                if ($scope.currentPage > 0) {
+                    $scope.currentPage--;
                 }
             };
 

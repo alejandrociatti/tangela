@@ -31,7 +31,7 @@ object Application extends Controller with Secured{
     ).as("text/javascript")
   }
 
-  def startupsInfo = Action {
+  def startupsInfo = withAuth { username => implicit request =>
     Ok(views.html.startupsInfo())
   }
 }

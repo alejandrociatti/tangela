@@ -199,18 +199,18 @@ object Startups extends Controller with Secured{
     WS.url(url).get().map{ response =>
       val success = response.json \\ "success"
       if (success.size == 0) {
-        val fundraising: JsArray = (response.json \ "funding").as[JsArray]
+        val funding: JsArray = (response.json \ "funding").as[JsArray]
 
         var seqFunding = Seq.empty[Map[String, String]]
         var seqParticipants = Seq.empty[Map[String, String]]
 
-        for(fundraise <- fundraising.value){
-          val participants: JsArray = (fundraise \ "participants").as[JsArray]
+        for(aFundraisingRound <- funding.value){
+          val participants: JsArray = (aFundraisingRound \ "participants").as[JsArray]
 
-          val id:Int = (fundraise \ "id").as[Int]
-          val round_type:String = (fundraise \ "round_type").as[String]
-          val amount:Int = (fundraise \ "amount" ).as[Int]
-          val closed_at:String = (fundraise \ "closed_at").as[String]
+          val id:Int = (aFundraisingRound \ "id").as[Int]
+          val round_type:String = (aFundraisingRound \ "round_type").as[String]
+          val amount:Int = (aFundraisingRound \ "amount" ).as[Int]
+          val closed_at:String = (aFundraisingRound \ "closed_at").as[String]
 
           for (participant <- participants.value){
             val id:Int = (participant \ "id").as[Int]
