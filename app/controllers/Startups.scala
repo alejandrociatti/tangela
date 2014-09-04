@@ -1,5 +1,6 @@
 package controllers
 
+import org.joda.time.DateTime
 import play.api.data.Forms._
 import anorm.Pk
 import play.api.data.Form
@@ -31,7 +32,9 @@ object Startups extends Controller with Secured{
     mapping(
       "id" -> ignored(NotAssigned:Pk[Long]),
       "name" -> nonEmptyText,
-      "angelId" -> ignored(0:Long)
+      "angelId" -> ignored(0:Long),
+      "quality" -> ignored(0:Int),
+      "creationDate" -> ignored(DateTime.now():DateTime)
     )(Startup.apply)(Startup.unapply)
   )
 
