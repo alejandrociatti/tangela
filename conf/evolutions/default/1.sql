@@ -8,10 +8,19 @@ CREATE TABLE Location(
   PRIMARY KEY (id)
 );
 
+CREATE TABLE Market(
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  name varchar(255) UNIQUE NOT NULL,
+  angelId bigint(20) NOT NULL UNIQUE,
+  PRIMARY KEY (id)
+);
+
 CREATE TABLE Startup(
   id bigint(20) NOT NULL AUTO_INCREMENT,
   name varchar(255) UNIQUE NOT NULL,
   angelId bigint(20) NOT NULL UNIQUE,
+  quality integer,
+  creationDate timestamp,
   PRIMARY KEY(id)
 );
 
@@ -19,4 +28,10 @@ CREATE TABLE Startup_Location(
   locationId bigint(20) NOT NULL,
   startupId bigint(20) NOT NULL,
   PRIMARY KEY (locationId, startupId)
+);
+
+CREATE TABLE Startup_Market(
+  marketId bigint(20) NOT NULL,
+  startupId bigint(20) NOT NULL,
+  PRIMARY KEY (marketId, startupId)
 );
