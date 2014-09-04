@@ -35,21 +35,21 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
             $scope.searchStartupFunding = function(){
                 dataAccess.getStartupFunding($scope.startupId, function(fundraising){
-                    $scope.participants = [];
                     $scope.rounds = fundraising;
+                    $scope.totalFunding = 0;
+                    $scope.numberOfRounds = fundraising.length;
 
-                    for(var i = 0; i < fundraising.size; i++) {
-                       $scope.participants[0] = JSON.parse(fundraising[i].participants);
+                    console.log(fundraising);
+
+                    for(var i = 0; i < fundraising.length; i++) {
+                        $scope.rounds[i].participants = JSON.parse(fundraising[i].participants);
+                        $scope.totalFunding += parseInt(fundraising[i].amount);
+                        if(fundraising[i].round_type == ""){
+                            $scope.rounds[i].round_type = "Doesn't have a type assigned";
+                        }else {
+                            $scope.rounds[i].round_type = fundraising[i].round_type;
+                        }
                     }
-                    //todo lograr poner los participants dentro de rounds
-                    $scope.roundId= fundraising[0].id;
-                    if(fundraising[0].round_type == ""){
-                        $scope.type= "Doesn't have a type assigned";
-                    }else {
-                        $scope.type= fundraising[0].round_type;
-                    }
-                    $scope.raised= fundraising[0].amount;
-                    $scope.closeDate= fundraising[0].closed_at;
                     $scope.$apply();
                 })
             };
@@ -70,6 +70,9 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
 
             //Pagination control:
+
+            //Pagination control:
+
             $scope.itemsPerPage = 5;
             $scope.currentPage = 0;
 

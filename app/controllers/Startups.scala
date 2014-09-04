@@ -202,9 +202,10 @@ object Startups extends Controller with Secured{
         val funding: JsArray = (response.json \ "funding").as[JsArray]
 
         var seqFunding = Seq.empty[Map[String, String]]
-        var seqParticipants = Seq.empty[Map[String, String]]
+
 
         for(aFundraisingRound <- funding.value){
+          var seqParticipants = Seq.empty[Map[String, String]]
           val participants: JsArray = (aFundraisingRound \ "participants").as[JsArray]
 
           val id:Int = (aFundraisingRound \ "id").as[Int]
@@ -221,9 +222,8 @@ object Startups extends Controller with Secured{
 
           seqFunding = seqFunding.+:(Map("id" -> id.toString, "round_type" -> round_type, "amount" -> amount.toString,
                 "closed_at" -> closed_at, "participants" -> Json.toJson(seqParticipants).toString()))
-
         }
-        Ok(Json.toJson(seqFunding))
+        Ok(Json.toJson(seqFunding.reverse))
       } else {
         Ok(Json.obj("id"->"error","msg"-> s"Startup $startupId does not exist"))
       }
