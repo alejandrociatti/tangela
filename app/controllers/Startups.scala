@@ -10,15 +10,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.WS
 import anorm.NotAssigned
 import play.api.mvc._
-import play.api.libs.json.Json
-import play.api.libs.json.{JsArray, JsValue, Json}
+import play.api.libs.json._
 import play.api.libs.ws.WS
 import play.api.mvc.{Controller, Action}
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import com.fasterxml.jackson.annotation.JsonValue
 import models.Startup
-import play.api.libs.json.JsArray
 import scala.concurrent.duration.Duration
 
 /**
@@ -233,4 +231,109 @@ object Startups extends Controller with Secured{
 
     }
   }
+
+  def startupCriteriaSearch(locationId: Long, marketId: Long,
+                            quality: Int, creationDate: Int) = Action.async {
+    println(locationId)
+    println(marketId)
+    println(quality)
+    println(creationDate)
+
+    searchByTag(locationId).map { json =>
+      println(Json.stringify(json))
+      Ok(json)
+    }
+  }
+  
+  def searchByTag(tag: Long): Future[JsValue] = {
+    WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map{ response =>
+      val pages:Int = (response.json \ "last_page" ).as[Int]
+
+      val startups:JsArray = (response.json \ "startups").as[JsArray]
+
+      var startupsAux: JsArray = JsArray()
+
+      startups.value.filter{ startup => !(startup \ "hidden").as[Boolean] }.map{startup =>
+        startupsAux = startupsAux .+:(getRelevantStartupInfo(startup))
+      }
+
+      var futures = Seq.empty[Future[_]]
+
+      for (i <- 2 until 20){
+        futures = futures.+:(getFutureStartupsByPage(i))
+      }
+
+      Await.result(Future.sequence[Any, Seq](futures),Duration.Inf)
+
+      def getFutureStartupsByPage(page: Int) = {
+        WS.url(Application.AngelApi + s"/tags/$tag/startups?page=$page").get().map { response =>
+          val startups: JsArray = (response.json \ "startups").as[JsArray]
+
+          startups.value.filter { startup => !(startup \ "hidden").as[Boolean] }.map { startup =>
+            startupsAux = startupsAux .+:(getRelevantStartupInfo(startup))
+          }
+        }
+      }
+
+      startupsAux
+    }
+  }
+
+  def getRelevantStartupInfo(startup: JsValue): JsValue = {
+    val id:JsNumber = (startup \ "id").as[JsNumber]
+    val name:JsString = (startup \ "name").as[JsString]
+    val markets:JsArray = (startup \ "markets").as[JsArray]
+    val quality:JsNumber = (startup \ "quality").as[JsNumber]
+    val creationDate:JsString = (startup \ "created_at").as[JsString]
+
+    Json.obj("id"->id, "name"->name, "markets"->markets, "quality"->quality, "created_at"->creationDate)
+  }
+
+/*
+  def searchByTag(tag: Long): Future[JsValue] = {
+    WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map{ response =>
+      val pages:Int = (response.json \ "last_page" ).as[Int]
+
+      val startups:JsArray = (response.json \ "startups").as[JsArray]
+
+      var seqAux = Seq.empty[Map[String, String]]
+
+      startups.value.filter{ startup => !(startup \ "hidden").as[Boolean] }.map{startup =>
+        val id:Int = (startup \ "id").as[Int]
+        val name:String = (startup \ "name").as[String]
+        val markets:JsArray = (startup \ "markets").as[JsArray]
+        val quality:Int = (startup \ "quality").as[Int]
+        val creationDate:String = (startup \ "created_at").as[String]
+        seqAux = seqAux .+:(Map("id"->id.toString, "name"->name, "markets"->Json.stringify(markets), "quality"->quality.toString,
+        "created_at"->creationDate))
+      }
+
+      var futures = Seq.empty[Future[_]]
+
+      for (i <- 2 until 20){
+        futures = futures.+:(getFutureStartupsByPage(i))
+      }
+
+      Await.result(Future.sequence[Any, Seq](futures),Duration.Inf)
+
+      def getFutureStartupsByPage(page: Int) = {
+        WS.url(Application.AngelApi + s"/tags/$tag/startups?page=$page").get().map { response =>
+          val startups: JsArray = (response.json \ "startups").as[JsArray]
+
+          startups.value.filter { startup => !(startup \ "hidden").as[Boolean] }.map { startup =>
+            val id:Int = (startup \ "id").as[Int]
+            val name:String = (startup \ "name").as[String]
+            val markets:JsArray = (startup \ "markets").as[JsArray]
+            val quality:Int = (startup \ "quality").as[Int]
+            val creationDate:String = (startup \ "created_at").as[String]
+            seqAux = seqAux .+:(Map("id"->id.toString, "name"->name, "markets"->Json.prettyPrint(markets), "quality"->quality.toString,
+              "created_at"->creationDate))
+          }
+        }
+      }
+
+      Json.toJson(seqAux)
+    }
+  }
+*/
 }
