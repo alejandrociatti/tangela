@@ -26,6 +26,15 @@ object Location{
     }
   }
 
+  def getOtherThanCountries:List[Location] = {
+    DB.withConnection{implicit connection =>
+      SQL("""
+         SELECT * FROM Location WHERE kind!={kind}
+         ORDER BY name
+          """).on("kind" -> Kind.COUNTRY.toString).as(locationParser *)
+    }
+  }
+
   def save(location: Location) = {
     if(DB.withConnection{implicit connection =>
       SQL("""

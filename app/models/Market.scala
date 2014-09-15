@@ -14,6 +14,12 @@ case class Market(id: Pk[Long] = NotAssigned, name:String, angelId:Long)
 
 object Market{
 
+  def getMarkets:List[Market] = {
+    DB.withConnection{implicit connection =>
+      SQL("SELECT * FROM Market ORDER BY name").as(marketParser *)
+    }
+  }
+
   def save(market: Market) = {
     if(DB.withConnection{implicit connection =>
       SQL("""

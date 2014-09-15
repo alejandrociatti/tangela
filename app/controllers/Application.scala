@@ -15,6 +15,10 @@ object Application extends Controller with Secured{
     Ok(views.html.startupsByLocation())
   }
 
+  def searchStartups = withAuth{ username => implicit request =>
+    Ok(views.html.search())
+  }
+
   def javascriptRoutes = Action { implicit request =>
     Ok(
       Routes.javascriptRouter("jsRoutes")(

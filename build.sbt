@@ -11,3 +11,5 @@ libraryDependencies ++= Seq(
 )     
 
 play.Project.playScalaSettings
+
+play.Keys.lessEntryPoints <<= baseDirectory(_ / "app" / "assets" / "stylesheets" / "bootstrap" ** "bootstrap.less")
