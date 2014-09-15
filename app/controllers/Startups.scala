@@ -1,6 +1,7 @@
 package controllers
 
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
 import anorm.Pk
 import play.api.data.Form
@@ -232,20 +233,50 @@ object Startups extends Controller with Secured{
     }
   }
 
-  def startupCriteriaSearch(locationId: Long, marketId: Long,
-                            quality: Int, creationDate: Int) = Action.async {
-    println(locationId)
-    println(marketId)
-    println(quality)
-    println(creationDate)
+  def startupCriteriaSearch(locationId: Int, marketId: Int,
+                            quality: Int, creationDate: String) = Action.async {
 
-    searchByTag(locationId).map { json =>
-      println(Json.stringify(json))
-      Ok(json)
+    var startupsToSend:JsArray = JsArray()
+
+    if(locationId != -1){
+      searchByTag(locationId).map { startups =>
+        startupsToSend = startups
+        if(marketId != -1) startupsToSend = filterArrayByInt(startupsToSend, "markets", "id", marketId)
+        if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
+        if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        Ok(startupsToSend)
+      }
+    } else {
+      searchByTag(marketId).map { startups =>
+        if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
+        if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        Ok(startupsToSend)
+      }
     }
   }
+
+  def filterByInt(startups: JsArray, filterString: String, filterValue: Int): JsArray = {
+    JsArray(startups.value.filter{ startup =>
+      (startup \ filterString).as[Int].equals(filterValue)
+    })
+  }
+
+  def filterByDate(startups: JsArray, filterString: String, filterValue: String): JsArray = {
+    val date:DateTime = DateTime.parse(filterValue)
+    JsArray(startups.value.filter{ startup =>
+      DateTime.parse((startup \ filterString).as[String]).isAfter(date)
+    })
+  }
+
+  def filterArrayByInt(startups: JsArray, filterStringForArray: String, filterStringForValue: String, filterValue:Int): JsArray = {
+    JsArray(startups.value.filter{ startup =>
+      (startup \ filterStringForArray).as[JsArray].value.exists{ filterArrayValue =>
+        (filterArrayValue \ filterStringForValue).as[Int].equals(filterValue)
+      }
+    })
+  }
   
-  def searchByTag(tag: Long): Future[JsValue] = {
+  def searchByTag(tag: Long): Future[JsArray] = {
     WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map{ response =>
       val pages:Int = (response.json \ "last_page" ).as[Int]
 
