@@ -39,9 +39,6 @@ object Locations extends Controller{
         val newLocation = Location(NotAssigned, name, id, models.Kind.COUNTRY)
         Location.save(newLocation)
       }
-      //Mock country:
-      val newLocation = Location(NotAssigned, "Antigua and Barbuda", 55071, models.Kind.COUNTRY)
-      Location.save(newLocation)
     }
   }
 

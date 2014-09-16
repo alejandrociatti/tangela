@@ -30,6 +30,9 @@ GET         /startups/name/:name                    controllers.Startups.getStar
 GET         /startups/funding/:id                   controllers.Startups.getStartupFunding(id: Long)
 GET         /startups/startupCriteriaSearch         controllers.Startups.startupCriteriaSearch(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 
+#Markets
+GET         /markets/market-list                    controllers.Markets.getMarkets
+
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes              controllers.Application.javascriptRoutes
 

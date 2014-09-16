@@ -165,6 +165,8 @@ object Startups extends Controller with Secured{
       }
     }
   }
+
+
   def getRolesOfStartup(startupId: Long) = Action.async {
     WS.url(Application.AngelApi+s"/startups/$startupId/roles").get().map{ response =>
 
