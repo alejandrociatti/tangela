@@ -1,5 +1,8 @@
 package controllers
 
+import java.io.File
+
+import com.github.tototoshi.csv.CSVWriter
 import play.api._
 import play.api.mvc._
 
@@ -37,5 +40,23 @@ object Application extends Controller with Secured{
 
   def startupsInfo = withAuth { username => implicit request =>
     Ok(views.html.startupsInfo())
+  }
+
+  def testCSV() = Action {
+    val file: File = new File("/Users/martingutierrez/Desktop/test.csv")
+
+    writeCSVWithHeaders(file, List("titulo1", "titulo2", "titulo3"), List(List("1", "2", "3"), List("4", "5", "6")))
+
+    Ok.sendFile(file)
+  }
+
+  def writeCSVWithHeaders(file: File, headers: List[String], values: List[List[String]]) = {
+    val writer = CSVWriter.open(file)
+
+    writer.writeRow(headers)
+
+    writer.writeAll(values)
+
+    writer.close()
   }
 }
