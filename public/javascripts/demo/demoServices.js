@@ -72,6 +72,14 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getStartupPeopleInfo: function(startupId, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.getAllInfoOfPeopleInStartups(startupId).ajax({
+                method: 'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
         }
     };
 });

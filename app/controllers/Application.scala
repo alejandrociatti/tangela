@@ -26,12 +26,17 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getRolesOfStartup,
         routes.javascript.Startups.getStartupNetInfo,
         routes.javascript.Startups.getStartupsByName,
-        routes.javascript.Startups.getStartupFunding
+        routes.javascript.Startups.getStartupFunding,
+        routes.javascript.Startups.getAllInfoOfPeopleInStartups
       )
     ).as("text/javascript")
   }
 
   def startupsInfo = Action {
     Ok(views.html.startupsInfo())
+  }
+
+  def startupsPeopleInfo() = Action {
+    Ok(views.html.startupsPeopleInfo())
   }
 }

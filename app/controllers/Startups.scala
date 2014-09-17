@@ -102,7 +102,7 @@ object Startups extends Controller with Secured{
 
 
 
-  def getNumberOfStartupsFundraising() = withAsyncAuth( username => implicit request =>
+  def getNumberOfStartupsFundraising = withAsyncAuth( username => implicit request =>
     WS.url(Application.AngelApi + "/startups?filter=raising").get().map{ response =>
 
       val total = (response.json \ "total").as[Int]
@@ -163,10 +163,11 @@ object Startups extends Controller with Secured{
       }
     }
   }
+
   def getRolesOfStartup(startupId: Long) = Action.async {
     WS.url(Application.AngelApi+s"/startups/$startupId/roles").get().map{ response =>
 
-      val roles:JsArray = (response.json \ "startup_roles").as[JsArray]
+//      val roles:JsArray = (response.json \ "startup_roles").as[JsArray]
 
       val success= response.json \\ "success"
 
@@ -192,6 +193,7 @@ object Startups extends Controller with Secured{
       }
     }
   }
+
 
 
   def getStartupFunding(startupId: Long) = Action.async {
@@ -230,4 +232,117 @@ object Startups extends Controller with Secured{
 
     }
   }
+
+  def getAllInfoOfPeopleInStartups(startupId: Long) = Action.async {
+    WS.url(Application.AngelApi+s"/startup_roles?startup_id=$startupId").get().map{ response =>
+      val success= response.json \\ "success"
+      if( success.size == 0) {
+        val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+        var seqAux = Seq.empty[Map[String, String]]
+        var futures = Seq.empty[Future[_]]
+
+        for (role <- roles.value) {
+          val user:JsValue= (role \ "user").as[JsValue]
+          val userRole:String= (role \ "role").as[String]
+          val userId:Int= (user \ "id").as[Int]
+          futures = futures.+:(getFutureUserInfoById(userId, userRole))
+
+          Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
+
+
+          def getFutureUserInfoById(userId: Int, userRole:String) = {
+            WS.url(Application.AngelApi+s"/users/$userId").get().map { userResponse =>
+              val user= userResponse.json
+              val userSuccess= user \\ "success"
+              if(userSuccess.size == 0) {
+                val name: String = if ((user \ "name").toString() != "null") (user \ "name").as[String] else ""
+                val bio: String = if((user \ "bio").toString() != "null")(user \ "bio").as[String] else ""
+                val followerCount: Int = (user \ "follower_count").as[Int]
+                val angellistUrl: String = if((user \ "angellist_url").toString() != "null")(user \ "angellist_url").as[String] else ""
+                val image: String = if((user \ "image").toString() != "null")(user \ "image").as[String] else ""
+                val blogUrl: String = if((user \ "blog_url").toString() != "null")(user \ "blog_url").as[String] else ""
+                val onlineBioUrl: String = if((user \ "online_bio_url").toString() != "null")(user \ "online_bio_url").as[String] else ""
+                val twitterUrl: String = if((user \ "twitter_url").toString() != "null")(user \ "twitter_url").as[String] else ""
+                val facebookUrl: String = if((user \ "facebook_url").toString() != "null")(user \ "facebook_url").as[String] else ""
+                val linkedinUrl: String = if((user \ "linkedin_url").toString() != "null")(user \ "linkedin_url").as[String] else ""
+                val whatIBuilt: String = if((user \ "what_ive_built").toString() != "null")(user \ "what_ive_built").as[String] else ""
+                val whatIDo: String = if((user \ "what_i_do").toString() != "null")(user \ "what_i_do").as[String] else ""
+                val investor: Boolean = (user \ "investor").as[Boolean]
+                //TODO: se le pueden meter skils , las locations y los roles
+                seqAux = seqAux.+:(Map("id" -> userId.toString, "name" -> name, "bio" -> bio, "role" -> userRole,
+                  "follower_count" -> followerCount.toString, "angellist_url" -> angellistUrl, "image" -> image,
+                  "blog_url" -> blogUrl, "online_bio_url" -> onlineBioUrl, "twitter_url" -> twitterUrl,
+                  "facebook_url" -> facebookUrl, "linkedin_url" -> linkedinUrl, "what_ive_built" -> whatIBuilt,
+                  "what_i_do" -> whatIDo, "investor" -> investor.toString))
+              }
+            }
+          }
+
+        }
+
+        //AAC: I can confirm this is working with a small amount of pages (2 until 20)
+        //TODO: Ensure that this can cope with any amount of pages
+//        for (i <- 2 until 3){
+//          futures = futures.+:(getFutureRolesByPage(i))
+//        }
+//
+//        Await.result(Future.sequence[Any, Seq](futures),Duration.Inf)
+//
+//        def getFutureRolesByPage(page: Int) = {
+//
+//          WS.url(Application.AngelApi + s"/startup_roles?startup_id=$startupId?page=$page").get().map { response =>
+//            print("entre:     "+page)
+//            for (role <- roles.value) {
+//              var user:JsValue= (role \ "user").as[JsValue]
+//              val userRole:String= (role \ "role").as[String]
+//              val userId:Int= (user \ "id").as[Int]
+//              print("user:      "+ userId)
+//              futures = futures.+:(getFutureUserInfoById(userId, userRole))
+//
+//              Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
+//
+//
+//              def getFutureUserInfoById(userId: Int, userRole:String) = {
+//                WS.url(Application.AngelApi+s"/users/$userId").get().map { userResponse =>
+//                  user= userResponse.json
+//                  val userSuccess= user \\ "success"
+//                  if(userSuccess.size == 0) {
+//                    val name: String = (user \ "name").as[String]
+//                    val bio: String = (user \ "bio").as[String]
+//                    val followerCount: Int = (user \ "follower_count").as[Int]
+//                    val angellistUrl: String = (user \ "angellist_url").as[String]
+//                    val image: String = (user \ "image").as[String]
+//                    val blogUrl: String = (user \ "blog_url").as[String]
+//                    val onlineBioUrl: String = (user \ "online_bio_url").as[String]
+//                    val twitterUrl: String = (user \ "twitter_url").as[String]
+//                    val facebookUrl: String = (user \ "facebook_url").as[String]
+//                    val linkedinUrl: String = (user \ "linkedin_url").as[String]
+//                    val whatIBuilt: String = (user \ "what_ive_built").as[String]
+//                    val whatIDo: String = (user \ "what_i_do").as[String]
+//                    val investor: Boolean = (user \ "investor").as[Boolean]
+//                    //TODO: se le pueden meter skils , las locations y los roles
+//                    seqAux = seqAux.+:(Map("id" -> userId.toString, "name" -> name, "bio" -> bio, "role" -> userRole,
+//                      "follower_count" -> followerCount.toString, "angellist_url" -> angellistUrl, "image" -> image,
+//                      "blog_url" -> blogUrl, "online_bio_url" -> onlineBioUrl, "twitter_url" -> twitterUrl,
+//                      "facebook_url" -> facebookUrl, "linkedin_url" -> linkedinUrl, "what_ive_built" -> whatIBuilt,
+//                      "what_i_do" -> whatIDo, "investor" -> investor.toString))
+//                  }
+//                }
+//              }
+//
+//            }
+//          }
+//
+//        }
+        //TODO: q espere a q este el otroo
+        print(Json.toJson(seqAux))
+        Ok(Json.toJson(seqAux))
+      }else {
+        Ok(Json.obj("id"->"error","msg"-> s"Startup $startupId does not exist"))
+      }
+
+    }
+
+  }
+
 }
