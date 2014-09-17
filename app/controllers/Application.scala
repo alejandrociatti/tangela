@@ -1,10 +1,13 @@
 package controllers
 
-import java.io.File
+import java.io._
 
 import com.github.tototoshi.csv.CSVWriter
 import play.api._
+import play.api.libs.iteratee.Enumerator
 import play.api.mvc._
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
 
 object Application extends Controller with Secured{
   val AngelApi = "https://api.angel.co/1"
@@ -43,20 +46,25 @@ object Application extends Controller with Secured{
   }
 
   def testCSV() = Action {
-    val file: File = new File("/Users/martingutierrez/Desktop/test.csv")
-
-    writeCSVWithHeaders(file, List("titulo1", "titulo2", "titulo3"), List(List("1", "2", "3"), List("4", "5", "6")))
-
-    Ok.sendFile(file)
+    writeCSVWithHeaders(List("titulo1", "titulo2", "titulo3"), List(List("1", "2", "3"), List("4", "5", "6")))
   }
 
-  def writeCSVWithHeaders(file: File, headers: List[String], values: List[List[String]]) = {
-    val writer = CSVWriter.open(file)
+  def writeCSVWithHeaders(headers: List[String], values: List[List[String]]): SimpleResult = {
+    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
+    val streamWriter: OutputStreamWriter = new OutputStreamWriter(byteArrayOutputStream)
+
+    val writer = CSVWriter.open(streamWriter)
 
     writer.writeRow(headers)
 
     writer.writeAll(values)
 
     writer.close()
+
+    val bytes: Array[Byte] = byteArrayOutputStream.toByteArray
+
+    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(bytes))
+
+    Ok.chunked(Enumerator.fromStream(streamReader)).as("text/csv")
   }
 }
