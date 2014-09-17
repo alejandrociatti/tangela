@@ -475,10 +475,11 @@ object Startups extends Controller with Secured{
             val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
             for(role <- roles.value){
               val user:JsValue= (role \ "user").as[JsValue]
+              val userRole:String= (role \ "role").as[String]
               val userId:Int= (user \ "id").as[Int]
               val userName:String= (user \ "name").as[String]
               users= users.+:(Json.obj("userId" -> userId , "startupId" -> startupId,
-                "startupName" -> startupName, "userName" -> userName))
+                "startupName" -> startupName, "userName" -> userName, "userRole" -> userRole))
             }
           }
         }
@@ -494,8 +495,10 @@ object Startups extends Controller with Secured{
             val userId:Int= (user \ "userId").as[Int]
             val nameTwo:String= (user2 \ "startupName").as[String]
             val name:String= (user \ "userName").as[String]
+            val roleOne:String= (user \ "userRole").as[String]
+            val roleTwo:String= (user2 \ "userRole").as[String]
             result= result.+:(Json.obj("startupIdOne" -> id , "startupIdTwo" -> compareId, "startupNameOne" -> nameOne,
-              "startupNameTwo" -> nameTwo, "userId" -> userId , "userName" -> name))
+              "startupNameTwo" -> nameTwo, "userId" -> userId , "userName" -> name, "roleOne" -> roleOne, "roleTwo" -> roleTwo))
           }
         }
       }

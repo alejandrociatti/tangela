@@ -43,6 +43,10 @@
                             </div>
                         </form>
 
+                        <div class="alert alert-warning" ng-if="searching" >
+                            <p><strong>Please wait while we search for your request...</strong></p>
+                        </div>
+
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
                             <p><strong>There are not startups with that features</strong></p>
                         </div>
@@ -84,8 +88,10 @@
                                 <tr>
                                     <th>Startup Id One</th>
                                     <th>Startup Name One</th>
+                                    <th>User Role in Startup One</th>
                                     <th>Startup Id Two</th>
                                     <th>Startup Name Two</th>
+                                    <th>User Role in Startup Two</th>
                                     <th>User in common Id</th>
                                     <th>User in common Name</th>
                                 </tr>
@@ -94,8 +100,10 @@
                                 <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
                                     <td>{{startup.startupIdOne}}</td>
                                     <td>{{startup.startupNameOne}}</td>
+                                    <td>{{startup.roleOne}}</td>
                                     <td>{{startup.startupIdTwo}}</td>
                                     <td>{{startup.startupNameTwo}}</td>
+                                    <td>{{startup.roleTwo}}</td>
                                     <td>{{startup.userId}}</td>
                                     <td>{{startup.userName}}</td>
                                 </tr>

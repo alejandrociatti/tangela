@@ -11,14 +11,17 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
 
             $scope.startupsResultsReached= true;
+            $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
             $scope.persons= [] ;
 
             $scope.searchForStartupsNetwork= function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
+                $scope.searching= true;
                 dataAccess.getStartupsNetwork($scope.location, $scope.date, $scope.market, -1, function(startups){
                     $scope.startups= startups;
+                    $scope.searching= false;
                     $scope.startupsResultsReached= startups.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     $scope.$apply();
