@@ -1,0 +1,162 @@
+@main("Informacion sobre Startups   ")(sidebar()) {
+
+    <div class="row" ng-app="JB2" ng-controller="startupPeopleInfoCtrl">
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+
+                        <form role="form">
+                            <div class="form-group">
+                                <label class="control-label" for="location">Location</label>
+                                <select class="form-control" name="location" id="location" ng-model="location">
+                                    <option value="" disabled selected>Select a country...</option>
+                                    <optgroup label="Countries">
+                                    @for(country: Location <- Location.getCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                    <optgroup label="Specific Locations">
+                                    @for(country: Location <- Location.getOtherThanCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            @*<div class="form-group">*@
+                                @*<label class="control-label" for="market">Market</label>*@
+                                @*<select class="form-control" name="market" id="market">*@
+                                @*for(market: Market <- Market.getMarkets){*@
+                                    @*<option value="@market.angelId">@market.name</option>*@
+                                @*}*@
+                                @*</select>*@
+                            @*</div>*@
+                            <div class="form-group">
+                                <label class="control-label" for="creation-date">Creation date</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>
+                                    </span>
+                                </div>
+                            </div>
+                            @*<div class="form-group">*@
+                                @*<label for="startupName">Startup</label>*@
+                                @*<div class="input-group">*@
+                                    @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
+                                    @*<span class="input-group-btn">*@
+                                        @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
+                                    @*</span>*@
+                                @*</div>*@
+                            @*</div>*@
+                        </form>
+
+                        <div class="alert alert-danger" ng-if="!startupsResultsReached" >
+                            <p><strong>There are not startups with that features</strong></p>
+                        </div>
+
+                        <form role="form">
+                            <div class="form-group">
+                                <label for="startupId">Options: </label>
+                                <select class="form-control" name="startup" id="startupId" ng-model="startupId" ng-change="searchPeopleInfo()">
+                                    <option value="" selected disabled>{{optionSelectMsg}}</option>
+                                    <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
+                                </select>
+                            </div>
+
+                        </form>
+                        <form role="form">
+                            <label for="steps">Steps:</label>
+                            <div class="alert alert-success" id="steps">
+                                <p class="help-block">
+                                    Enter a startup name and hit Search, <br>
+                                    then select the startup you wanted from the options list. <br>
+                                    <small>
+                                        <strong>
+                                            You will see the individuals' information from that startup on the panel bellow.
+                                        </strong>
+                                    </small>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-12">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            Persons
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Bio</th>
+                                    <th>Role</th>
+                                    <th>Followers</th>
+                                    <th>AngelList</th>
+                                    <th>Image</th>
+                                    <th>Blog</th>
+                                    <th>Online Bio</th>
+                                    <th>Twitter</th>
+                                    <th>Facebook</th>
+                                    <th>Linkedin</th>
+                                    <th>What He'd Built</th>
+                                    <th>What He Does</th>
+                                    <th>Investor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="person in persons | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{person.id}}</td>
+                                    <td>{{person.name}}</td>
+                                    <td>{{person.bio}}</td>
+                                    <td>{{person.role}}</td>
+                                    <td>{{person.follower_count}}</td>
+                                    <td>{{person.angellist_url}}</td>
+                                    <td>{{person.image}}</td>
+                                    <td>{{person.blog_url}}</td>
+                                    <td>{{person.online_bio_url}}</td>
+                                    <td>{{person.twitter_url}}</td>
+                                    <td>{{person.facebook_url}}</td>
+                                    <td>{{person.linkedin_url}}</td>
+                                    <td>{{person.what_ive_built}}</td>
+                                    <td>{{person.what_i_do}}</td>
+                                    <td>{{person.investor}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <ul class="pagination">
+                            <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
+                            <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+                                <a href="#">{{n+1}}</a>
+                            </li>
+                            <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div><!-- /.row -->
+
+}{
+    <script src="@routes.Application.javascriptRoutes"></script>
+    <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
+    <script src="@routes.Assets.at("javascripts/startupsPeopleInfo.js")"></script>
+
+}

@@ -36,13 +36,19 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getRolesOfStartup,
         routes.javascript.Startups.getStartupNetInfo,
         routes.javascript.Startups.getStartupsByName,
-        routes.javascript.Startups.getStartupFunding
+        routes.javascript.Startups.getStartupFunding,
+        routes.javascript.Startups.startupCriteriaSearch,
+        routes.javascript.Startups.getAllInfoOfPeopleInStartups
       )
     ).as("text/javascript")
   }
 
   def startupsInfo = withAuth { username => implicit request =>
     Ok(views.html.startupsInfo())
+  }
+
+  def startupsPeopleInfo() = withAuth { username => implicit request =>
+    Ok(views.html.startupsPeopleInfo())
   }
 
   def testCSV() = Action {
