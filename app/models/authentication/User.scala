@@ -1,18 +1,21 @@
 package models.authentication
 
-import anorm.Pk
+import sorm.Entity
 
 /**
- * Created by Javi on 5/15/14.
+ * Created by Javier Isoldi.
+ * Date: 5/15/14.
+ * Project: Tangela.
  */
-class User(id : Pk[Long], username : String, password : String)
 
-case class Admin(id : Pk[Long], username : String, password : String) extends User(id, username, password)
-case class Researcher(id : Pk[Long], username : String, password : String) extends User(id, username, password)
+case class User(username: String, password: String, firstName: String, lastName: String, role: Role)
 
 object User {
+  def getEntity = Entity[User](unique = Set(Seq("username")))
+}
 
-  def authenticate(email: String, password: String): Option[User] = {
-    Option[User](null)
-  }
+case class Role(name: String)
+
+object Role {
+  def getEntity = Entity[Role]()
 }

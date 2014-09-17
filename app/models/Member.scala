@@ -1,20 +1,13 @@
 package models
 
-import anorm.{NotAssigned, Pk}
-
 /**
- * Created by Javi on 5/16/14.
+ * Created by Javier Isoldi.
+ * Date: 5/16/14.
+ * Project: Tangela.
  */
 
+class Member(person: Person, role: Role)
 
-class Member (id: Pk[Long] = NotAssigned, person: Person, role: Role){
+class Person(firstName: String, lastName: String)
 
-}
-
-class Person (id: Pk[Long] = NotAssigned, firstName: String, lastName: String){
-
-}
-
-class Role (id: Pk[Long] = NotAssigned, name: String){
-
-}
+class Role(name: String)

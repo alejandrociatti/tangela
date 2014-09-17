@@ -3,8 +3,7 @@ package controllers
 import scala.concurrent.ExecutionContext
 import play.api.libs.ws.WS
 import ExecutionContext.Implicits.global
-import models.Location
-import anorm.NotAssigned
+import models.{Kind, Location}
 import play.api.mvc._
 import play.api.libs.json._
 import java.net.URLEncoder
@@ -36,7 +35,7 @@ object Locations extends Controller{
       WS.url(Application.AngelApi+s"/search/slugs?type=LocationTag&query=$uriName").get().map{ response =>
         val id = (response.json \ "id").as[Long]
         val name = (response.json \ "name").as[String]
-        val newLocation = Location(NotAssigned, name, id, models.Kind.COUNTRY)
+        val newLocation = Location(name, id, Kind.Country.toString)
         Location.save(newLocation)
       }
     }

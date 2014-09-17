@@ -1,6 +1,5 @@
 package controllers
 
-import anorm.NotAssigned
 import models.Market
 
 import scala.concurrent.duration.Duration
@@ -69,7 +68,7 @@ object Markets extends Controller{
   }
 
   def saveMarketToDB(market:JsValue) = {
-    val newMarket = Market(NotAssigned, (market \ "name").as[String], (market \ "id").as[Long])
+    val newMarket = Market((market \ "name").as[String], (market \ "id").as[Long])
     Market.save(newMarket)
   }
 

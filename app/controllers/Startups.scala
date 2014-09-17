@@ -1,22 +1,15 @@
 package controllers
 
 import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import play.api.data.Forms._
-import anorm.Pk
 import play.api.data.Form
 import scala.concurrent._
-import ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.ws.WS
-import anorm.NotAssigned
-import play.api.mvc._
+import scala.concurrent.Future
 import play.api.libs.json._
 import play.api.libs.ws.WS
 import play.api.mvc.{Controller, Action}
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import com.fasterxml.jackson.annotation.JsonValue
 import models.Startup
 import scala.concurrent.duration.Duration
 
@@ -29,7 +22,6 @@ object Startups extends Controller with Secured{
 
   val startupForm = Form(
     mapping(
-      "id" -> ignored(NotAssigned:Pk[Long]),
       "name" -> nonEmptyText,
       "angelId" -> ignored(0:Long),
       "quality" -> ignored(0:Int),

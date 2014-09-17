@@ -1,21 +1,15 @@
 package models
 
-import anorm.{NotAssigned, Pk}
-import java.util.Calendar
+import org.joda.time.DateTime
 
 /**
- * Created by Javi on 5/16/14.
+ * Created by Javier Isoldi.
+ * Date: 5/16/14.
+ * Project: Tangela.
  */
 
+class InvestmentRound(startDate: Option[DateTime], endDate: Option[DateTime])
 
-class InvestmentRound(id: Pk[Long] = NotAssigned, startDate: Option[Calendar], endDate: Option[Calendar]) {
+class Investment(investmentRound: InvestmentRound, investor: Investor)
 
-}
-
-class Investment(id: Pk[Long] = NotAssigned, investmentRound: InvestmentRound, investor: Investor) {
-
-}
-
-class Investor (id: Pk[Long] = NotAssigned, name: String){
-
-}
+class Investor(name: String)

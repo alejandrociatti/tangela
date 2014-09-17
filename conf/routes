@@ -13,7 +13,6 @@ GET         /login                                  controllers.Authentication.l
 POST        /login                                  controllers.Authentication.authenticate
 GET         /logout                                 controllers.Authentication.logout
 
-
 #Locations
 GET         /locations/name/:countryName            controllers.Locations.getCountriesByString(countryName: String)
 GET         /locations/country-list                 controllers.Locations.getCountries

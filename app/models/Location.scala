@@ -1,79 +1,48 @@
 package models
 
-import anorm._
-import anorm.SqlParser._
-import play.api.db.DB
-import play.api.Play.current
-
-import models.Kind.Kind
+import sorm.Entity
 
 /**
- * Created with IntelliJ IDEA by: alejandro
+  * Created with IntelliJ IDEA by: alejandro
  * Date: 29/05/14
  * Time: 14:04
  */
 
-case class Location(id: Pk[Long] = NotAssigned, name:String, angelId:Long, kind:Kind)
+case class Location(name: String, angelId: Long, kind: String)
 
-object Location{
+object Location {
+  import models.Kind.Country
 
-  def getCountries:List[Location] = {
-    DB.withConnection{implicit connection =>
-      SQL("""
-         SELECT * FROM Location WHERE kind={kind}
-         ORDER BY name
-          """).on("kind" -> Kind.COUNTRY.toString).as(locationParser *)
+  def getEntity = Entity[Location]()
+
+  def getById(id: Long): Option[Location] = Database.query[Location].whereEqual("id", id).fetchOne()
+
+  def getCountries: List[Location] =
+    Database.query[Location].whereEqual("kind", Country.toString).fetch().toList
+
+  def getOtherThanCountries: List[Location] =
+    Database.query[Location].whereNotEqual("kind", Country.toString).fetch().toList
+
+  def save(location: Location) =
+    if (Database.query[Location].whereEqual("angelId", location.angelId).count() == 0) {
+      Database.save(location)
     }
-  }
 
-  def getOtherThanCountries:List[Location] = {
-    DB.withConnection{implicit connection =>
-      SQL("""
-         SELECT * FROM Location WHERE kind!={kind}
-         ORDER BY name
-          """).on("kind" -> Kind.COUNTRY.toString).as(locationParser *)
-    }
-  }
-
-  def save(location: Location) = {
-    if(DB.withConnection{implicit connection =>
-      SQL("""
-        SELECT COUNT(*) AS Count FROM Location WHERE angelId={angelId};
-          """).on("angelId"->location.angelId).apply().head[Long]("Count")
-    } <= 0){
-      DB.withConnection{implicit connection =>
-        SQL("""
-        INSERT INTO Location(name, angelId, kind)
-        VALUES({name}, {angelId}, {kind});
-            """).on("name"-> location.name,
-            "angelId"->location.angelId,
-            "kind"->location.kind.toString).executeInsert(scalar[Pk[Long]] single)
+  def saveRelation(locationId: Long, startupId: Long) =
+    getById(locationId) map { location =>
+      Startup.getById(startupId) map { startup =>
+        Database.save(StartupLocation(startup, location))
       }
     }
-  }
-
-  def saveRelation(locationId:Long, startupId:Long) = {
-    DB.withConnection{implicit connection =>
-      SQL(
-        """
-        INSERT INTO Startup_Location(locationId, startupId)
-        VALUES({locationId},{startupId})
-        """).on("locationId" -> locationId, "startupId"->startupId).execute()
-    }
-  }
-
-  private val locationParser: RowParser[Location] = {
-      get[Pk[Long]]("id") ~
-      get[String]("name") ~
-      get[Long]("angelId") ~
-      get[String]("kind") map {
-      case id ~ name ~ angelId ~ kind => Location(id, name, angelId, Kind.withName(kind))
-    }
-  }
-
 }
 
-object Kind extends Enumeration{
+case class StartupLocation(startup: Startup, location: Location)
+
+object StartupLocation {
+  def getEntity = Entity[StartupLocation]()
+}
+
+object Kind extends Enumeration {
   type Kind = Value
-  val COUNTRY = Value("COUNTRY")
+  val Country = Value("COUNTRY")
 }
