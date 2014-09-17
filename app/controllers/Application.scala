@@ -5,7 +5,7 @@ import java.io._
 import com.github.tototoshi.csv.CSVWriter
 import play.api._
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsArray, Json, JsValue}
 import play.api.mvc._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -65,8 +65,9 @@ object Application extends Controller with Secured{
   def tableToCSV(jsonString: String) = Action { request =>
     request.body.asJson.map { json =>
       val json: JsValue = Json.parse(jsonString)
-      val headers: List[String] = (json \ "headers").as[List[String]]
-      val values: List[List[String]] = (json \ "values").as[List[List[String]]]
+      val jsValueToString: (JsValue) => String = value => value.as[String]
+      val headers: List[String] = (json \ "headers").as[JsArray].value.map(jsValueToString).toList
+      val values: List[List[String]] = (json \ "values").as[JsArray].value.map(array => array.as[JsArray].value.map(jsValueToString).toList).toList
 
       writeCSVWithHeaders(headers, values)
     }.getOrElse(Ok("puto el que lee!!"))
