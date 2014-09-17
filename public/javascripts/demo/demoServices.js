@@ -82,7 +82,7 @@ serviceModule.factory('dataAccess', function() {
             });
         },
         getStartupsByFeatures: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.startupCriteriaSearch(locationId, undefined, undefined, date).ajax({
+            jsRoutes.controllers.Startups.startupCriteriaSearch(locationId, market, undefined, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,

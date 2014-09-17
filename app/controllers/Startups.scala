@@ -276,6 +276,7 @@ object Startups extends Controller with Secured{
   
   def searchByTag(tag: Long): Future[JsArray] = {
     WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map{ response =>
+      println(response.json)
       val pages:Int = (response.json \ "last_page" ).as[Int]
       println("y aca")
       val startups:JsArray = (response.json \ "startups").as[JsArray]
@@ -430,6 +431,78 @@ object Startups extends Controller with Secured{
 
   }
 
+  def getStartupsNetwork(locationId: Int, marketId: Int,
+                         quality: Int, creationDate: String) = Action.async{
+    var startupsToSend:JsArray = JsArray()
+    if(locationId != -1){
+
+      searchByTag(locationId).map { startups =>
+        startupsToSend = startups
+        if(marketId != -1) startupsToSend = filterArrayByInt(startupsToSend, "markets", "id", marketId)
+        if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
+        if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        startupsToSend = getNetwork(startupsToSend)
+        Ok(startupsToSend)
+      }
+    } else {
+      println("en no location")
+      searchByTag(marketId).map { startups =>
+        if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
+        if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        startupsToSend = getNetwork(startupsToSend)
+        Ok(startupsToSend)
+      }
+    }
+  }
+
+  def getNetwork(startups:JsArray) : JsArray ={
+    var result:JsArray= new JsArray()
+    var users = new JsArray()
+    for(startup <- startups.value){
+      val startupId:Int= (startup \ "id").as[Int]
+      val startupName:String= (startup \ "name").as[String]
+      var futures = Seq.empty[Future[_]]
+
+      futures= futures.+:(getStartupRolesById(startupId, startupName))
+
+      Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
+
+      def getStartupRolesById(startupId:Int, startupName:String) = {
+        WS.url(Application.AngelApi+s"/startup_roles?startup_id=$startupId").get().map{ response =>
+          val success= response.json \\ "success"
+          if( success.size == 0) {
+            println(response.json)
+            val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+            for(role <- roles.value){
+              val user:JsValue= (role \ "user").as[JsValue]
+              val userId:Int= (user \ "id").as[Int]
+              val userName:String= (user \ "name").as[String]
+              users= users.+:(Json.obj("userId" -> userId , "startupId" -> startupId,
+                "startupName" -> startupName, "userName" -> userName))
+            }
+          }
+        }
+      }
+    }
+    for (user <- users.value){
+      val id:Int= (user \ "startupId").as[Int]
+      for (user2 <- users.value) {
+        val compareId:Int= (user2 \ "startupId").as[Int]
+        if(id != compareId){    //SI LOS STARTUPS SON DISTINTOS ME FIJO SI EL USUARIO EES EL MISMO
+          if((user \ "userId").as[Int] == (user2 \ "userId").as[Int]){
+            val nameOne:String= (user \ "startupName").as[String]
+            val userId:Int= (user \ "userId").as[Int]
+            val nameTwo:String= (user2 \ "startupName").as[String]
+            val name:String= (user \ "userName").as[String]
+            result= result.+:(Json.obj("startupIdOne" -> id , "startupIdTwo" -> compareId, "startupNameOne" -> nameOne,
+              "startupNameTwo" -> nameTwo, "userId" -> userId , "userName" -> name))
+          }
+        }
+      }
+    }
+
+    result
+  }
 
 
 }
