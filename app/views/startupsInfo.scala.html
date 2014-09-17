@@ -99,19 +99,19 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h2 class="panel-title">
-                        Fundraising
+                        Funding Rounds
                     </h2>
                 </div>
-                <div class="panel-body">
+                <div ng-repeat="round in rounds" class="panel-body">
                     <dl class="dl-horizontal">
-                        <dt>Round Id: </dt>
-                        <dd>{{roundId}}</dd>
                         <dt>Type: </dt>
-                        <dd>{{type}}</dd>
+                        <dd>{{round.round_type}}</dd>
                         <dt>Raised: </dt>
-                        <dd>{{raised}}</dd>
+                        <dd>{{round.amount}}</dd>
                         <dt>Closed At: </dt>
-                        <dd>{{closeDate}}</dd>
+                        <dd>{{round.closed_at}}</dd>
+                        <dt>Round Id: </dt>
+                        <dd>{{round.id}}</dd>
                     </dl>
                     <table class="table table-bordered">
                         <thead>
@@ -125,7 +125,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="participant in participants | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                            <tr ng-repeat="participant in round.participants">
                                 <td>{{participant.name}}</td>
                                 <td>{{participant.type}}</td>
                                 <td>{{participant.id}}</td>
@@ -150,6 +150,24 @@
                     <div class="alert alert-success" >
                         <p style="text-align: center"><strong>{{numberOfFounders}}</strong></p>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Funding Information
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>Total Funding: </dt>
+                        <dd>{{totalFunding}}</dd>
+                        <dt>Total of Rounds: </dt>
+                        <dd>{{numberOfRounds}}</dd>
+                    </dl>
                 </div>
             </div>
         </div>

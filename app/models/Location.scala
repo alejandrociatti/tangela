@@ -13,9 +13,7 @@ import models.Kind.Kind
  * Time: 14:04
  */
 
-case class Location(id: Pk[Long] = NotAssigned, name: String, angelId:Long, kind:Kind) {
-
-}
+case class Location(id: Pk[Long] = NotAssigned, name:String, angelId:Long, kind:Kind)
 
 object Location{
 
@@ -23,6 +21,15 @@ object Location{
     DB.withConnection{implicit connection =>
       SQL("""
          SELECT * FROM Location WHERE kind={kind}
+         ORDER BY name
+          """).on("kind" -> Kind.COUNTRY.toString).as(locationParser *)
+    }
+  }
+
+  def getOtherThanCountries:List[Location] = {
+    DB.withConnection{implicit connection =>
+      SQL("""
+         SELECT * FROM Location WHERE kind!={kind}
          ORDER BY name
           """).on("kind" -> Kind.COUNTRY.toString).as(locationParser *)
     }

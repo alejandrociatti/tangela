@@ -13,10 +13,11 @@ var module = angular.module('app.controllers', ['app.services']);
 module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             $scope.roles = [];
+            $scope.rounds = [];
             $scope.startupsResultsReached= true;
             $scope.optionSelectMsg = 'Search first.';
 
-            $scope.searchForStartupsByName= function () {
+            $scope.searchForStartupsByName = function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 dataAccess.getStartupsByName($scope.startupName, function(startupsByName){
                     $scope.startupsByName= startupsByName;
@@ -34,16 +35,22 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
             $scope.searchStartupFunding = function(){
                 dataAccess.getStartupFunding($scope.startupId, function(fundraising){
-                    //TODO: Check this, fundraising[0] may be undefined
-                    $scope.participants = JSON.parse(fundraising[0].participants);
-                    $scope.roundId= fundraising[0].id;
-                    if(fundraising[0].round_type == ""){
-                        $scope.type= "Doesn't have a type assigned";
-                    }else {
-                        $scope.type= fundraising[0].round_type;
+                    $scope.rounds = fundraising;
+                    $scope.totalFunding = 0;
+                    $scope.numberOfRounds = fundraising.length;
+
+                    console.log(fundraising);
+
+                    for(var i = 0; i < fundraising.length; i++) {
+                        $scope.rounds[i].participants = JSON.parse(fundraising[i].participants);
+                        $scope.totalFunding += parseInt(fundraising[i].amount);
+                        if(fundraising[i].round_type == ""){
+                            $scope.rounds[i].round_type = "Doesn't have a type assigned";
+                        }else {
+                            $scope.rounds[i].round_type = fundraising[i].round_type;
+                        }
                     }
-                    $scope.raised= fundraising[0].amount;
-                    $scope.closeDate= fundraising[0].closed_at;
+                    $scope.$apply();
                 })
             };
 
@@ -63,6 +70,9 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
 
             //Pagination control:
+
+            //Pagination control:
+
             $scope.itemsPerPage = 5;
             $scope.currentPage = 0;
 
@@ -97,6 +107,12 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
             $scope.nextPage = function() {
                 if ($scope.currentPage < $scope.pageCount()) {
                     $scope.currentPage++;
+                }
+            };
+
+            $scope.prevPage = function() {
+                if ($scope.currentPage > 0) {
+                    $scope.currentPage--;
                 }
             };
 
