@@ -37,6 +37,7 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupNetInfo,
         routes.javascript.Startups.getStartupsByName,
         routes.javascript.Startups.getStartupFunding,
+        routes.javascript.Startups.startupCriteriaSearch,
         routes.javascript.Startups.getAllInfoOfPeopleInStartups
       )
     ).as("text/javascript")
@@ -46,7 +47,7 @@ object Application extends Controller with Secured{
     Ok(views.html.startupsInfo())
   }
 
-  def startupsPeopleInfo() = Action {
+  def startupsPeopleInfo() = withAuth { username => implicit request =>
     Ok(views.html.startupsPeopleInfo())
   }
 

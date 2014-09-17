@@ -17,6 +17,7 @@ import ExecutionContext.Implicits.global
 import com.fasterxml.jackson.annotation.JsonValue
 import models.Startup
 import scala.concurrent.duration.Duration
+import org.joda.time.DateTime
 
 /**
  * Created by Javi on 5/16/14.
@@ -237,8 +238,10 @@ object Startups extends Controller with Secured{
                             quality: Int, creationDate: String) = Action.async {
 
     var startupsToSend:JsArray = JsArray()
-
+    println("dale wachoooooooooooo")
     if(locationId != -1){
+      println("entre en location")
+
       searchByTag(locationId).map { startups =>
         startupsToSend = startups
         if(marketId != -1) startupsToSend = filterArrayByInt(startupsToSend, "markets", "id", marketId)
@@ -247,6 +250,7 @@ object Startups extends Controller with Secured{
         Ok(startupsToSend)
       }
     } else {
+      println("en no location")
       searchByTag(marketId).map { startups =>
         if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
@@ -279,7 +283,7 @@ object Startups extends Controller with Secured{
   def searchByTag(tag: Long): Future[JsArray] = {
     WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map{ response =>
       val pages:Int = (response.json \ "last_page" ).as[Int]
-
+      println("y aca")
       val startups:JsArray = (response.json \ "startups").as[JsArray]
 
       var startupsAux: JsArray = JsArray()
@@ -431,5 +435,7 @@ object Startups extends Controller with Secured{
     }
 
   }
+
+
 
 }

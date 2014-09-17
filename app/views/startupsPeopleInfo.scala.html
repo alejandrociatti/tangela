@@ -9,18 +9,51 @@
 
                         <form role="form">
                             <div class="form-group">
-                                <label for="startupName">Startup</label>
+                                <label class="control-label" for="location">Location</label>
+                                <select class="form-control" name="location" id="location" ng-model="location">
+                                    <option value="" disabled selected>Select a country...</option>
+                                    <optgroup label="Countries">
+                                    @for(country: Location <- Location.getCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                    <optgroup label="Specific Locations">
+                                    @for(country: Location <- Location.getOtherThanCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            @*<div class="form-group">*@
+                                @*<label class="control-label" for="market">Market</label>*@
+                                @*<select class="form-control" name="market" id="market">*@
+                                @*for(market: Market <- Market.getMarkets){*@
+                                    @*<option value="@market.angelId">@market.name</option>*@
+                                @*}*@
+                                @*</select>*@
+                            @*</div>*@
+                            <div class="form-group">
+                                <label class="control-label" for="creation-date">Creation date</label>
                                 <div class="input-group">
-                                    <input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>
+                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
                                     <span class="input-group-btn">
-                                        <button class="btn btn-default" ng-click="searchForStartupsByName();">Search</button>
+                                        <button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>
                                     </span>
                                 </div>
                             </div>
+                            @*<div class="form-group">*@
+                                @*<label for="startupName">Startup</label>*@
+                                @*<div class="input-group">*@
+                                    @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
+                                    @*<span class="input-group-btn">*@
+                                        @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
+                                    @*</span>*@
+                                @*</div>*@
+                            @*</div>*@
                         </form>
 
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
-                            <p><strong>There are not startups with that name</strong></p>
+                            <p><strong>There are not startups with that features</strong></p>
                         </div>
 
                         <form role="form">

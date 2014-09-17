@@ -14,9 +14,9 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
 
-        $scope.searchForStartupsByName= function () {
+        $scope.searchForStartupsByFeatures= function () {
             $scope.optionSelectMsg = 'Loading results...';
-            dataAccess.getStartupsByName($scope.startupName, function(startupsByName){
+            dataAccess.getStartupsByFeatures($scope.location, $scope.date, -1, -1, function(startupsByName){
                 $scope.startupsByName= startupsByName;
                 $scope.startupsResultsReached= startupsByName.length != 0;
                 $scope.optionSelectMsg = 'Select a startup.';
@@ -28,6 +28,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
             dataAccess.getStartupPeopleInfo($scope.startupId, function(persons){
                 console.log(persons);
                 $scope.persons= persons;
+                $scope.$apply();
             });
         };
 
