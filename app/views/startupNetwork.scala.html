@@ -1,10 +1,125 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-  <meta charset="UTF-8">
-  <title></title>
-</head>
-<body>
+@main("Informacion sobre Startups   ")(sidebar()) {
 
-</body>
-</html>
+    <div class="row" ng-app="JB3" ng-controller="startupsNetworkCtrl">
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+
+                        <form role="form">
+                            <div class="form-group">
+                                <label class="control-label" for="location">Location</label>
+                                <select class="form-control" name="location" id="location" ng-model="location">
+                                    <option value="" disabled selected>Select a country...</option>
+                                    <optgroup label="Countries">
+                                    @for(country: Location <- Location.getCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                    <optgroup label="Specific Locations">
+                                    @for(country: Location <- Location.getOtherThanCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="market">Market</label>
+                                <select class="form-control" ng-model="market" name="market" id="market">
+                                @for(market: Market <- Market.getMarkets){
+                                    <option value="@market.angelId">@market.name</option>
+                                }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="creation-date">Creation date</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" ng-click="searchForStartupsNetwork();">Search</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="alert alert-danger" ng-if="!startupsResultsReached" >
+                            <p><strong>There are not startups with that features</strong></p>
+                        </div>
+
+                        <form role="form">
+                            <label for="steps">Steps:</label>
+                            <div class="alert alert-success" id="steps">
+                                <p class="help-block">
+                                    Enter a startup name and hit Search, <br>
+                                    then select the startup you wanted from the options list. <br>
+                                    <small>
+                                        <strong>
+                                            You will see the individuals' information from that startup on the panel bellow.
+                                        </strong>
+                                    </small>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-12">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            Persons
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Startup Id One</th>
+                                    <th>Startup Name One</th>
+                                    <th>Startup Id Two</th>
+                                    <th>Startup Name Two</th>
+                                    <th>User in common Id</th>
+                                    <th>User in common Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{startup.startupIdOne}}</td>
+                                    <td>{{startup.startupNameOne}}</td>
+                                    <td>{{startup.startupIdTwo}}</td>
+                                    <td>{{startup.startupNameTwo}}</td>
+                                    <td>{{startup.userId}}</td>
+                                    <td>{{startup.userName}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <ul class="pagination">
+                            <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
+                            <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+                                <a href="#">{{n+1}}</a>
+                            </li>
+                            <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div><!-- /.row -->
+
+}{
+    <script src="@routes.Application.javascriptRoutes"></script>
+    <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
+    <script src="@routes.Assets.at("javascripts/statupsNetwork.js")"></script>
+
+}

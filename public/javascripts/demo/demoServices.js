@@ -88,6 +88,14 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getStartupsNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.getStartupsNetwork(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
         }
 
     };
