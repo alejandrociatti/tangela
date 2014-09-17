@@ -36,6 +36,9 @@ GET         /startups/startup-network               controllers.Startups.getStar
 #Markets
 GET         /markets/market-list                    controllers.Markets.getMarkets
 
+#CSV in general
+GET         /csv                                    controllers.Application.tableToCSV()
+
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes              controllers.Application.javascriptRoutes
 
