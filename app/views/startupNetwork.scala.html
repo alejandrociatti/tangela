@@ -43,6 +43,10 @@
                             </div>
                         </form>
 
+                        <div class="alert alert-danger" ng-if="markOne" >
+                            <p><strong>You must mark either a location or a market to search</strong></p>
+                        </div>
+
                         <div class="alert alert-warning" ng-if="searching" >
                             <p><strong>Please wait while we search for your request...</strong></p>
                         </div>

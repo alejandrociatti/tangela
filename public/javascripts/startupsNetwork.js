@@ -14,18 +14,22 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
             $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
             $scope.persons= [] ;
+            $scope.markOne = false;
 
             $scope.searchForStartupsNetwork= function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
-                dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function(startups){
-                    $scope.startups= startups;
-                    $scope.searching= false;
-                    $scope.startupsResultsReached= startups.length != 0;
-                    $scope.optionSelectMsg = 'Select a startup.';
-                    $scope.$apply();
-                });
+                $scope.markOne = !($scope.location || $scope.market);
+                if(!$scope.markOne) {
+                    dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function (startups) {
+                        $scope.startups = startups;
+                        $scope.searching = false;
+                        $scope.startupsResultsReached = startups.length != 0;
+                        $scope.optionSelectMsg = 'Select a startup.';
+                        $scope.$apply();
+                    });
+                }
             };
 
             $scope.export= function () {

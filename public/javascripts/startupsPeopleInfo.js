@@ -13,16 +13,20 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.startupsResultsReached= true;
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
+        $scope.markOne= false;
 
         $scope.searchForStartupsByFeatures= function () {
             $scope.optionSelectMsg = 'Loading results...';
             $scope.startupsResultsReached= true;
-            dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function(startupsByName){
-                $scope.startupsByName= startupsByName;
-                $scope.startupsResultsReached= startupsByName.length != 0;
-                $scope.optionSelectMsg = 'Select a startup.';
-                $scope.$apply();
-            });
+            $scope.markOne = !($scope.location || $scope.market);
+            if(!$scope.markOne) {
+                dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function (startupsByName) {
+                    $scope.startupsByName = startupsByName;
+                    $scope.startupsResultsReached = startupsByName.length != 0;
+                    $scope.optionSelectMsg = 'Select a startup.';
+                    $scope.$apply();
+                });
+            }
         };
 
         $scope.searchPeopleInfo= function(){
