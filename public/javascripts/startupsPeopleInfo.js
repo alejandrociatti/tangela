@@ -50,7 +50,10 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
             }
 
             dataAccess.getCSV(JSON.stringify(obj), function(file){
-                console.log(file);
+                var pom = document.createElement('a');
+                pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                pom.setAttribute('download', 'data.csv');
+                pom.click();
             });
 
         };
