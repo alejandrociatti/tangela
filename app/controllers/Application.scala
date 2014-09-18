@@ -58,17 +58,10 @@ object Application extends Controller with Secured{
     Ok(views.html.startupNetwork())
   }
 
-  def testCSV() = Action {
-    writeCSVWithHeaders(List("titulo1", "titulo2", "titulo3"), List(List("1", "2", "3"), List("4", "5", "6")))
-  }
-
-  def tableToCSV= Action { request =>
-    request.body.asJson.fold(Ok("puto el que lee!!")) { json =>
-      println("hola1")
+  def tableToCSV = Action { request =>
+    request.body.asJson.fold(Ok("No Data Available")) { json =>
       val headers: List[String] = (json \ "headers").as[JsArray].value.map(value => value.as[String]).toList
-      println("hola2:     "+(json \ "values"))
       val values: List[List[String]] = (json \ "values").as[JsArray].value.map(array => array.as[JsArray].value.map(value => value.as[String]).toList).toList
-      println("hola3")
 
       writeCSVWithHeaders(headers, values)
     }
