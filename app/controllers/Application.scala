@@ -2,6 +2,7 @@ package controllers
 
 import java.io._
 
+import models.authentication.Role._
 import com.github.tototoshi.csv.CSVWriter
 import play.api._
 import play.api.libs.iteratee.Enumerator
@@ -13,15 +14,15 @@ object Application extends Controller with Secured{
   val AngelApi = "https://api.angel.co/1"
 
 
-  def index = withAuth { username => implicit request =>
+  def index = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.index())
   }
   
-  def startupsByLocation = withAuth { username => implicit request =>
+  def startupsByLocation = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.startupsByLocation())
   }
 
-  def searchStartups = withAuth{ username => implicit request =>
+  def searchStartups = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.search())
   }
 
@@ -44,15 +45,15 @@ object Application extends Controller with Secured{
     ).as("text/javascript")
   }
 
-  def startupsInfo = withAuth { username => implicit request =>
+  def startupsInfo = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.startupsInfo())
   }
 
-  def startupsPeopleInfo = withAuth { username => implicit request =>
+  def startupsPeopleInfo = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.startupsPeopleInfo())
   }
 
-  def startupsNetwork = withAuth { username => implicit request =>
+  def startupsNetwork = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.startupNetwork())
   }
 

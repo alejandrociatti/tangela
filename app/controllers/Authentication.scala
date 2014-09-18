@@ -1,13 +1,16 @@
 package controllers
 
+import models.authentication.Role.Role
+import models.authentication.User
 import play.api.mvc._
-import play.api.data._
 import play.api.data.Forms._
 import play.api.data.Form
 import scala.concurrent.Future
 
 /**
- * Created by Javi on 5/16/14.
+ * Created by Javier Isoldi.
+ * Date: 5/16/14.
+ * Project: Tangela.
  */
 
 object Authentication extends Controller{
@@ -43,19 +46,26 @@ object Authentication extends Controller{
 }
 
 trait Secured {
-  def username(request: RequestHeader) = request.session.get(Security.username)
+  def isAuthenticated(request: RequestHeader, roles: Seq[Role]): Option[User] = {
+    request.session.get(Security.username)
+      .flatMap(username =>
+      User.getByUsername(username)
+    )
+  }
 
   def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Authentication.login)
 
-  def withAuth(f: => String => Request[AnyContent] => Result) = {
-    Security.Authenticated(username, onUnauthorized) { user =>
+  def withAuth(roles: Role*)(f: => User => Request[AnyContent] => Result) = {
+    Security.Authenticated(request => isAuthenticated(request, roles), onUnauthorized) { user =>
       Action(request => f(user)(request))
     }
   }
 
-  def withAsyncAuth(f: => String => Request[AnyContent] => Future[SimpleResult]) = {
-    Security.Authenticated(username, onUnauthorized) { user =>
+  def withAsyncAuth(roles: Role*)(f: => User => Request[AnyContent] => Future[SimpleResult]) = {
+    Security.Authenticated(request => isAuthenticated(request, roles), onUnauthorized) { user =>
       Action.async { request => f(user)(request) }
     }
   }
+
+  def rolesToString(role: Role) = role.toString
 }

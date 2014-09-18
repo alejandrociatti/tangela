@@ -1,8 +1,11 @@
 package controllers
 
 /**
- * Created by Javi on 5/16/14.
+ * Created by Javier Isoldi.
+ * Date: 5/16/14.
+ * Project: Tangela.
  */
+
 object Investors {
 
 }

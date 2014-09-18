@@ -1,6 +1,6 @@
 package controllers
 
-import org.joda.time.DateTime
+import models.authentication.Role._
 import play.api.data.Forms._
 import play.api.data.Form
 import scala.concurrent._
@@ -15,8 +15,11 @@ import scala.concurrent.duration.Duration
 import org.joda.time.DateTime
 
 /**
- * Created by Javi on 5/16/14.
+ * Created by Javier Isoldi.
+ * Date: 5/16/14.
+ * Project: Tangela.
  */
+
 object Startups extends Controller with Secured{
 
   val ANGELAPI = "https://api.angel.co/1"
@@ -26,7 +29,8 @@ object Startups extends Controller with Secured{
       "name" -> nonEmptyText,
       "angelId" -> ignored(0:Long),
       "quality" -> ignored(0:Int),
-      "creationDate" -> ignored(DateTime.now():DateTime)
+      "creationDate" -> ignored(DateTime.now():DateTime),
+      "id" -> optional(longNumber)
     )(Startup.apply)(Startup.unapply)
   )
 
@@ -97,14 +101,14 @@ object Startups extends Controller with Secured{
 
 
 
-  def getNumberOfStartupsFundraising = withAsyncAuth( username => implicit request =>
-    WS.url(Application.AngelApi + "/startups?filter=raising").get().map{ response =>
+  def getNumberOfStartupsFundraising = withAsyncAuth(Admin, Researcher) { user => implicit request =>
+    WS.url(Application.AngelApi + "/startups?filter=raising").get().map { response =>
 
       val total = (response.json \ "total").as[Int]
 
       Ok(views.html.fundraisingCount(total))
     }
-  )
+  }
 
   def getStartupById(startupId: Long) = Action.async {
     val url: String = ANGELAPI + s"/startups/$startupId"

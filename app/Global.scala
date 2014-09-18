@@ -1,20 +1,38 @@
+import models.Database
+import models.authentication.{Users, Role, User}
 import org.joda.time.{LocalDate, LocalTime}
 import play.api._
+import play.api.db.slick._
 import play.libs.Akka
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.Play.current
+import scala.slick.lifted.Query
+import play.api.db.slick.Config.driver.simple._
 
 /**
  * Created with IntelliJ IDEA by: alejandro
  * Date: 03/06/14
  * Time: 12:54
  */
-object Global extends GlobalSettings{
+
+object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
     super.onStart(app)
 
+    createAdmin()
+
     dropTablesCRON()
+  }
+
+  def createAdmin() = {
+//    val admins = Database.query[User].whereEqual("role", Role.Admin.toString).fetch()
+    DB.withSession { implicit  session: scala.slick.session.Session =>
+      Query(Users).filter( _.role === Role.Admin.toString).firstOption.getOrElse {
+        Users.insert(User("admin", "secret", "Tangela", "Admin", Role.Admin.toString))
+      }
+    }
   }
 
   def dropTablesCRON() = {
