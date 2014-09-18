@@ -1,0 +1,126 @@
+@main("Informacion sobre Startups   ")(sidebar()) {
+
+    <div class="row" ng-app="AAC" ng-controller="startupsFundingInfo">
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+
+                        <form role="form">
+                            <div class="form-group">
+                                <label class="control-label" for="location">Location</label>
+                                <select class="form-control" name="location" id="location" ng-model="location">
+                                    <option value="" disabled selected>Select a country...</option>
+                                    <optgroup label="Countries">
+                                    @for(country: Location <- Location.getCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                    <optgroup label="Specific Locations">
+                                    @for(country: Location <- Location.getOtherThanCountries){
+                                        <option value="@country.angelId">@country.name</option>
+                                    }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="market">Market</label>
+                                <select class="form-control" ng-model="market" name="market" id="market">
+                                @for(market: Market <- Market.getMarkets){
+                                    <option value="@market.angelId">@market.name</option>
+                                }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="creation-date">Creation date</label>
+                                <input type="date" class="form-control" name="creation-date" id="creation-date" ng-model="creationDate"/>
+                                <p class="help-block">Creation date filters startups created ON or AFTER given creation date.</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="quality" class="control-label">Quality</label>
+                                <input type="number" class="form-control" name="quality" id="quality" ng-model="quality"/>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary pull-right" ng-click="submit()">Search</button>
+                            </div>
+                            @*<div class="form-group">*@
+                            @*<label for="startupName">Startup</label>*@
+                            @*<div class="input-group">*@
+                            @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
+                            @*<span class="input-group-btn">*@
+                            @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
+                            @*</span>*@
+                            @*</div>*@
+                            @*</div>*@
+                        </form>
+
+                        <div class="alert alert-danger" ng-if="!startupsResultsReached" >
+                            <p><strong>There are not startups with that features</strong></p>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-12">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            Persons
+
+                            <div class="pull-right">
+                                <button ng-click="exportCSV()"  class="btn btn-xs btn-primary">Export</button>
+                            </div>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Round Type</th>
+                                    <th>Amount</th>
+                                    <th>Closed At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="fund in fundings | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{fund.id}}</td>
+                                    <td>{{fund.name}}</td>
+                                    <td>{{fund.round_type}}</td>
+                                    <td>{{fund.amount}}</td>
+                                    <td>{{fund.closed_at}}</td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                        <ul class="pagination">
+                            <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
+                            <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+                                <a href="#">{{n+1}}</a>
+                            </li>
+                            <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div><!-- /.row -->
+
+}{
+    <script src="@routes.Application.javascriptRoutes"></script>
+    <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
+    <script src="@routes.Assets.at("javascripts/startupsFundingInfo.js")"></script>
+
+}
