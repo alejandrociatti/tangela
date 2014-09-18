@@ -19,7 +19,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
-                dataAccess.getStartupsNetwork($scope.location, $scope.date, $scope.market, -1, function(startups){
+                dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function(startups){
                     $scope.startups= startups;
                     $scope.searching= false;
                     $scope.startupsResultsReached= startups.length != 0;

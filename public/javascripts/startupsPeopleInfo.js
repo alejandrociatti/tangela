@@ -17,7 +17,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.searchForStartupsByFeatures= function () {
             $scope.optionSelectMsg = 'Loading results...';
             $scope.startupsResultsReached= true;
-            dataAccess.getStartupsByFeatures($scope.location, $scope.date, $scope.market, -1, function(startupsByName){
+            dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function(startupsByName){
                 $scope.startupsByName= startupsByName;
                 $scope.startupsResultsReached= startupsByName.length != 0;
                 $scope.optionSelectMsg = 'Select a startup.';
