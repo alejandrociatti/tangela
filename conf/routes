@@ -8,6 +8,7 @@ GET         /startups-by-location                   controllers.Application.star
 GET         /startups-info                          controllers.Application.startupsInfo
 GET         /startup-people-info                    controllers.Application.startupsPeopleInfo
 GET         /startup-network                        controllers.Application.startupsNetwork
+GET         /startup-people-network                 controllers.Application.startupsPeopleNetwork
 GET         /startups-search                        controllers.Application.searchStartups
 
 # Log in
@@ -32,13 +33,16 @@ GET         /startups/funding/:id                   controllers.Startups.getStar
 GET         /startups/persons/:id                   controllers.Startups.getAllInfoOfPeopleInStartups(id: Long)
 GET         /startups/startupCriteriaSearch         controllers.Startups.startupCriteriaSearch(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startup-network               controllers.Startups.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
+GET         /startups/startup-people-network        controllers.Startups.getPeopleNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 
 #Markets
 GET         /markets/market-list                    controllers.Markets.getMarkets
+
+#CSV in general
+POST        /csv                                    controllers.Application.tableToCSV()
 
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes              controllers.Application.javascriptRoutes
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                           controllers.Assets.at(path="/public", file)
-GET         /testCSV                                controllers.Application.testCSV()

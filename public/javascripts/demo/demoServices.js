@@ -33,6 +33,14 @@ serviceModule.factory('dataAccess', function() {
                 error: errorHandler
             })
         },
+        getStartupsByCriteria: function(criteriaObj, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.startupCriteriaSearch(
+                criteriaObj.locationId, criteriaObj.marketId, criteriaObj.quality, criteriaObj.creationDate).ajax({
+                    method: 'GET',
+                    success: successHandler,
+                    error: errorHandler
+                })
+        },
         getStartupNetInfo: function(startupId, successHandler, errorHandler){
             jsRoutes.controllers.Startups.getStartupNetInfo(startupId).ajax({
                 method: 'GET',
@@ -96,7 +104,25 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getPeopleNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.getPeopleNetwork(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
+        },
+        getCSV: function(json, successHandler, errorHandler){
+            jsRoutes.controllers.Application.tableToCSV().ajax({
+                method: 'POST',
+                contentType: 'text/json',
+                data: json,
+                success: successHandler,
+                error: errorHandler
+            })
         }
+
 
     };
 });

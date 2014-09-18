@@ -11,18 +11,44 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
 
             $scope.startupsResultsReached= true;
+            $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
             $scope.persons= [] ;
 
             $scope.searchForStartupsNetwork= function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
-                dataAccess.getStartupsNetwork($scope.location, $scope.date, $scope.market, -1, function(startups){
+                $scope.searching= true;
+                dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function(startups){
                     $scope.startups= startups;
+                    $scope.searching= false;
                     $scope.startupsResultsReached= startups.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     $scope.$apply();
                 });
+            };
+
+            $scope.export= function () {
+
+
+                var obj = {
+                    headers: ["Startup Id One", "Startup Name One","User Role in Startup One","Startup Id Two"
+                        ,"Startup Name Two", "User Role in Startup Two","User in common Id","User in common Name"],
+                    values: []
+                } ;
+                for (var i = 0; i < $scope.startups.length; i++) {
+                    var startup = $scope.startups[i];
+                    obj.values.push([startup.startupIdOne,startup.startupNameOne,startup.roleOne,
+                        startup.startupIdTwo,startup.startupNameTwo,startup.roleTwo,startup.userId,startup.userName]);
+                }
+
+                dataAccess.getCSV(JSON.stringify(obj), function(file){
+                    var pom = document.createElement('a');
+                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                    pom.setAttribute('download', 'data.csv');
+                    pom.click();
+                });
+
             };
 
 

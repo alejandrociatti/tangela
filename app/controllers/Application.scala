@@ -6,6 +6,7 @@ import models.authentication.Role._
 import com.github.tototoshi.csv.CSVWriter
 import play.api._
 import play.api.libs.iteratee.Enumerator
+import play.api.libs.json.{JsArray, Json, JsValue}
 import play.api.mvc._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -40,7 +41,9 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupFunding,
         routes.javascript.Startups.startupCriteriaSearch,
         routes.javascript.Startups.getStartupsNetwork,
-        routes.javascript.Startups.getAllInfoOfPeopleInStartups
+        routes.javascript.Startups.getPeopleNetwork,
+        routes.javascript.Startups.getAllInfoOfPeopleInStartups,
+        routes.javascript.Application.tableToCSV
       )
     ).as("text/javascript")
   }
@@ -57,8 +60,17 @@ object Application extends Controller with Secured{
     Ok(views.html.startupNetwork())
   }
 
-  def testCSV() = Action {
-    writeCSVWithHeaders(List("titulo1", "titulo2", "titulo3"), List(List("1", "2", "3"), List("4", "5", "6")))
+  def startupsPeopleNetwork = withAuth { username => implicit request =>
+    Ok(views.html.startupsPeopleNetwork())
+  }
+
+  def tableToCSV = Action { request =>
+    request.body.asJson.fold(Ok("No Data Available")) { json =>
+      val headers: List[String] = (json \ "headers").as[JsArray].value.map(value => value.as[String]).toList
+      val values: List[List[String]] = (json \ "values").as[JsArray].value.map(array => array.as[JsArray].value.map(value => value.as[String]).toList).toList
+
+      writeCSVWithHeaders(headers, values)
+    }
   }
 
   def writeCSVWithHeaders(headers: List[String], values: List[List[String]]): SimpleResult = {

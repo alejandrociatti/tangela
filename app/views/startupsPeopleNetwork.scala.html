@@ -1,6 +1,6 @@
 @main("Informacion sobre Startups   ")(sidebar()) {
 
-    <div class="row" ng-app="JB2" ng-controller="startupPeopleInfoCtrl">
+    <div class="row" ng-app="AAC" ng-controller="startupsPplNetCtrl">
 
         <div class="row">
             <div class="col-lg-6">
@@ -34,21 +34,24 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label" for="creation-date">Creation date</label>
-                                <div class="input-group">
-                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>
-                                    </span>
-                                </div>
+                                <input type="date" class="form-control" name="creation-date" id="creation-date" ng-model="creationDate"/>
+                                <p class="help-block">Creation date filters startups created ON or AFTER given creation date.</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="quality" class="control-label">Quality</label>
+                                <input type="number" class="form-control" name="quality" id="quality" ng-model="quality"/>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary pull-right" ng-click="submit()">Search</button>
                             </div>
                             @*<div class="form-group">*@
-                                @*<label for="startupName">Startup</label>*@
-                                @*<div class="input-group">*@
-                                    @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
-                                    @*<span class="input-group-btn">*@
-                                        @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
-                                    @*</span>*@
-                                @*</div>*@
+                            @*<label for="startupName">Startup</label>*@
+                            @*<div class="input-group">*@
+                            @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
+                            @*<span class="input-group-btn">*@
+                            @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
+                            @*</span>*@
+                            @*</div>*@
                             @*</div>*@
                         </form>
 
@@ -56,30 +59,6 @@
                             <p><strong>There are not startups with that features</strong></p>
                         </div>
 
-                        <form role="form">
-                            <div class="form-group">
-                                <label for="startupId">Options: </label>
-                                <select class="form-control" name="startup" id="startupId" ng-model="startupId" ng-change="searchPeopleInfo()">
-                                    <option value="" selected disabled>{{optionSelectMsg}}</option>
-                                    <option ng-repeat="startup in startupsByName" value="{{startup.id}}">{{startup.name}}</option>
-                                </select>
-                            </div>
-
-                        </form>
-                        <form role="form">
-                            <label for="steps">Steps:</label>
-                            <div class="alert alert-success" id="steps">
-                                <p class="help-block">
-                                    Enter a startup name and hit Search, <br>
-                                    then select the startup you wanted from the options list. <br>
-                                    <small>
-                                        <strong>
-                                            You will see the individuals' information from that startup on the panel bellow.
-                                        </strong>
-                                    </small>
-                                </p>
-                            </div>
-                        </form>
                     </div>
 
                 </div>
@@ -96,12 +75,12 @@
                         <h2 class="panel-title">
                             Persons
 
-                                <div class="pull-right">
-                                    <button ng-click="export()"  class="btn btn-xs btn-primary">Export</button>
-                                </div>
+                            <div class="pull-right">
+                                <button ng-click="exportCSV()"  class="btn btn-xs btn-primary">Export</button>
+                            </div>
                         </h2>
                     </div>
-                    <div class="panel-body table-responsive">
+                    <div class="panel-body">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -161,6 +140,6 @@
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
-    <script src="@routes.Assets.at("javascripts/startupsPeopleInfo.js")"></script>
+    <script src="@routes.Assets.at("javascripts/startupsPeopleNetwork.js")"></script>
 
 }

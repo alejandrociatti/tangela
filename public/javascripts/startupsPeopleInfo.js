@@ -17,7 +17,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.searchForStartupsByFeatures= function () {
             $scope.optionSelectMsg = 'Loading results...';
             $scope.startupsResultsReached= true;
-            dataAccess.getStartupsByFeatures($scope.location, $scope.date, $scope.market, -1, function(startupsByName){
+            dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function(startupsByName){
                 $scope.startupsByName= startupsByName;
                 $scope.startupsResultsReached= startupsByName.length != 0;
                 $scope.optionSelectMsg = 'Select a startup.';
@@ -31,6 +31,31 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
                 $scope.persons= persons;
                 $scope.$apply();
             });
+        };
+
+
+        $scope.export= function () {
+
+
+            var obj = {
+                headers: ["Id","Name","Bio","Role","Followers","AngelList","Image","Blog","Online Bio","Twitter","Facebook",
+                    "Linkedin","What He'd Built","What He Does","Investor"],
+                values: []
+            } ;
+            for (var i = 0; i < $scope.persons.length; i++) {
+                var person = $scope.persons[i];
+                obj.values.push([person.id,person.name,person.bio,person.role,person.follower_count,person.angellist_url,
+                    person.image,person.blog_url,person.online_bio_url,person.twitter_url,
+                    person.facebook_url,person.linkedin_url,person.what_ive_built,person.what_i_do,person.investor]);
+            }
+
+            dataAccess.getCSV(JSON.stringify(obj), function(file){
+                var pom = document.createElement('a');
+                pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                pom.setAttribute('download', 'data.csv');
+                pom.click();
+            });
+
         };
 
 

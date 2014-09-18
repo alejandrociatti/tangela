@@ -43,6 +43,10 @@
                             </div>
                         </form>
 
+                        <div class="alert alert-warning" ng-if="searching" >
+                            <p><strong>Please wait while we search for your request...</strong></p>
+                        </div>
+
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
                             <p><strong>There are not startups with that features</strong></p>
                         </div>
@@ -51,11 +55,10 @@
                             <label for="steps">Steps:</label>
                             <div class="alert alert-success" id="steps">
                                 <p class="help-block">
-                                    Enter a startup name and hit Search, <br>
-                                    then select the startup you wanted from the options list. <br>
+                                    Enter the startup features and hit Search. <br>
                                     <small>
                                         <strong>
-                                            You will see the individuals' information from that startup on the panel bellow.
+                                            You will see the startups connections on the panel bellow.
                                         </strong>
                                     </small>
                                 </p>
@@ -76,6 +79,9 @@
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Persons
+                            <div class="pull-right">
+                                <button ng-click="export()"  class="btn btn-xs btn-primary">Export</button>
+                            </div>
                         </h2>
                     </div>
                     <div class="panel-body">
@@ -84,8 +90,10 @@
                                 <tr>
                                     <th>Startup Id One</th>
                                     <th>Startup Name One</th>
+                                    <th>User Role in Startup One</th>
                                     <th>Startup Id Two</th>
                                     <th>Startup Name Two</th>
+                                    <th>User Role in Startup Two</th>
                                     <th>User in common Id</th>
                                     <th>User in common Name</th>
                                 </tr>
@@ -94,8 +102,10 @@
                                 <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
                                     <td>{{startup.startupIdOne}}</td>
                                     <td>{{startup.startupNameOne}}</td>
+                                    <td>{{startup.roleOne}}</td>
                                     <td>{{startup.startupIdTwo}}</td>
                                     <td>{{startup.startupNameTwo}}</td>
+                                    <td>{{startup.roleTwo}}</td>
                                     <td>{{startup.userId}}</td>
                                     <td>{{startup.userName}}</td>
                                 </tr>
@@ -120,6 +130,6 @@
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
-    <script src="@routes.Assets.at("javascripts/statupsNetwork.js")"></script>
+    <script src="@routes.Assets.at("javascripts/startupsNetwork.js")"></script>
 
 }
