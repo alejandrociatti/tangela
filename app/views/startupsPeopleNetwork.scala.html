@@ -1,6 +1,6 @@
 @main("Informacion sobre Startups   ")(sidebar()) {
 
-    <div class="row" ng-app="JB3" ng-controller="startupsNetworkCtrl">
+    <div class="row" ng-app="AAC" ng-controller="startupsPplNetCtrl">
 
         <div class="row">
             <div class="col-lg-6">
@@ -34,36 +34,31 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label" for="creation-date">Creation date</label>
-                                <div class="input-group">
-                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default" ng-click="searchForStartupsNetwork();">Search</button>
-                                    </span>
-                                </div>
+                                <input type="date" class="form-control" name="creation-date" id="creation-date" ng-model="creationDate"/>
+                                <p class="help-block">Creation date filters startups created ON or AFTER given creation date.</p>
                             </div>
+                            <div class="form-group">
+                                <label for="quality" class="control-label">Quality</label>
+                                <input type="number" class="form-control" name="quality" id="quality" ng-model="quality"/>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary pull-right" ng-click="submit()">Search</button>
+                            </div>
+                            @*<div class="form-group">*@
+                            @*<label for="startupName">Startup</label>*@
+                            @*<div class="input-group">*@
+                            @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
+                            @*<span class="input-group-btn">*@
+                            @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
+                            @*</span>*@
+                            @*</div>*@
+                            @*</div>*@
                         </form>
-
-                        <div class="alert alert-warning" ng-if="searching" >
-                            <p><strong>Please wait while we search for your request...</strong></p>
-                        </div>
 
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
                             <p><strong>There are not startups with that features</strong></p>
                         </div>
 
-                        <form role="form">
-                            <label for="steps">Steps:</label>
-                            <div class="alert alert-success" id="steps">
-                                <p class="help-block">
-                                    Enter the startup features and hit Search. <br>
-                                    <small>
-                                        <strong>
-                                            You will see the startups connections on the panel bellow.
-                                        </strong>
-                                    </small>
-                                </p>
-                            </div>
-                        </form>
                     </div>
 
                 </div>
@@ -79,8 +74,9 @@
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Persons
+
                             <div class="pull-right">
-                                <button ng-click="export()"  class="btn btn-xs btn-primary">Export</button>
+                                <button ng-click="exportCSV()"  class="btn btn-xs btn-primary">Export</button>
                             </div>
                         </h2>
                     </div>
@@ -88,26 +84,40 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Startup Id One</th>
-                                    <th>Startup Name One</th>
-                                    <th>User Role in Startup One</th>
-                                    <th>Startup Id Two</th>
-                                    <th>Startup Name Two</th>
-                                    <th>User Role in Startup Two</th>
-                                    <th>User in common Id</th>
-                                    <th>User in common Name</th>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Bio</th>
+                                    <th>Role</th>
+                                    <th>Followers</th>
+                                    <th>AngelList</th>
+                                    <th>Image</th>
+                                    <th>Blog</th>
+                                    <th>Online Bio</th>
+                                    <th>Twitter</th>
+                                    <th>Facebook</th>
+                                    <th>Linkedin</th>
+                                    <th>What He'd Built</th>
+                                    <th>What He Does</th>
+                                    <th>Investor</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-                                    <td>{{startup.startupIdOne}}</td>
-                                    <td>{{startup.startupNameOne}}</td>
-                                    <td>{{startup.roleOne}}</td>
-                                    <td>{{startup.startupIdTwo}}</td>
-                                    <td>{{startup.startupNameTwo}}</td>
-                                    <td>{{startup.roleTwo}}</td>
-                                    <td>{{startup.userId}}</td>
-                                    <td>{{startup.userName}}</td>
+                                <tr ng-repeat="person in persons | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{person.id}}</td>
+                                    <td>{{person.name}}</td>
+                                    <td>{{person.bio}}</td>
+                                    <td>{{person.role}}</td>
+                                    <td>{{person.follower_count}}</td>
+                                    <td>{{person.angellist_url}}</td>
+                                    <td>{{person.image}}</td>
+                                    <td>{{person.blog_url}}</td>
+                                    <td>{{person.online_bio_url}}</td>
+                                    <td>{{person.twitter_url}}</td>
+                                    <td>{{person.facebook_url}}</td>
+                                    <td>{{person.linkedin_url}}</td>
+                                    <td>{{person.what_ive_built}}</td>
+                                    <td>{{person.what_i_do}}</td>
+                                    <td>{{person.investor}}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -130,6 +140,6 @@
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
-    <script src="@routes.Assets.at("javascripts/startupsNetwork.js")"></script>
+    <script src="@routes.Assets.at("javascripts/startupsPeopleNetwork.js")"></script>
 
 }
