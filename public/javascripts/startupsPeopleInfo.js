@@ -13,16 +13,20 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.startupsResultsReached= true;
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
+        $scope.markOne= false;
 
         $scope.searchForStartupsByFeatures= function () {
             $scope.optionSelectMsg = 'Loading results...';
             $scope.startupsResultsReached= true;
-            dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function(startupsByName){
-                $scope.startupsByName= startupsByName;
-                $scope.startupsResultsReached= startupsByName.length != 0;
-                $scope.optionSelectMsg = 'Select a startup.';
-                $scope.$apply();
-            });
+            $scope.markOne = !($scope.location || $scope.market);
+            if(!$scope.markOne) {
+                dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function (startupsByName) {
+                    $scope.startupsByName = startupsByName;
+                    $scope.startupsResultsReached = startupsByName.length != 0;
+                    $scope.optionSelectMsg = 'Select a startup.';
+                    $scope.$apply();
+                });
+            }
         };
 
         $scope.searchPeopleInfo= function(){
@@ -52,7 +56,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
             dataAccess.getCSV(JSON.stringify(obj), function(file){
                 var pom = document.createElement('a');
                 pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                pom.setAttribute('download', 'data.csv');
+                pom.setAttribute('download', 'peopleinfo.csv');
                 pom.click();
             });
 

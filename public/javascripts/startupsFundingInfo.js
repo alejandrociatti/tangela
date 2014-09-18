@@ -1,58 +1,52 @@
 /**
- * Created by Joaquin on 17/09/2014.
+ * Created with IntelliJ IDEA.
+ * User: alejandro
+ * Date: 18/09/14
+ * Time: 17:17
  */
 
 
-angular.module('JB3', ['app.controllers']);
+angular.module('AAC', ['app.controllers']);
 
 var module = angular.module('app.controllers', ['app.services']);
 
-module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
+module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
 
             $scope.startupsResultsReached= true;
             $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
             $scope.persons= [] ;
-            $scope.markOne = false;
 
-            $scope.searchForStartupsNetwork= function () {
+            $scope.submit = function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
-                $scope.markOne = !($scope.location || $scope.market);
-                if(!$scope.markOne) {
-                    dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function (startups) {
-                        $scope.startups = startups;
-                        $scope.searching = false;
-                        $scope.startupsResultsReached = startups.length != 0;
-                        $scope.optionSelectMsg = 'Select a startup.';
-                        $scope.$apply();
-                    });
-                }
+                dataAccess.getPeopleNetwork($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
+                    $scope.fundings= startups;
+                    $scope.searching= false;
+                    $scope.startupsResultsReached= fundings.length != 0;
+                    $scope.optionSelectMsg = 'Select a startup.';
+                    $scope.$apply();
+                });
             };
 
-            $scope.export= function () {
-
-
+            $scope.exportCSV = function () {
                 var obj = {
-                    headers: ["Startup Id One", "Startup Name One","User Role in Startup One","Startup Id Two"
-                        ,"Startup Name Two", "User Role in Startup Two","User in common Id","User in common Name"],
+                    headers: ["id", "startup name","round type","amount", "closed at"],
                     values: []
                 } ;
-                for (var i = 0; i < $scope.startups.length; i++) {
-                    var startup = $scope.startups[i];
-                    obj.values.push([startup.startupIdOne,startup.startupNameOne,startup.roleOne,
-                        startup.startupIdTwo,startup.startupNameTwo,startup.roleTwo,startup.userId,startup.userName]);
+                for (var i = 0; i < $scope.fundings.length; i++) {
+                    var fund = $scope.fundings[i];
+                    obj.values.push([fund.id, fund.name, fund.round_type, fund.amount, fund.closed_at]);
                 }
 
                 dataAccess.getCSV(JSON.stringify(obj), function(file){
                     var pom = document.createElement('a');
                     pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                    pom.setAttribute('download', 'startupsNetwork.csv');
+                    pom.setAttribute('download', 'data.csv');
                     pom.click();
                 });
-
             };
 
 

@@ -1,6 +1,6 @@
 @main("Informacion sobre Startups   ")(sidebar()) {
 
-    <div class="row" ng-app="JB3" ng-controller="startupsNetworkCtrl">
+    <div class="row" ng-app="AAC" ng-controller="startupsFundingInfo">
 
         <div class="row">
             <div class="col-lg-6">
@@ -34,40 +34,31 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label" for="creation-date">Creation date</label>
-                                <div class="input-group">
-                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default" ng-click="searchForStartupsNetwork();">Search</button>
-                                    </span>
-                                </div>
+                                <input type="date" class="form-control" name="creation-date" id="creation-date" ng-model="creationDate"/>
+                                <p class="help-block">Creation date filters startups created ON or AFTER given creation date.</p>
                             </div>
+                            <div class="form-group">
+                                <label for="quality" class="control-label">Quality</label>
+                                <input type="number" class="form-control" name="quality" id="quality" ng-model="quality"/>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary pull-right" ng-click="submit()">Search</button>
+                            </div>
+                            @*<div class="form-group">*@
+                            @*<label for="startupName">Startup</label>*@
+                            @*<div class="input-group">*@
+                            @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
+                            @*<span class="input-group-btn">*@
+                            @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
+                            @*</span>*@
+                            @*</div>*@
+                            @*</div>*@
                         </form>
-
-                        <div class="alert alert-danger" ng-if="markOne" >
-                            <p><strong>You must mark either a location or a market to search</strong></p>
-                        </div>
-
-                        <div class="alert alert-warning" ng-if="searching" >
-                            <p><strong>Please wait while we search for your request...</strong></p>
-                        </div>
 
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
                             <p><strong>There are not startups with that features</strong></p>
                         </div>
 
-                        <form role="form">
-                            <label for="steps">Steps:</label>
-                            <div class="alert alert-success" id="steps">
-                                <p class="help-block">
-                                    Enter the startup features and hit Search. <br>
-                                    <small>
-                                        <strong>
-                                            You will see the startups connections on the panel bellow.
-                                        </strong>
-                                    </small>
-                                </p>
-                            </div>
-                        </form>
                     </div>
 
                 </div>
@@ -83,8 +74,9 @@
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Persons
+
                             <div class="pull-right">
-                                <button ng-click="export()"  class="btn btn-xs btn-primary">Export</button>
+                                <button ng-click="exportCSV()"  class="btn btn-xs btn-primary">Export</button>
                             </div>
                         </h2>
                     </div>
@@ -92,26 +84,21 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>User Id One</th>
-                                    <th>User Name One</th>
-                                    <th>User Role One</th>
-                                    <th>User Id Two</th>
-                                    <th>User Name Two</th>
-                                    <th>User Role Two</th>
-                                    <th>Startup in common Id</th>
-                                    <th>Startup in common Name</th>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Round Type</th>
+                                    <th>Amount</th>
+                                    <th>Closed At</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="person in persons | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-                                    <td>{{person.userIdOne}}</td>
-                                    <td>{{person.userNameOne}}</td>
-                                    <td>{{person.roleOne}}</td>
-                                    <td>{{person.userIdTwo}}</td>
-                                    <td>{{person.userNameTwo}}</td>
-                                    <td>{{person.roleTwo}}</td>
-                                    <td>{{person.startupId}}</td>
-                                    <td>{{person.startupName}}</td>
+                                <tr ng-repeat="fund in fundings | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{fund.id}}</td>
+                                    <td>{{fund.name}}</td>
+                                    <td>{{fund.round_type}}</td>
+                                    <td>{{fund.amount}}</td>
+                                    <td>{{fund.closed_at}}</td>
+
                                 </tr>
                             </tbody>
                         </table>
@@ -134,6 +121,6 @@
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
-    <script src="@routes.Assets.at("javascripts/startupsNetwork.js")"></script>
+    <script src="@routes.Assets.at("javascripts/startupsFundingInfo.js")"></script>
 
 }

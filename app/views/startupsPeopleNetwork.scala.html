@@ -54,6 +54,9 @@
                             @*</div>*@
                             @*</div>*@
                         </form>
+                        <div class="alert alert-danger" ng-if="markOne" >
+                            <p><strong>You must mark either a location or a market to search</strong></p>
+                        </div>
 
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
                             <p><strong>There are not startups with that features</strong></p>
