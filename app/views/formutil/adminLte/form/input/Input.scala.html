@@ -1,0 +1,15 @@
+@(inputType: views.formutil.form.input.InputType.InputType, field: Field, arguments: Seq[(Symbol, Any)])
+
+@import views.formutil.form.validations.Constraints._
+@import views.formutil.common.HtmlUtil._
+
+@SimpleInputWrapper(field, arguments) {
+    @defining(arguments.toMap) { argumentsMap =>
+        <input type="@inputType" class="form-control"
+            name="@field.name" id="@argumentsMap.getOrElse('_id, "")"
+            value="@field.value.getOrElse("")"
+            @constraintsToHtml(field.constraints)
+            @attributesToHtml(arguments)
+        />
+    }
+}

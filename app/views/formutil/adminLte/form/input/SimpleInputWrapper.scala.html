@@ -1,0 +1,17 @@
+@(field: Field, args: Seq[(Symbol, Any)])(input: Html)
+
+@import views.formutil.form.validations.Validations._
+@import views.formutil.form.validations.Constraints._
+@import views.formutil.common.HtmlUtil._
+
+@defining(args.toMap) { args =>
+    <div class="form-group @if(field.hasErrors) {has-error } @args.getOrElse('_class, "")">
+        <label class="control-label" for="@args.getOrElse('_id, "")">@args.getOrElse('_label, field.name)</label>
+        @input
+        @if(field.hasErrors) {
+            @field.errors.map { fieldError =>
+                <p class="help-block">@errorMessage(fieldError)</p>
+            }
+        }
+    </div>
+}

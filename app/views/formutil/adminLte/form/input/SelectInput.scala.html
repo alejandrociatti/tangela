@@ -1,0 +1,24 @@
+@(field: Field, options: Seq[(String,Any)], arguments: (Symbol, Any)*)
+
+@import views.formutil.form.input.InputType._
+@import views.formutil.form.validations.Constraints._
+@import views.formutil.common.HtmlUtil._
+
+@SimpleInputWrapper(field, arguments) {
+    @defining(arguments.toMap) { argumentsMap =>
+            <select id="@argumentsMap.getOrElse('_id, "")" name="@field.name" class="form-control"
+                @attributesToHtml(arguments) @constraintsToHtml(field.constraints)>
+                @options.map { option =>
+                    <option value="@option._1" @default(argumentsMap.get('_default), option._1) >@option._2 </option>
+                }
+            </select>
+    }
+}
+
+@default(default: Option[Any], value: String) = {
+    @default.map { default =>
+        @if(value == default.toString ) {
+            selected="selected"
+        }
+    }
+}

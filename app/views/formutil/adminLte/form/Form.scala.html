@@ -1,0 +1,15 @@
+@(form: Form[_], call: Call, arguments: (Symbol, Any)*)(content: Html)
+
+@defining(arguments.toMap) { arguments =>
+    <form role="form" action="@call" id="@arguments.getOrElse('_id, "")" class="@arguments.getOrElse('_class, "")"
+        method="@arguments.getOrElse('_method, "GET")">
+        @form.errors.filter( error => error.key.isEmpty ).map { formError =>
+            <div class="alert alert-danger alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                @formError.message
+            </div>
+        }
+        @content
+    </form>
+}
+
