@@ -87,40 +87,26 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Id</th>
-                                    <th>Name</th>
-                                    <th>Bio</th>
-                                    <th>Role</th>
-                                    <th>Followers</th>
-                                    <th>AngelList</th>
-                                    <th>Image</th>
-                                    <th>Blog</th>
-                                    <th>Online Bio</th>
-                                    <th>Twitter</th>
-                                    <th>Facebook</th>
-                                    <th>Linkedin</th>
-                                    <th>What He'd Built</th>
-                                    <th>What He Does</th>
-                                    <th>Investor</th>
+                                    <th>User Id One</th>
+                                    <th>User Name One</th>
+                                    <th>User Role One</th>
+                                    <th>User Id Two</th>
+                                    <th>User Name Two</th>
+                                    <th>User Role Two</th>
+                                    <th>Startup in common Id</th>
+                                    <th>Startup in common Name</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="person in persons | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-                                    <td>{{person.id}}</td>
-                                    <td>{{person.name}}</td>
-                                    <td>{{person.bio}}</td>
-                                    <td>{{person.role}}</td>
-                                    <td>{{person.follower_count}}</td>
-                                    <td>{{person.angellist_url}}</td>
-                                    <td>{{person.image}}</td>
-                                    <td>{{person.blog_url}}</td>
-                                    <td>{{person.online_bio_url}}</td>
-                                    <td>{{person.twitter_url}}</td>
-                                    <td>{{person.facebook_url}}</td>
-                                    <td>{{person.linkedin_url}}</td>
-                                    <td>{{person.what_ive_built}}</td>
-                                    <td>{{person.what_i_do}}</td>
-                                    <td>{{person.investor}}</td>
+                                    <td>{{person.userIdOne}}</td>
+                                    <td>{{person.userNameOne}}</td>
+                                    <td>{{person.roleOne}}</td>
+                                    <td>{{person.userIdTwo}}</td>
+                                    <td>{{person.userNameTwo}}</td>
+                                    <td>{{person.roleTwo}}</td>
+                                    <td>{{person.startupId}}</td>
+                                    <td>{{person.startupName}}</td>
                                 </tr>
                             </tbody>
                         </table>
