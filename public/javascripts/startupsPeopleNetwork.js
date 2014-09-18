@@ -19,31 +19,31 @@ module.controller('startupsPplNetCtrl', ['$scope', 'dataAccess',
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
-                dataAccess.getPeopleNetwork($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(startups){
-                    $scope.startups= startups;
+                dataAccess.getPeopleNetwork($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(persons){
+                    $scope.persons= persons;
                     $scope.searching= false;
-                    $scope.startupsResultsReached= startups.length != 0;
+                    $scope.startupsResultsReached= persons.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     $scope.$apply();
                 });
             };
 
-            $scope.exportCSV = function () {
+            $scope.export = function () {
                 var obj = {
-                    headers: ["Startup Id One", "Startup Name One","User Role in Startup One","Startup Id Two"
-                        ,"Startup Name Two", "User Role in Startup Two","User in common Id","User in common Name"],
+                    headers: ["User Id One", "User Name One","User Role One","User Id Two"
+                        ,"User Name Two", "User Role Two","Startup in common Id","Startup in common Name"],
                     values: []
                 } ;
-                for (var i = 0; i < $scope.startups.length; i++) {
-                    var startup = $scope.startups[i];
-                    obj.values.push([startup.startupIdOne,startup.startupNameOne,startup.roleOne,
-                        startup.startupIdTwo,startup.startupNameTwo,startup.roleTwo,startup.userId,startup.userName]);
+                for (var i = 0; i < $scope.persons.length; i++) {
+                    var person= $scope.persons[i];
+                    obj.values.push([person.userIdOne,person.userNameOne,person.roleOne,
+                        person.userIdTwo,person.userNameTwo,person.roleTwo,person.startupId,person.startupName]);
                 }
 
                 dataAccess.getCSV(JSON.stringify(obj), function(file){
                     var pom = document.createElement('a');
                     pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                    pom.setAttribute('download', 'data.csv');
+                    pom.setAttribute('download', 'peopleNetwork.csv');
                     pom.click();
                 });
             };
