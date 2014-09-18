@@ -42,7 +42,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                         startup.startupIdTwo,startup.startupNameTwo,startup.roleTwo,startup.userId,startup.userName]);
                 }
 
-                dataAccess.getCSVStartupsNetwork(JSON.stringify(obj), function(file){
+                dataAccess.getCSV(JSON.stringify(obj), function(file){
                     console.log(file);
                 });
 

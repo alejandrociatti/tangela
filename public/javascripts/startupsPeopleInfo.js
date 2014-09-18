@@ -34,6 +34,28 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         };
 
 
+        $scope.export= function () {
+
+
+            var obj = {
+                headers: ["Id","Name","Bio","Role","Followers","AngelList","Image","Blog","Online Bio","Twitter","Facebook",
+                    "Linkedin","What He'd Built","What He Does","Investor"],
+                values: []
+            } ;
+            for (var i = 0; i < $scope.persons.length; i++) {
+                var person = $scope.persons[i];
+                obj.values.push([person.id,person.name,person.bio,person.role,person.follower_count,person.angellist_url,
+                    person.image,person.blog_url,person.online_bio_url,person.twitter_url,
+                    person.facebook_url,person.linkedin_url,person.what_ive_built,person.what_i_do,person.investor]);
+            }
+
+            dataAccess.getCSV(JSON.stringify(obj), function(file){
+                console.log(file);
+            });
+
+        };
+
+
 
         //Pagination control:
         $scope.itemsPerPage = 5;

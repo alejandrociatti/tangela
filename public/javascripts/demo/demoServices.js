@@ -97,7 +97,7 @@ serviceModule.factory('dataAccess', function() {
                 error: errorHandler
             });
         },
-        getCSVStartupsNetwork: function(json, successHandler, errorHandler){
+        getCSV: function(json, successHandler, errorHandler){
             jsRoutes.controllers.Application.tableToCSV().ajax({
                 method: 'POST',
                 contentType: 'text/json',

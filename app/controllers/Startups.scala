@@ -232,9 +232,7 @@ object Startups extends Controller with Secured{
                             quality: Int, creationDate: String) = Action.async {
 
     var startupsToSend:JsArray = JsArray()
-    println("dale wachoooooooooooo")
     if(locationId != -1){
-      println("entre en location")
 
       searchByTag(locationId).map { startups =>
         startupsToSend = startups
@@ -244,7 +242,6 @@ object Startups extends Controller with Secured{
         Ok(startupsToSend)
       }
     } else {
-      println("en no location")
       searchByTag(marketId).map { startups =>
         if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
@@ -276,9 +273,7 @@ object Startups extends Controller with Secured{
   
   def searchByTag(tag: Long): Future[JsArray] = {
     WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map{ response =>
-      println(response.json)
       val pages:Int = (response.json \ "last_page" ).as[Int]
-      println("y aca")
       val startups:JsArray = (response.json \ "startups").as[JsArray]
 
       var startupsAux: JsArray = JsArray()
@@ -445,7 +440,6 @@ object Startups extends Controller with Secured{
         Ok(startupsToSend)
       }
     } else {
-      println("en no location")
       searchByTag(marketId).map { startups =>
         if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
@@ -471,7 +465,6 @@ object Startups extends Controller with Secured{
         WS.url(Application.AngelApi+s"/startup_roles?startup_id=$startupId").get().map{ response =>
           val success= response.json \\ "success"
           if( success.size == 0) {
-            println(response.json)
             val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
             for(role <- roles.value){
               val user:JsValue= (role \ "user").as[JsValue]
@@ -497,8 +490,8 @@ object Startups extends Controller with Secured{
             val name:String= (user \ "userName").as[String]
             val roleOne:String= (user \ "userRole").as[String]
             val roleTwo:String= (user2 \ "userRole").as[String]
-            result= result.+:(Json.obj("startupIdOne" -> id , "startupIdTwo" -> compareId, "startupNameOne" -> nameOne,
-              "startupNameTwo" -> nameTwo, "userId" -> userId , "userName" -> name, "roleOne" -> roleOne, "roleTwo" -> roleTwo))
+            result= result.+:(Json.obj("startupIdOne" -> id.toString , "startupIdTwo" -> compareId.toString, "startupNameOne" -> nameOne,
+              "startupNameTwo" -> nameTwo, "userId" -> userId.toString , "userName" -> name, "roleOne" -> roleOne, "roleTwo" -> roleTwo))
           }
         }
       }
