@@ -19,7 +19,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
-                dataAccess.getStartupsNetwork($scope.location, $scope.date, $scope.market, -1, function(startups){
+                dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function(startups){
                     $scope.startups= startups;
                     $scope.searching= false;
                     $scope.startupsResultsReached= startups.length != 0;
@@ -42,8 +42,11 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                         startup.startupIdTwo,startup.startupNameTwo,startup.roleTwo,startup.userId,startup.userName]);
                 }
 
-                dataAccess.getCSVStartupsNetwork(JSON.stringify(obj), function(file){
-                    console.log(file);
+                dataAccess.getCSV(JSON.stringify(obj), function(file){
+                    var pom = document.createElement('a');
+                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                    pom.setAttribute('download', 'data.csv');
+                    pom.click();
                 });
 
             };
