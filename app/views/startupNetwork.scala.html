@@ -55,11 +55,10 @@
                             <label for="steps">Steps:</label>
                             <div class="alert alert-success" id="steps">
                                 <p class="help-block">
-                                    Enter a startup name and hit Search, <br>
-                                    then select the startup you wanted from the options list. <br>
+                                    Enter the startup features and hit Search. <br>
                                     <small>
                                         <strong>
-                                            You will see the individuals' information from that startup on the panel bellow.
+                                            You will see the startups connections on the panel bellow.
                                         </strong>
                                     </small>
                                 </p>
@@ -80,6 +79,9 @@
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Persons
+                            <div class="pull-right">
+                                <button ng-click="export()"  class="btn btn-xs btn-primary">Exportar</button>
+                            </div>
                         </h2>
                     </div>
                     <div class="panel-body">

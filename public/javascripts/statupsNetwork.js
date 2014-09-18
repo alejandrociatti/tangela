@@ -28,6 +28,26 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                 });
             };
 
+            $scope.export= function () {
+
+
+                var obj = {
+                    headers: ["Startup Id One", "Startup Name One","User Role in Startup One","Startup Id Two"
+                        ,"Startup Name Two", "User Role in Startup Two","User in common Id","User in common Name"],
+                    values: []
+                } ;
+                for (var i = 0; i < $scope.startups.length; i++) {
+                    var startup = $scope.startups[i];
+                    obj.values.push([startup.startupIdOne,startup.startupNameOne,startup.roleOne,
+                        startup.startupIdTwo,startup.startupNameTwo,startup.roleTwo,startup.userId,startup.userName]);
+                }
+
+                dataAccess.getCSVStartupsNetwork(JSON.stringify(obj), function(file){
+                    console.log(file);
+                });
+
+            };
+
 
 
 

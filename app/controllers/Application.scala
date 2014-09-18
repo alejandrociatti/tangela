@@ -62,15 +62,16 @@ object Application extends Controller with Secured{
     writeCSVWithHeaders(List("titulo1", "titulo2", "titulo3"), List(List("1", "2", "3"), List("4", "5", "6")))
   }
 
-  def tableToCSV(jsonString: String) = Action { request =>
-    request.body.asJson.map { json =>
-      val json: JsValue = Json.parse(jsonString)
-      val jsValueToString: (JsValue) => String = value => value.as[String]
-      val headers: List[String] = (json \ "headers").as[JsArray].value.map(jsValueToString).toList
-      val values: List[List[String]] = (json \ "values").as[JsArray].value.map(array => array.as[JsArray].value.map(jsValueToString).toList).toList
+  def tableToCSV= Action { request =>
+    request.body.asJson.fold(Ok("puto el que lee!!")) { json =>
+      println("hola1")
+      val headers: List[String] = (json \ "headers").as[JsArray].value.map(value => value.as[String]).toList
+      println("hola2:     "+(json \ "values"))
+      val values: List[List[String]] = (json \ "values").as[JsArray].value.map(array => array.as[JsArray].value.map(value => value.as[String]).toList).toList
+      println("hola3")
 
       writeCSVWithHeaders(headers, values)
-    }.getOrElse(Ok("puto el que lee!!"))
+    }
   }
 
   def writeCSVWithHeaders(headers: List[String], values: List[List[String]]): SimpleResult = {
