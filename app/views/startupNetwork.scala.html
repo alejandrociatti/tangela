@@ -92,26 +92,26 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>User Id One</th>
-                                    <th>User Name One</th>
-                                    <th>User Role One</th>
-                                    <th>User Id Two</th>
-                                    <th>User Name Two</th>
-                                    <th>User Role Two</th>
-                                    <th>Startup in common Id</th>
-                                    <th>Startup in common Name</th>
+                                    <th>Startup Id One</th>
+                                    <th>Startup Name One</th>
+                                    <th>User Role in Startup One</th>
+                                    <th>Startup Id Two</th>
+                                    <th>Startup Name Two</th>
+                                    <th>User Role in Startup Two</th>
+                                    <th>User in common Id</th>
+                                    <th>User in common Name</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="person in persons | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-                                    <td>{{person.userIdOne}}</td>
-                                    <td>{{person.userNameOne}}</td>
-                                    <td>{{person.roleOne}}</td>
-                                    <td>{{person.userIdTwo}}</td>
-                                    <td>{{person.userNameTwo}}</td>
-                                    <td>{{person.roleTwo}}</td>
-                                    <td>{{person.startupId}}</td>
-                                    <td>{{person.startupName}}</td>
+                                <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{startup.startupIdOne}}</td>
+                                    <td>{{startup.startupNameOne}}</td>
+                                    <td>{{startup.roleOne}}</td>
+                                    <td>{{startup.startupIdTwo}}</td>
+                                    <td>{{startup.startupNameTwo}}</td>
+                                    <td>{{startup.roleTwo}}</td>
+                                    <td>{{startup.userId}}</td>
+                                    <td>{{startup.userName}}</td>
                                 </tr>
                             </tbody>
                         </table>
