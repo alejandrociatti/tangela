@@ -35,6 +35,12 @@ GET         /startups/startupCriteriaSearch         controllers.Startups.startup
 GET         /startups/startup-network               controllers.Startups.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startup-people-network        controllers.Startups.getPeopleNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 
+# Users
+GET         /user/list                              controllers.Users.listUsers
+GET         /user/new                               controllers.Users.newUser
+GET         /user/edit/:id                          controllers.Users.editUser(id: Long)
+GET         /user/save                              controllers.Users.saveUser
+
 #Markets
 GET         /markets/market-list                    controllers.Markets.getMarkets
 

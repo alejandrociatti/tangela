@@ -32,7 +32,19 @@ object Users extends Table[User]("USERS") {
 }
 
 object User {
-//  def getByUsername(username: String) = Database.query[User].whereEqual("username", username).fetchOne()
+  def getById(id: Long): Option[User] = DB.withSession { implicit  session: Session =>
+    Query(Users).filter( _.id === id).firstOption
+  }
+
+  def save(user: User) =  DB.withSession { implicit  session: Session =>
+    Users.insert(user)
+  }
+
+  def getAll: List[User] = DB.withSession { implicit  session: Session =>
+    Query(Users).list
+  }
+
+  //  def getByUsername(username: String) = Database.query[User].whereEqual("username", username).fetchOne()
   def getByUsername(username: String) = DB.withSession { implicit  session: Session =>
     Query(Users).filter( _.username === username).firstOption
   }
@@ -42,4 +54,6 @@ object Role extends Enumeration {
   type Role = Value
   val Admin = Value("Admin")
   val Researcher = Value("Researcher")
+
+  def getValues = Seq("Admin" -> "Admin", "Researcher" -> "Researcher")
 }

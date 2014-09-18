@@ -60,7 +60,7 @@ object Application extends Controller with Secured{
     Ok(views.html.startupNetwork())
   }
 
-  def startupsPeopleNetwork = withAuth { username => implicit request =>
+  def startupsPeopleNetwork = withAuth(Admin, Researcher) { username => implicit request =>
     Ok(views.html.startupsPeopleNetwork())
   }
 
