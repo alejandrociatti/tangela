@@ -113,6 +113,14 @@ serviceModule.factory('dataAccess', function() {
                 error: errorHandler
             });
         },
+        startupsFundingByCriteria: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.startupsFundingByCriteria(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
+        },
         getCSV: function(json, successHandler, errorHandler){
             jsRoutes.controllers.Application.tableToCSV().ajax({
                 method: 'POST',
