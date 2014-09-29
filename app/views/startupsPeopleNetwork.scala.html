@@ -44,16 +44,14 @@
                             <div class="form-group">
                                 <button type="submit" class="btn btn-primary pull-right" ng-click="submit()">Search</button>
                             </div>
-                            @*<div class="form-group">*@
-                            @*<label for="startupName">Startup</label>*@
-                            @*<div class="input-group">*@
-                            @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
-                            @*<span class="input-group-btn">*@
-                            @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
-                            @*</span>*@
-                            @*</div>*@
-                            @*</div>*@
                         </form>
+
+
+                        <div class="alert alert-warning" ng-if="searching" >
+                            <p><strong>Please wait while we search for the result...</strong></p>
+                        </div>
+
+
                         <div class="alert alert-danger" ng-if="markOne" >
                             <p><strong>You must mark either a location or a market to search</strong></p>
                         </div>
@@ -64,6 +62,40 @@
 
                     </div>
 
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title text-center">
+                            Startups
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Startup Id</th>
+                                    <th>Startup Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="startup in startupsToShow | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{startup.id}}</td>
+                                    <td>{{startup.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <ul class="pagination">
+                            <li ng-class="prevPageDisabled2()"><a href ng-click="prevPage2()">&laquo;</a></li>
+                            <li ng-repeat="n in range2()" ng-class="{active: n == currentPage2}" ng-click="setPage2(n)">
+                                <a href="#">{{n+1}}</a>
+                            </li>
+                            <li ng-class="nextPageDisabled2()"><a href ng-click="nextPage2()">&raquo;</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 

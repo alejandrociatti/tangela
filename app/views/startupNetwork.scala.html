@@ -73,6 +73,41 @@
                 </div>
             </div>
 
+            <div class="col-lg-6">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title text-center">
+                            Startups
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Startup Id</th>
+                                    <th>Startup Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="startup in startupsToShow | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                    <td>{{startup.id}}</td>
+                                    <td>{{startup.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <ul class="pagination">
+                            <li ng-class="prevPageDisabled2()"><a href ng-click="prevPage2()">&laquo;</a></li>
+                            <li ng-repeat="n in range2()" ng-class="{active: n == currentPage2}" ng-click="setPage2(n)">
+                                <a href="#">{{n+1}}</a>
+                            </li>
+                            <li ng-class="nextPageDisabled2()"><a href ng-click="nextPage2()">&raquo;</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
 
         <div class="row">
@@ -82,7 +117,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h2 class="panel-title">
-                            Persons
+                            Startups Network
                             <div class="pull-right">
                                 <button ng-click="export()"  class="btn btn-xs btn-primary">Export</button>
                             </div>

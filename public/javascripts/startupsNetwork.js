@@ -13,7 +13,8 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
             $scope.startupsResultsReached= true;
             $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
-            $scope.persons= [] ;
+            $scope.startups= [] ;
+            $scope.startupsToShow= [] ;
             $scope.markOne = false;
 
             $scope.searchForStartupsNetwork= function () {
@@ -23,7 +24,10 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                 $scope.markOne = !($scope.location || $scope.market);
                 if(!$scope.markOne) {
                     dataAccess.getStartupsNetwork($scope.location, $("#creation-date").val(), $scope.market, -1, function (startups) {
-                        $scope.startups = startups;
+                        startups= JSON.parse(startups);
+                        //en startups to show tengo los startups que tengo q mostrar en otra tablita
+                        $scope.startupsToShow= (startups[1]);
+                        $scope.startups = (startups[0]);
                         $scope.searching = false;
                         $scope.startupsResultsReached = startups.length != 0;
                         $scope.optionSelectMsg = 'Select a startup.';
@@ -105,7 +109,57 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
             };
 
             $scope.pageCount = function() {
-                return Math.ceil($scope.persons.length/$scope.itemsPerPage)-1;
+                return Math.ceil($scope.startups.length/$scope.itemsPerPage)-1;
+            };
+
+            //Pagination control2:
+            $scope.itemsPerPage2 = 5;
+            $scope.currentPage2 = 0;
+
+            $scope.range2 = function() {
+                var rangeSize = 5;
+                var ret = [];
+                var start;
+
+                start = $scope.currentPage2;
+                if ( start > $scope.pageCount2()-rangeSize ) {
+                    start = $scope.pageCount2()-rangeSize+1;
+                }
+
+                for (var i=start; i<start+rangeSize; i++) {
+                    if(i >= 0) {
+                        ret.push(i);
+                    }
+                }
+                return ret;
+            };
+
+            $scope.prevPage2 = function() {
+                if ($scope.currentPage2 > 0) {
+                    $scope.currentPage2--;
+                }
+            };
+
+            $scope.setPage2 = function(n) {
+                $scope.currentPage2 = n;
+            };
+
+            $scope.nextPage2 = function() {
+                if ($scope.currentPage2 < $scope.pageCount2()) {
+                    $scope.currentPage2++;
+                }
+            };
+
+            $scope.nextPageDisabled2 = function() {
+                return $scope.currentPage2 === $scope.pageCount2() ? "disabled" : "";
+            };
+
+            $scope.prevPageDisabled2 = function() {
+                return $scope.currentPage2 === 0 ? "disabled" : "";
+            };
+
+            $scope.pageCount2 = function() {
+                return Math.ceil($scope.startupsToShow.length/$scope.itemsPerPage2)-1;
             };
 
 

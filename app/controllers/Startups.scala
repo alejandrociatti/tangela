@@ -480,15 +480,17 @@ object Startups extends Controller with Secured {
         if (marketId != -1) startupsToSend = filterArrayByInt(startupsToSend, "markets", "id", marketId)
         if (quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if (creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        val startups2 = startupsToSend
         startupsToSend = getNetwork(startupsToSend)
-        Ok(startupsToSend)
+        Ok("["+startupsToSend+","+startups2+"]")
       }
     } else {
       searchByTag(marketId).map { startups =>
         if (quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if (creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        val startups2 = startupsToSend
         startupsToSend = getNetwork(startupsToSend)
-        Ok(startupsToSend)
+        Ok("["+startupsToSend+","+startups2+"]")
       }
     }
   }
@@ -555,15 +557,17 @@ object Startups extends Controller with Secured {
         if(marketId != -1) startupsToSend = filterArrayByInt(startupsToSend, "markets", "id", marketId)
         if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        val startups2 = startupsToSend
         startupsToSend = getPNetwork(startupsToSend)
-        Ok(startupsToSend)
+        Ok("["+startupsToSend+","+startups2+"]")
       }
     } else {
       searchByTag(marketId).map { startups =>
         if(quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if(creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
+        val startups2 = startupsToSend
         startupsToSend = getPNetwork(startupsToSend)
-        Ok(startupsToSend)
+        Ok("["+startupsToSend+","+startups2+"]")
       }
     }
   }
