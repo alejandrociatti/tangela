@@ -531,14 +531,23 @@ object Startups extends Controller with Secured {
         if (id != compareId) {
           //SI LOS STARTUPS SON DISTINTOS ME FIJO SI EL USUARIO EES EL MISMO
           if ((user \ "userId").as[Int] == (user2 \ "userId").as[Int]) {
-            val nameOne: String = (user \ "startupName").as[String]
-            val userId: Int = (user \ "userId").as[Int]
-            val nameTwo: String = (user2 \ "startupName").as[String]
-            val name: String = (user \ "userName").as[String]
-            val roleOne: String = (user \ "userRole").as[String]
-            val roleTwo: String = (user2 \ "userRole").as[String]
-            result = result.+:(Json.obj("startupIdOne" -> id.toString, "startupIdTwo" -> compareId.toString, "startupNameOne" -> nameOne,
-              "startupNameTwo" -> nameTwo, "userId" -> userId.toString, "userName" -> name, "roleOne" -> roleOne, "roleTwo" -> roleTwo))
+            var possible:Boolean= true
+            for(aux <- result.value){
+              if(id.toString == (aux \ "startupIdTwo").as[String] && compareId.toString == (aux \ "startupIdOne").as[String] ){
+                possible= false
+              }
+            }
+            if(possible) {
+              val nameOne: String = (user \ "startupName").as[String]
+              val userId: Int = (user \ "userId").as[Int]
+              val nameTwo: String = (user2 \ "startupName").as[String]
+              val name: String = (user \ "userName").as[String]
+              val roleOne: String = (user \ "userRole").as[String]
+              val roleTwo: String = (user2 \ "userRole").as[String]
+              result = result.+:(Json.obj("startupIdOne" -> id.toString, "startupIdTwo" -> compareId.toString,
+                "startupNameOne" -> nameOne, "startupNameTwo" -> nameTwo, "userId" -> userId.toString, "userName" -> name,
+                "roleOne" -> roleOne, "roleTwo" -> roleTwo))
+            }
           }
         }
       }
@@ -607,14 +616,22 @@ object Startups extends Controller with Secured {
         val compareId:Int= (user2 \ "userId").as[Int]
         if(id != compareId){    //SI LOS STARTUPS SON DISTINTOS ME FIJO SI EL USUARIO EES EL MISMO
           if((user \ "startupId").as[Int] == (user2 \ "startupId").as[Int]){
-            val nameOne:String= (user \ "userName").as[String]
-            val startupId:Int= (user \ "startupId").as[Int]
-            val nameTwo:String= (user2 \ "userName").as[String]
-            val name:String= (user \ "startupName").as[String]
-            val roleOne:String= (user \ "userRole").as[String]
-            val roleTwo:String= (user2 \ "userRole").as[String]
-            result= result.+:(Json.obj("userIdOne" -> id.toString , "userIdTwo" -> compareId.toString, "userNameOne" -> nameOne,
-              "userNameTwo" -> nameTwo, "startupId" -> startupId.toString , "startupName" -> name, "roleOne" -> roleOne, "roleTwo" -> roleTwo))
+            var possible:Boolean= true
+            for(aux <- result.value){
+              if(id.toString == (aux \ "userIdTwo").as[String] && compareId.toString == (aux \ "userIdOne").as[String] ){
+                possible= false
+              }
+            }
+            if(possible) {
+              val nameOne: String = (user \ "userName").as[String]
+              val startupId: Int = (user \ "startupId").as[Int]
+              val nameTwo: String = (user2 \ "userName").as[String]
+              val name: String = (user \ "startupName").as[String]
+              val roleOne: String = (user \ "userRole").as[String]
+              val roleTwo: String = (user2 \ "userRole").as[String]
+              result = result.+:(Json.obj("userIdOne" -> id.toString, "userIdTwo" -> compareId.toString, "userNameOne" -> nameOne,
+                "userNameTwo" -> nameTwo, "startupId" -> startupId.toString, "startupName" -> name, "roleOne" -> roleOne, "roleTwo" -> roleTwo))
+            }
           }
         }
       }
