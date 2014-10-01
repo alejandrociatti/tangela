@@ -1,5 +1,6 @@
 package controllers
 
+import controllers.AngelListServices.getStartupById
 import models.authentication.Role._
 import play.api.data.Forms._
 import play.api.data.Form
@@ -39,10 +40,9 @@ object Startups extends Controller with Secured{
    * required to show given startup in a network graph.
    */
   def getStartupNetInfo(startupId:Long) = Action.async {
-    WS.url(Application.AngelApi + s"/startups/$startupId").get().map{ response =>
-      val resp:JsValue = response.json.as[JsValue]
-      val followers: Int = (resp \ "follower_count").as[Int]
-      val name: String = (resp \ "name").as[String]
+    AngelListServices.getStartupById(startupId) map { jsResponse =>
+      val followers: Int = (jsResponse \ "follower_count").as[Int]
+      val name: String = (jsResponse \ "name").as[String]
       Ok(Json.toJson(Map("id"->startupId.toString, "follower_count"->followers.toString, "name"->name)))
     }
   }
@@ -111,14 +111,11 @@ object Startups extends Controller with Secured{
   }
 
   def getStartupById(startupId: Long) = Action.async {
-    val url: String = ANGELAPI + s"/startups/$startupId"
-    WS.url(url).get().map{ response =>
-
-      val success= response.json \\ "success"
-      if(success.size == 0) {
-        val fundraising = response.json.\\("fundraising")
-        Ok(Json.toJson(fundraising))
-      } else {
+    AngelListServices.getStartupById(startupId).map { jsResponse =>
+      println("jsResponse = " + jsResponse)
+      (jsResponse \\ "success").headOption.fold {
+        Ok(Json.toJson(jsResponse \\ "fundraising"))
+      } { success =>
         Ok("No existe el StartUp")
       }
     }
