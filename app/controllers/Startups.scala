@@ -328,7 +328,8 @@ object Startups extends Controller with Secured {
 
       var futures = Seq.empty[Future[_]]
 
-      for (i <- 2 until 20) {
+      //TODO: Necesitamos un fix para poder requestear sin liquidar las requests!!
+      for (i <- 2 until 5) {
         futures = futures.+:(getFutureStartupsByPage(i))
       }
 
