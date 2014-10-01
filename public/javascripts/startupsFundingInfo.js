@@ -22,8 +22,8 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
-                dataAccess.getPeopleNetwork($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
-                    $scope.fundings= startups;
+                dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
+                    $scope.fundings= fundings;
                     $scope.searching= false;
                     $scope.startupsResultsReached= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';

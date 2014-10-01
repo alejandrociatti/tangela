@@ -23,7 +23,10 @@ module.controller('startupsPplNetCtrl', ['$scope', 'dataAccess',
                 $scope.markOne = !($scope.location || $scope.market);
                 if(!$scope.markOne) {
                     dataAccess.getPeopleNetwork($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function (persons) {
-                        $scope.persons = persons;
+                        persons= JSON.parse(persons);
+                        //en startups to show tengo los startups que tengo q mostrar en otra tablita
+                        $scope.startupsToShow= (persons[1]);
+                        $scope.persons = (persons[0]);
                         $scope.searching = false;
                         $scope.startupsResultsReached = persons.length != 0;
                         $scope.optionSelectMsg = 'Select a startup.';
@@ -103,6 +106,56 @@ module.controller('startupsPplNetCtrl', ['$scope', 'dataAccess',
 
             $scope.pageCount = function() {
                 return Math.ceil($scope.persons.length/$scope.itemsPerPage)-1;
+            };
+
+            //Pagination control2:
+            $scope.itemsPerPage2 = 5;
+            $scope.currentPage2 = 0;
+
+            $scope.range2 = function() {
+                var rangeSize = 5;
+                var ret = [];
+                var start;
+
+                start = $scope.currentPage2;
+                if ( start > $scope.pageCount2()-rangeSize ) {
+                    start = $scope.pageCount2()-rangeSize+1;
+                }
+
+                for (var i=start; i<start+rangeSize; i++) {
+                    if(i >= 0) {
+                        ret.push(i);
+                    }
+                }
+                return ret;
+            };
+
+            $scope.prevPage2 = function() {
+                if ($scope.currentPage2 > 0) {
+                    $scope.currentPage2--;
+                }
+            };
+
+            $scope.setPage2 = function(n) {
+                $scope.currentPage2 = n;
+            };
+
+            $scope.nextPage2 = function() {
+                if ($scope.currentPage2 < $scope.pageCount2()) {
+                    $scope.currentPage2++;
+                }
+            };
+
+            $scope.nextPageDisabled2 = function() {
+                return $scope.currentPage2 === $scope.pageCount2() ? "disabled" : "";
+            };
+
+            $scope.prevPageDisabled2 = function() {
+                return $scope.currentPage2 === 0 ? "disabled" : "";
+            };
+
+            $scope.pageCount2 = function() {
+                return Math.ceil($scope.startupsToShow.length/$scope.itemsPerPage2)-1;
             };
 
 
