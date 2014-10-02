@@ -34,12 +34,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label" for="creation-date">Creation date</label>
-                                <div class="input-group">
-                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default" ng-click="searchForStartupsNetwork();">Search</button>
-                                    </span>
-                                </div>
+                                <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" ng-click="searchForStartupsNetwork();">Search</button>
                             </div>
                         </form>
 
@@ -117,7 +115,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h2 class="panel-title">
-                            Startups Network
+                            Startups Network ({{startups.length}})
                             <div class="pull-right">
                                 <button ng-click="export()"  class="btn btn-xs btn-primary">Export</button>
                             </div>

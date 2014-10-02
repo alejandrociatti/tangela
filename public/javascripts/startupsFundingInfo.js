@@ -16,13 +16,14 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
             $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
             $scope.persons= [] ;
+            $scope.fundings = [];
 
             $scope.submit = function () {
                 $scope.optionSelectMsg = 'Loading results...';
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
-                    $scope.fundings = sortByKeys(fundings, "name");
+                    $scope.fundings = sortBdyKeys(fundings, "name");
                     $scope.searching = false;
                     $scope.startupsResultsReached= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';

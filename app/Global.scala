@@ -48,8 +48,8 @@ object Global extends GlobalSettings {
     ){
       //Task:
       //TODO: 'TRUNCATE TABLE X' SQL WHEN WE HAVE THEM
-      populateCountries()
-      populateMarket()
+//      populateCountries()
+//      populateMarket()
       println("Cron Job just ran.")
     }
   }
