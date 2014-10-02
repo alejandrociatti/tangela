@@ -319,6 +319,7 @@ object Startups extends Controller with Secured {
       val futureResponses = (2 to Math.min(5, pages)) map AngelListServices.getStartupsByTagIdAndPage(tagId)
       val startups = Future.sequence[JsValue, Seq](futureResponses) map responsesToJsArray
 
+
       // Add first page to result
       startups map { startups => JsArray(responseToStartupSeq(response)) ++ startups}
     }
