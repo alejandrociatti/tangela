@@ -5,7 +5,6 @@
  * Time: 17:17
  */
 
-
 angular.module('AAC', ['app.controllers']);
 
 var module = angular.module('app.controllers', ['app.services']);
@@ -23,13 +22,23 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
-                    $scope.fundings= fundings;
-                    $scope.searching= false;
+                    $scope.fundings = sortByKeys(fundings, "name");
+                    $scope.searching = false;
                     $scope.startupsResultsReached= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     $scope.$apply();
                 });
             };
+            function sortByKeys(array, key1) {
+                return array.sort(function(a, b) {
+                    return compareByKey(a, b, key1);
+                });
+            }
+
+            function compareByKey(obj1, obj2, key) {
+                var x = obj1[key]; var y = obj2[key];
+                return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+            }
 
             $scope.exportCSV = function () {
                 var obj = {
@@ -99,7 +108,7 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
             };
 
             $scope.pageCount = function() {
-                return Math.ceil($scope.persons.length/$scope.itemsPerPage)-1;
+                return Math.ceil($scope.fundings.length/$scope.itemsPerPage)-1;
             };
 
 
