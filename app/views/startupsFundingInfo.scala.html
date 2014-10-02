@@ -40,7 +40,7 @@
                                 <input type="number" class="form-control" name="quality" id="quality" ng-model="quality"/>
                             </div>
                             <div class="form-group">
-                                <button type="submit" class="btn btn-primary pull-right" ng-click="submit()">Search</button>
+                                <button type="submit" class="btn btn-primary" ng-click="submit()">Search</button>
                             </div>
                             @*<div class="form-group">*@
                             @*<label for="startupName">Startup</label>*@
@@ -103,7 +103,7 @@
                         <ul class="pagination">
                             <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
                             <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
-                                <a href="#">{{n+1}}</a>
+                                <a href>{{n+1}}</a>
                             </li>
                             <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
                         </ul>

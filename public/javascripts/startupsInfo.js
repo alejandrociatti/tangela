@@ -69,10 +69,10 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                     var round = $scope.rounds[i];
                     rounds.values.push([round.id, round.round_type, round.amount, round.closed_at]);
 
-                    var participants2 = round[i].participants;
+                    var participants2 = round.participants;
                     for(var j = 0; j < participants2.length; j++){
                         var auxParticipant = participants2[j];
-                        participants.values([round.id, auxParticipant.id, auxParticipant.name, auxParticipant.type])
+                        participants.values.push([round.id, auxParticipant.id, auxParticipant.name, auxParticipant.type])
                     }
                 }
 

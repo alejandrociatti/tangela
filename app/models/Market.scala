@@ -21,10 +21,14 @@ object Markets extends Table[Market]("MARKET") {
 }
 
 object Market {
-//  def getMarkets = Database.query[Market].fetch().toList
+  //  def getMarkets = Database.query[Market].fetch().toList
 
   def getMarkets = DB.withSession { implicit  session: Session =>
     Query(Markets).sortBy(_.name).list
+  }
+
+  def clearAll() = DB.withSession { implicit session: Session =>
+    Query(Markets).delete
   }
 
 //  def getById(id: Long): Option[Market] = Database.query[Market].whereEqual("id", id).fetchOne()

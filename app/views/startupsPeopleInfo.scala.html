@@ -34,12 +34,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label" for="creation-date">Creation date</label>
-                                <div class="input-group">
-                                    <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>
-                                    </span>
-                                </div>
+                                <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" ng-click="searchForStartupsByFeatures();">Search</button>
                             </div>
                             @*<div class="form-group">*@
                                 @*<label for="startupName">Startup</label>*@

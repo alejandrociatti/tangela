@@ -18,15 +18,11 @@ import java.net.URLEncoder
 object Locations extends Controller{
 
   def getCountries = Action {
-    loadCountriesToDB
-    Ok(
-      Json.parse(
-        scala.io.Source.fromFile("public/data/countries.json").getLines().mkString
-      )
-    )
+    loadCountriesToDB()
+    Ok("Countries loaded!")
   }
 
-  def loadCountriesToDB = {
+  def loadCountriesToDB() = {
     val countries = Json.parse(scala.io.Source.fromFile("public/data/countries-reduced.json").getLines().mkString)
     val names:Seq[JsValue] = countries \\ "name"
     for(i <- 0 until names.size){

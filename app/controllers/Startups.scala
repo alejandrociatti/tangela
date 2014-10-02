@@ -3,15 +3,13 @@ package controllers
 import models.Startup
 import org.joda.time.DateTime
 import models.authentication.Role._
-import play.api.data.Forms._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json._
-import play.api.libs.ws.WS
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future, _}
+import scala.concurrent._
 import scala.concurrent.duration.Duration
 
 /**
@@ -21,8 +19,6 @@ import scala.concurrent.duration.Duration
  */
 
 object Startups extends Controller with Secured {
-
-  val ANGELAPI = "https://api.angel.co/1"
 
   val startupForm = Form(
     mapping(
@@ -38,12 +34,11 @@ object Startups extends Controller with Secured {
    * Responds with a JSON containing the minimum amount of information
    * required to show given startup in a network graph.
    */
-  def getStartupNetInfo(startupId: Long) = Action.async {
-    WS.url(Application.AngelApi + s"/startups/$startupId").get().map { response =>
-      val resp: JsValue = response.json.as[JsValue]
-      val followers: Int = (resp \ "follower_count").as[Int]
-      val name: String = (resp \ "name").as[String]
-      Ok(Json.toJson(Map("id" -> startupId.toString, "follower_count" -> followers.toString, "name" -> name)))
+  def getStartupNetInfo(startupId:Long) = Action.async {
+    AngelListServices.getStartupById(startupId) map { jsResponse =>
+      val followers: Int = (jsResponse \ "follower_count").as[Int]
+      val name: String = (jsResponse \ "name").as[String]
+      Ok(Json.toJson(Map("id"->startupId.toString, "follower_count"->followers.toString, "name"->name)))
     }
   }
 
@@ -53,10 +48,10 @@ object Startups extends Controller with Secured {
    * @return JSON response containing an array of {id, name} of each startup
    */
   def getStartupsByLocationId(locationId: Long) = Action.async {
-    WS.url(Application.AngelApi + s"/tags/$locationId/startups").get().map { response =>
-      val pages: Int = (response.json \ "last_page").as[Int]
+    AngelListServices.getStartupsByTagId(locationId) map { response =>
+      val pages: Int = (response \ "last_page").as[Int]
 
-      val startups: JsArray = (response.json \ "startups").as[JsArray]
+      val startups: JsArray = (response \ "startups").as[JsArray]
 
       var seqAux = Seq.empty[Map[String, String]]
 
@@ -77,8 +72,8 @@ object Startups extends Controller with Secured {
       Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
 
       def getFutureStartupsByPage(page: Int) = {
-        WS.url(Application.AngelApi + s"/tags/$locationId/startups?page=$page").get().map { response =>
-          val startups: JsArray = (response.json \ "startups").as[JsArray]
+        AngelListServices.getStartupsByTagIdAndPage(locationId)(page) map { response =>
+          val startups: JsArray = (response \ "startups").as[JsArray]
 
           startups.value.filter { startup => !(startup \ "hidden").as[Boolean]}.map { startup =>
             val id: Int = (startup \ "id").as[Int]
@@ -101,36 +96,31 @@ object Startups extends Controller with Secured {
 
 
   def getNumberOfStartupsFundraising = withAsyncAuth(Admin, Researcher){username => implicit request =>
-    WS.url(Application.AngelApi + "/startups?filter=raising").get().map { response =>
-
-      val total = (response.json \ "total").as[Int]
-
+    AngelListServices.getStartupsWithFoundRaising map { response =>
+      val total = (response \ "total").as[Int]
       Ok(views.html.fundraisingCount(total))
     }
   }
 
   def getStartupById(startupId: Long) = Action.async {
-    val url: String = ANGELAPI + s"/startups/$startupId"
-    WS.url(url).get().map { response =>
-
-      val success = response.json \\ "success"
-      if (success.size == 0) {
-        val fundraising = response.json.\\("fundraising")
-        Ok(Json.toJson(fundraising))
-      } else {
+    AngelListServices.getStartupById(startupId).map { jsResponse =>
+      println("jsResponse = " + jsResponse)
+      (jsResponse \\ "success").headOption.fold {
+        Ok(Json.toJson(jsResponse \\ "fundraising"))
+      } { success =>
         Ok("No existe el StartUp")
       }
     }
   }
 
   def getNumberOfFoundersByStartupId(startupId: Long) = Action.async {
-    WS.url(Application.AngelApi + s"/startups/$startupId/roles?role=founder").get().map { response =>
+    AngelListServices.getFoundersByStartupId(startupId) map { response =>
 
-      val success = response.json \\ "success"
+      val success = response \\ "success"
 
       if (success.size == 0) {
 
-        val founders: JsArray = (response.json \ "startup_roles").as[JsArray]
+        val founders: JsArray = (response \ "startup_roles").as[JsArray]
         val numberOfFounders: Int = founders.value.size
 
         Ok(numberOfFounders.toString)
@@ -143,12 +133,11 @@ object Startups extends Controller with Secured {
 
   def getStartupsByName(startupName: String) = Action.async {
     val name: String = startupName.replaceAll("\\s", "_")
-    val url: String = ANGELAPI + s"/search?query=$name&type=Startup"
-    WS.url(url).get().map { response =>
+    AngelListServices.searchStartupByName(name) map { response =>
       //TODO: que me busque todas las paginas y no solo la primera
-      val success = response.json \\ "success"
+      val success = response \\ "success"
       if (success.size == 0) {
-        val startups: JsArray = response.json.as[JsArray]
+        val startups: JsArray = response.as[JsArray]
         var seqAux = Seq.empty[Map[String, String]]
         for (startup <- startups.value) {
           val id: Int = (startup \ "id").as[Int]
@@ -164,21 +153,19 @@ object Startups extends Controller with Secured {
 
 
   def getRolesOfStartup(startupId: Long) = Action.async {
-    WS.url(Application.AngelApi + s"/startups/$startupId/roles").get().map { response =>
+    AngelListServices.getRolesFromStartupId(startupId) map { response =>
 
-      //      val roles:JsArray = (response.json \ "startup_roles").as[JsArray]
-
-      val success = response.json \\ "success"
+      val success = response \\ "success"
 
       if (success.size == 0) {
 
-        val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+        val roles: JsArray = (response \ "startup_roles").as[JsArray]
 
         var seqAux = Seq.empty[Map[String, String]]
 
         for (role <- roles.value) {
           val roleString: String = (role \ "role").as[String]
-          val user = (role \ "tagged").as[JsValue]
+          val user = (role \ "user").as[JsValue]
           val id: Int = (user \ "id").as[Int]
           val name: String = (user \ "name").as[String]
           val followers: Int = (user \ "follower_count").as[Int]
@@ -201,11 +188,10 @@ object Startups extends Controller with Secured {
   }
 
   def getStartupFund(startupId: Long, startupName: String = ""): Future[JsValue] = {
-    val url: String = ANGELAPI + "/startups/" + startupId + "/funding"
-    WS.url(url).get().map { response =>
-      val success = response.json \\ "success"
+    AngelListServices.getFundingByStartupId(startupId) map { response =>
+      val success = response \\ "success"
       if (success.size == 0) {
-        val funding: JsArray = (response.json \ "funding").as[JsArray]
+        val funding: JsArray = (response \ "funding").as[JsArray]
 
         var seqFunding = Seq.empty[Map[String, String]]
 
@@ -241,7 +227,7 @@ object Startups extends Controller with Secured {
   }
 
   def startupsFundingByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
-    var startupsToReturn:JsArray = JsArray()
+    var startupsToReturn: JsArray = JsArray()
 
     var futures = Seq.empty[Future[_]]
 
@@ -275,22 +261,20 @@ object Startups extends Controller with Secured {
 
   def startupsByCriteria(locationId: Int, marketId: Int,
                          quality: Int, creationDate: String): Future[JsArray] = {
-    var startupsToSend: JsArray = JsArray()
-    if (locationId != -1) {
-
-      searchByTag(locationId).map { startups =>
-        startupsToSend = startups
-        if (marketId != -1) startupsToSend = filterArrayByInt(startupsToSend, "markets", "id", marketId)
-        if (quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
-        if (creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
-        startupsToSend
-      }
+//    Filter by location and market
+    val initialStartupsToSend = if (locationId == -1) {
+      searchByTag(marketId)
     } else {
-      searchByTag(marketId).map { startups =>
-        if (quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
-        if (creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
-        startupsToSend
+      searchByTag(locationId).map { startupsByLocation =>
+        if (marketId != -1) filterArrayByInt(startupsByLocation, "markets", "id", marketId)
+        else startupsByLocation
       }
+    }
+
+//    Filter by quality and creationDate
+    initialStartupsToSend map { startups =>
+      val filteredByQuality = if (quality != -1) filterByInt(startups, "quality", quality) else startups
+      if (creationDate != "") filterByDate(filteredByQuality, "created_at", creationDate) else filteredByQuality
     }
   }
 
@@ -315,37 +299,29 @@ object Startups extends Controller with Secured {
     })
   }
 
-  def searchByTag(tag: Long): Future[JsArray] = {
-    WS.url(Application.AngelApi + s"/tags/$tag/startups").get().map { response =>
-      val pages: Int = (response.json \ "last_page").as[Int]
-      val startups: JsArray = (response.json \ "startups").as[JsArray]
+  /**
+   * This method return all not hidden startups that are associated to a tag
+   * @param tagId id of the Tag
+   * @return A Future with a JsArray of the startups
+   */
 
-      var startupsAux: JsArray = JsArray()
+  def searchByTag(tagId: Long): Future[JsArray] = {
+    AngelListServices.getStartupsByTagId(tagId) flatMap { response =>
 
-      startups.value.filter { startup => !(startup \ "hidden").as[Boolean]}.map { startup =>
-        startupsAux = startupsAux.+:(getRelevantStartupInfo(startup))
-      }
+      def responseToStartupSeq(response: JsValue): Seq[JsValue] =
+        (response \ "startups").as[JsArray].value
+          .filter { startup => !(startup \ "hidden").as[Boolean]}
+          .map(getRelevantStartupInfo)
 
-      var futures = Seq.empty[Future[_]]
+      def responsesToJsArray(responses: Seq[JsValue]) = JsArray(responses flatMap responseToStartupSeq)
 
-      //TODO: Necesitamos un fix para poder requestear sin liquidar las requests!!
-      for (i <- 2 until 5) {
-        futures = futures.+:(getFutureStartupsByPage(i))
-      }
+      val pages: Int = (response \ "last_page").as[Int]
+      val futureResponses = (2 to Math.min(5, pages)) map AngelListServices.getStartupsByTagIdAndPage(tagId)
+      val startups = Future.sequence[JsValue, Seq](futureResponses) map responsesToJsArray
 
-      Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
 
-      def getFutureStartupsByPage(page: Int) = {
-        WS.url(Application.AngelApi + s"/tags/$tag/startups?page=$page").get().map { response =>
-          val startups: JsArray = (response.json \ "startups").as[JsArray]
-
-          startups.value.filter { startup => !(startup \ "hidden").as[Boolean]}.map { startup =>
-            startupsAux = startupsAux.+:(getRelevantStartupInfo(startup))
-          }
-        }
-      }
-
-      startupsAux
+      // Add first page to result
+      startups map { startups => JsArray(responseToStartupSeq(response)) ++ startups}
     }
   }
 
@@ -360,10 +336,10 @@ object Startups extends Controller with Secured {
   }
 
   def getAllInfoOfPeopleInStartups(startupId: Long) = Action.async {
-    WS.url(Application.AngelApi + s"/startup_roles?startup_id=$startupId").get().map { response =>
-      val success = response.json \\ "success"
+    AngelListServices.getRolesFromStartupId(startupId) map { response =>
+      val success = response \\ "success"
       if (success.size == 0) {
-        val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+        val roles: JsArray = (response \ "startup_roles").as[JsArray]
         var seqAux = Seq.empty[Map[String, String]]
         var futures = Seq.empty[Future[_]]
 
@@ -377,11 +353,11 @@ object Startups extends Controller with Secured {
 
 
           def getFutureUserInfoById(userId: Int, userRole: String) = {
-            WS.url(Application.AngelApi + s"/users/$userId").get().map { userResponse =>
-              val user = userResponse.json
+            AngelListServices.getUserById(userId) map { userResponse =>
+              val user = userResponse
               val userSuccess = user \\ "success"
               if (userSuccess.size == 0) {
-                val name: String = if ((user \ "name").toString() != "null") (user \ "name").as[String] else ""
+                val name: String = (user \ "name").asOpt[String].getOrElse("")
                 val bio: String = if ((user \ "bio").toString() != "null") (user \ "bio").as[String] else ""
                 val followerCount: Int = (user \ "follower_count").as[Int]
                 val angellistUrl: String = if ((user \ "angellist_url").toString() != "null") (user \ "angellist_url").as[String] else ""
@@ -509,10 +485,10 @@ object Startups extends Controller with Secured {
       Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
 
       def getStartupRolesById(startupId: Int, startupName: String) = {
-        WS.url(Application.AngelApi + s"/startup_roles?startup_id=$startupId").get().map { response =>
-          val success = response.json \\ "success"
+        AngelListServices.getRolesFromStartupId(startupId) map { response =>
+          val success = response \\ "success"
           if (success.size == 0) {
-            val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+            val roles: JsArray = (response \ "startup_roles").as[JsArray]
             for (role <- roles.value) {
               val user: JsValue = (role \ "user").as[JsValue]
               val userRole: String = (role \ "role").as[String]
@@ -595,10 +571,10 @@ object Startups extends Controller with Secured {
       Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
 
       def getStartupRolesById(startupId:Int, startupName:String) = {
-        WS.url(Application.AngelApi+s"/startup_roles?startup_id=$startupId").get().map{ response =>
-          val success= response.json \\ "success"
+        AngelListServices.getRolesFromStartupId(startupId) map { response =>
+          val success= response \\ "success"
           if( success.size == 0) {
-            val roles: JsArray = (response.json \ "startup_roles").as[JsArray]
+            val roles: JsArray = (response \ "startup_roles").as[JsArray]
             for(role <- roles.value){
               val user:JsValue= (role \ "user").as[JsValue]
               val userRole:String= (role \ "role").as[String]

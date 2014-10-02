@@ -29,6 +29,10 @@ object Location {
     Query(Locations).filter( _.id === id).firstOption
   }
 
+
+  def clearAll() = DB.withSession { implicit  session: Session =>
+    Query(Locations).delete
+  }
 //  def getCountries: List[Location] =
 //    Database.query[Location].whereEqual("kind", Country.toString).fetch().toList
 
