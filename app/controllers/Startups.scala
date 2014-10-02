@@ -165,7 +165,7 @@ object Startups extends Controller with Secured {
 
         for (role <- roles.value) {
           val roleString: String = (role \ "role").as[String]
-          val user = (role \ "tagged").as[JsValue]
+          val user = (role \ "user").as[JsValue]
           val id: Int = (user \ "id").as[Int]
           val name: String = (user \ "name").as[String]
           val followers: Int = (user \ "follower_count").as[Int]
