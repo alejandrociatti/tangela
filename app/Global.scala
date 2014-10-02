@@ -1,4 +1,5 @@
-import models.Database
+import controllers.{Markets, Locations}
+import models.{Market, Location, Database}
 import models.authentication.{Users, Role, User}
 import org.joda.time.{LocalDate, LocalTime}
 import play.api._
@@ -47,12 +48,22 @@ object Global extends GlobalSettings {
     ){
       //Task:
       //TODO: 'TRUNCATE TABLE X' SQL WHEN WE HAVE THEM
+      populateCountries()
+      populateMarket()
       println("Cron Job just ran.")
     }
   }
 
   def populateCountries() = {
+    Location.clearAll()
+    Locations.loadCountriesToDB()
+    println("Countries Loaded!")
+  }
 
+  def populateMarket() = {
+    Market.clearAll()
+    Markets.loadMarketsToDB()
+    println("Markets Loaded!")
   }
 
 }
