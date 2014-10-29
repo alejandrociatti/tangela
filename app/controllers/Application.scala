@@ -12,8 +12,6 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 object Application extends Controller with Secured{
-  val AngelApi = "https://api.angel.co/1"
-
 
   def index = withAuth(Admin, Researcher) { user => implicit request =>
     Ok(views.html.index())

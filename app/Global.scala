@@ -1,4 +1,4 @@
-import controllers.{Markets, Locations}
+import controllers.{AngelListServices, Markets, Locations}
 import models.{Market, Location, Database}
 import models.authentication.{Users, Role, User}
 import org.joda.time.{LocalDate, LocalTime}
@@ -21,6 +21,8 @@ object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
     super.onStart(app)
+
+    AngelListServices.checkTor()
 
     createAdmin()
 
@@ -48,8 +50,6 @@ object Global extends GlobalSettings {
     ){
       //Task:
       //TODO: 'TRUNCATE TABLE X' SQL WHEN WE HAVE THEM
-//      populateCountries()
-//      populateMarket()
       println("Cron Job just ran.")
     }
   }

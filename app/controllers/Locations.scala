@@ -28,9 +28,9 @@ object Locations extends Controller{
     for(i <- 0 until names.size){
       //Next line turns strings like "Sri Lanka" to sri-lanka, so country names match their AngelList 'slugs'
       val uriName = URLEncoder.encode(names(i).as[String].replace(" ", "-").toLowerCase, "UTF-8")
-      WS.url(Application.AngelApi+s"/search/slugs?type=LocationTag&query=$uriName").get().map{ response =>
-        val id = (response.json \ "id").as[Long]
-        val name = (response.json \ "name").as[String]
+      AngelListServices.searchLocationBySlug(uriName) map { jsResponse =>
+        val id = (jsResponse \ "id").as[Long]
+        val name = (jsResponse \ "name").as[String]
         val newLocation = Location(name, id, Kind.Country.toString)
         Location.save(newLocation)
       }
@@ -38,9 +38,9 @@ object Locations extends Controller{
   }
 
   def getCountriesByString(countryName:String) = Action.async {
-    WS.url(Application.AngelApi +s"/search?type=LocationTag&query=$countryName").get().map{ response =>
-      val ids : Seq[JsValue] = response.json \\ "id"
-      val names : Seq[JsValue] = response.json \\ "name"
+    AngelListServices.searchLocationByName(countryName) map{ jsResponse =>
+      val ids : Seq[JsValue] = jsResponse \\ "id"
+      val names : Seq[JsValue] = jsResponse \\ "name"
 
       var seqAux = Seq.empty[Map[String, String]]
 
@@ -57,9 +57,9 @@ object Locations extends Controller{
   }
 
   def getChildrenOf(countryId:Long) = Action.async {
-    WS.url(Application.AngelApi+s"/tags/$countryId/children").get().map{response =>
-      val ids:Seq[JsValue] = response.json \\ "id"
-      val names:Seq[JsValue] = response.json \\ "display_name"
+    AngelListServices.getChildrenOfTag(countryId) map{ jsResponse =>
+      val ids:Seq[JsValue] = jsResponse \\ "id"
+      val names:Seq[JsValue] = jsResponse \\ "display_name"
       var seqAux = Seq.empty[Map[String, String]]
       for(i <- 0 until ids.size){
         seqAux = seqAux .+:(Map("id"->ids(i).as[Long].toString, "name"->names(i).as[String]))

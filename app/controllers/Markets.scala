@@ -19,9 +19,9 @@ object Markets extends Controller{
   }
 
   def getMarketsByString(marketName:String) = Action.async {
-    WS.url(Application.AngelApi +s"/search?type=MarketTag&query=$marketName").get().map{ response =>
-      val ids : Seq[JsValue] = response.json \\ "id"
-      val names : Seq[JsValue] = response.json \\ "name"
+    AngelListServices.searchMarketByName(marketName) map{ jsResponse =>
+      val ids : Seq[JsValue] = jsResponse \\ "id"
+      val names : Seq[JsValue] = jsResponse \\ "name"
 
       var seqAux = Seq.empty[Map[String, String]]
 
@@ -39,9 +39,9 @@ object Markets extends Controller{
 
   def loadMarketsToDB() = {
     val magicNumber = 9217
-    WS.url(Application.AngelApi + s"/tags/$magicNumber/children").get().map { response =>
-      val pages: Int = (response.json \ "last_page").as[Int]
-      val markets: JsArray = (response.json \ "children").as[JsArray]
+    AngelListServices.getChildrenOfTag(magicNumber) map { jsResponse =>
+      val pages: Int = (jsResponse \ "last_page").as[Int]
+      val markets: JsArray = (jsResponse \ "children").as[JsArray]
 
       markets.value.filter { market => (market \ "statistics" \ "direct" \ "startups").as[Int] > 10}.map { market =>
         saveMarketToDB(market)
@@ -56,8 +56,8 @@ object Markets extends Controller{
       Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
 
       def getFutureMarketsByPage(page: Int) = {
-        WS.url(Application.AngelApi + s"/tags/$magicNumber/children?page=$page").get().map { response =>
-          val markets: JsArray = (response.json \ "children").as[JsArray]
+        AngelListServices.getChildrenOfTagAndPage(magicNumber)(page) map { jsResponse =>
+          val markets: JsArray = (jsResponse \ "children").as[JsArray]
 
           markets.value.filter { market => (market \ "statistics" \ "direct" \ "startups").as[Int] > 10}.map { market =>
             saveMarketToDB(market)
