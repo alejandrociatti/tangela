@@ -304,7 +304,6 @@ object Startups extends Controller with Secured {
    * @param tagId id of the Tag
    * @return A Future with a JsArray of the startups
    */
-
   def searchByTag(tagId: Long): Future[JsArray] = {
     AngelListServices.getStartupsByTagId(tagId) flatMap { response =>
 
@@ -437,7 +436,6 @@ object Startups extends Controller with Secured {
         //
         //        }
         //TODO: q espere a q este el otroo
-        print(Json.toJson(seqAux))
         Ok(Json.toJson(seqAux))
       } else {
         Ok(Json.obj("id" -> "error", "msg" -> s"Startup $startupId does not exist"))

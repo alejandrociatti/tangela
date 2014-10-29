@@ -23,9 +23,10 @@ object AngelListServices {
   def sendRequest(request: String): Future[JsValue] =
     Cache.get(AngelApi + request).fold {
       WS.url(AngelApi + request).get().map{ result =>
-        val jsonResponce = responseToJson(result)
-        Cache.set(AngelApi + request, jsonResponce, 82800)
-        jsonResponce
+        val jsonResponse = responseToJson(result)
+        Cache.set(AngelApi + request, jsonResponse, 82800)
+        println(jsonResponse)
+        jsonResponse
       }
     } { result =>
       Future(result.asInstanceOf[JsValue])

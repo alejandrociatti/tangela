@@ -44,7 +44,7 @@ object Location {
 //    Database.query[Location].whereNotEqual("kind", Country.toString).fetch().toList
 
   def getOtherThanCountries: List[Location] = DB.withSession { implicit  session: Session =>
-    Query(Locations).filter( _.kind === Kind.Country.toString ).list
+    Query(Locations).filter( _.kind === Kind.Other.toString ).sortBy(_.name).list
   }
 
 //  def save(location: Location) =
@@ -85,4 +85,5 @@ object StartupLocation {
 object Kind extends Enumeration {
   type Kind = Value
   val Country = Value("COUNTRY")
+  val Other = Value("OTHER")
 }

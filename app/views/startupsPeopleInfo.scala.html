@@ -18,8 +18,8 @@
                                     }
                                     </optgroup>
                                     <optgroup label="Specific Locations">
-                                    @for(country: Location <- Location.getOtherThanCountries){
-                                        <option value="@country.angelId">@country.name</option>
+                                    @for(location: Location <- Location.getOtherThanCountries){
+                                        <option value="@location.angelId">@location.name</option>
                                     }
                                     </optgroup>
                                 </select>
