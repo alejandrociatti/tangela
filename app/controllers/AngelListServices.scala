@@ -29,7 +29,9 @@ object AngelListServices {
         val connection = new URL("https://check.torproject.org/").openConnection(proxy)
         connection.setRequestProperty("User-Agent", "Mozilla/5.0")
         val rd = new BufferedReader(new InputStreamReader(connection.getInputStream))
-        Json.parse(Stream.continually(rd.readLine()).takeWhile(_ != null).mkString(" "))
+        val jsonResponse = Json.parse(Stream.continually(rd.readLine()).takeWhile(_ != null).mkString(" "))
+        if((jsonResponse\"error").as[JsString].toString().isEmpty) Cache.set(AngelApi + request, jsonResponse, 82800)
+        jsonResponse
       }
     } { result =>
       Future(result.asInstanceOf[JsValue])
