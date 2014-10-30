@@ -6,7 +6,7 @@ import models.authentication.Role._
 import com.github.tototoshi.csv.CSVWriter
 import play.api._
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{JsArray, Json, JsValue}
+import play.api.libs.json.{JsArray}
 import play.api.mvc._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global

@@ -22,7 +22,8 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     super.onStart(app)
 
-    AngelListServices.checkTor()
+    //Uncomment for TOR check...
+    //AngelListServices.checkTor()
 
     createAdmin()
 
