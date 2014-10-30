@@ -5,6 +5,7 @@ import java.net.{URL, Proxy, InetSocketAddress}
 
 import com.ning.http.client.{AsyncHttpClient, ProxyServer, AsyncHttpClientConfig}
 import play.api.libs.ws.WS
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Created with IntelliJ IDEA by: alejandro
