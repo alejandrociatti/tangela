@@ -12,8 +12,8 @@ public class MyAsyncCompletionHandler{
     public static AsyncCompletionHandler MY_HANDLER = new AsyncCompletionHandler() {
         @Override
         public Object onCompleted(Response response) throws Exception {
-            //System.out.println(response.getResponseBody());
-            if(response.getResponseBody().contains("<h1 class=\"on\">")){
+            final String body = response.getResponseBody();
+            if(body.contains("<h1 class=\"on\">") || body.contains("<h1 class=\"not\">")){
                 System.out.println("NING is using the TOR network.");
             }else{
                 System.out.println("NING is not under the TOR network");

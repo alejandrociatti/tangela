@@ -1,6 +1,7 @@
-import controllers.{AngelListServices, Markets, Locations}
-import models.{Market, Location, Database}
+import controllers.{ Markets, Locations}
+import models.{Market, Location}
 import models.authentication.{Users, Role, User}
+import util.TorTester
 import org.joda.time.{LocalDate, LocalTime}
 import play.api._
 import play.api.db.slick._
@@ -23,7 +24,7 @@ object Global extends GlobalSettings {
     super.onStart(app)
 
     //Uncomment for TOR check...
-    //AngelListServices.checkTor()
+    //TorTester.checkTor()
 
     createAdmin()
 
