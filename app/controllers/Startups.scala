@@ -318,7 +318,6 @@ object Startups extends Controller with Secured {
       val futureResponses = (2 to Math.min(5, pages)) map AngelListServices.getStartupsByTagIdAndPage(tagId)
       val startups = Future.sequence[JsValue, Seq](futureResponses) map responsesToJsArray
 
-
       // Add first page to result
       startups map { startups => JsArray(responseToStartupSeq(response)) ++ startups}
     }
@@ -456,6 +455,7 @@ object Startups extends Controller with Secured {
         if (quality != -1) startupsToSend = filterByInt(startupsToSend, "quality", quality)
         if (creationDate != "") startupsToSend = filterByDate(startupsToSend, "created_at", creationDate)
         val startups2 = startupsToSend
+        println(startupsToSend)
         startupsToSend = getNetwork(startupsToSend)
         Ok("["+startupsToSend+","+startups2+"]")
       }
@@ -484,6 +484,7 @@ object Startups extends Controller with Secured {
 
       def getStartupRolesById(startupId: Int, startupName: String) = {
         AngelListServices.getRolesFromStartupId(startupId) map { response =>
+          println("response = " + response)
           val success = response \\ "success"
           if (success.size == 0) {
             val roles: JsArray = (response \ "startup_roles").as[JsArray]
@@ -499,6 +500,7 @@ object Startups extends Controller with Secured {
         }
       }
     }
+    println("dfgdfgdfg")
     for (user <- users.value) {
       val id: Int = (user \ "startupId").as[Int]
       for (user2 <- users.value) {

@@ -23,7 +23,7 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
-                    $scope.fundings = sortBdyKeys(fundings, "name");
+                    $scope.fundings = sortByKeys(fundings, "name");
                     $scope.searching = false;
                     $scope.startupsResultsReached= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';

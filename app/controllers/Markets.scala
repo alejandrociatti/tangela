@@ -14,7 +14,7 @@ object Markets extends Controller{
   def getMarkets = Action{
     loadMarketsToDB()
     Ok(
-      Json.toJson("Markets Not loaded")
+      Json.toJson("Markets loaded")
     )
   }
 
