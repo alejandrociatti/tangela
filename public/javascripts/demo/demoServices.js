@@ -98,7 +98,7 @@ serviceModule.factory('dataAccess', function() {
             });
         },
         getStartupsNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.getStartupsNetwork(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Networks.getStartupsNetwork(locationId, market, undefined, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -106,7 +106,7 @@ serviceModule.factory('dataAccess', function() {
             });
         },
         getPeopleNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.getPeopleNetwork(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Networks.getPeopleNetwork(locationId, market, undefined, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,

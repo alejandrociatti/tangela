@@ -3,10 +3,11 @@ package controllers
 import java.io.{InputStreamReader, BufferedReader}
 import java.net.{URL, InetSocketAddress, Proxy}
 
+import _root_.util.RequestManager
 import play.api.Play.current
 import play.api.cache.Cache
 import play.api.libs.json._
-import play.api.libs.ws.{Response, WS}
+import play.api.libs.ws.Response
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -20,30 +21,17 @@ import scala.concurrent.Future
 object AngelListServices {
   val AngelApi = "https://api.angel.co/1"
   val proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 9050))
+//  var count = 0
 
   private def responseToJson(response: Response) = response.json
 
   def sendRequest(request: String): Future[JsValue] =
     Cache.get(AngelApi + request).fold {
-      scala.concurrent.Future {
-        val connection = new URL("https://check.torproject.org/").openConnection(proxy)
-        connection.setRequestProperty("User-Agent", "Mozilla/5.0")
-        val rd = new BufferedReader(new InputStreamReader(connection.getInputStream))
-        val jsonResponse = Json.parse(Stream.continually(rd.readLine()).takeWhile(_ != null).mkString(" "))
-        if((jsonResponse\"error").as[JsString].toString().isEmpty) Cache.set(AngelApi + request, jsonResponse, 82800)
-        jsonResponse
-      }
-    } { result =>
-      Future(result.asInstanceOf[JsValue])
-    }
-
-
-  def sendRequestOld(request: String): Future[JsValue] =
-    Cache.get(AngelApi + request).fold {
-    WS.url(AngelApi + request).get().map{ result =>
-        val jsonResponse = responseToJson(result)
-        //TODO: @Javier can u make this check pretty?
-        if((jsonResponse\"error").as[JsString].toString().isEmpty) Cache.set(AngelApi + request, jsonResponse, 82800)
+//      count = count + 1
+//      println("general count = " + count)
+      RequestManager.sendRequest(AngelApi + request) map { response =>
+        val jsonResponse = Json.parse(response)
+        if((jsonResponse\"error").isInstanceOf[JsUndefined]) Cache.set(AngelApi + request, jsonResponse, 82800)
         jsonResponse
       }
     } { result =>

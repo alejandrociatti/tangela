@@ -38,8 +38,8 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupsByName,
         routes.javascript.Startups.getStartupFunding,
         routes.javascript.Startups.startupCriteriaSearch,
-        routes.javascript.Startups.getStartupsNetwork,
-        routes.javascript.Startups.getPeopleNetwork,
+        routes.javascript.Networks.getStartupsNetwork,
+        routes.javascript.Networks.getPeopleNetwork,
         routes.javascript.Startups.getAllInfoOfPeopleInStartups,
         routes.javascript.Startups.startupsFundingByCriteria,
         routes.javascript.Application.tableToCSV
