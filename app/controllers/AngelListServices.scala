@@ -1,9 +1,10 @@
 package controllers
 
-import java.io.{InputStreamReader, BufferedReader}
+import java.io.{File, InputStreamReader, BufferedReader}
 import java.net.{URL, InetSocketAddress, Proxy}
 
-import _root_.util.RequestManager
+import _root_.util.{DiskSaver, RequestManager}
+import com.fasterxml.jackson.core.JsonParseException
 import play.api.Play.current
 import play.api.cache.Cache
 import play.api.libs.json._
@@ -20,21 +21,31 @@ import scala.concurrent.Future
 
 object AngelListServices {
   val AngelApi = "https://api.angel.co/1"
-  val proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 9050))
-//  var count = 0
+  val jsonSaver = DiskSaver(new File("storedJsons"))
 
-  private def responseToJson(response: Response) = response.json
+  private def cache(key: String, value: JsValue) =
+    if((value\"error").isInstanceOf[JsUndefined]) Cache.set(key, value, 300)
+
+  private def parseAndCache(key: String, value: String) = {
+      val jsonResponse = Json.parse(value)
+      cache(key, jsonResponse)
+      jsonResponse
+  }
+
+  private def sendRequestToAngelList(request: String): Future[JsValue] =
+    RequestManager.sendRequest(AngelApi + request) map { response =>
+      Future(jsonSaver.put(request, response))
+      parseAndCache(request, response)
+    }
 
   def sendRequest(request: String): Future[JsValue] =
-    Cache.get(AngelApi + request).fold {
-//      count = count + 1
-//      println("general count = " + count)
-      RequestManager.sendRequest(AngelApi + request) map { response =>
-        val jsonResponse = Json.parse(response)
-        if((jsonResponse\"error").isInstanceOf[JsUndefined]) Cache.set(AngelApi + request, jsonResponse, 82800)
-        jsonResponse
+    Cache.get(request).fold {
+      jsonSaver.get(request).fold {
+        sendRequestToAngelList(request)
+      }{ value =>
+        Future(parseAndCache(request, value))
       }
-    } { result =>
+    }{ result =>
       Future(result.asInstanceOf[JsValue])
     }
 

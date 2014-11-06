@@ -289,28 +289,30 @@ object Startups extends Controller with Secured {
     } else {
       searchByTagNonBlocking(locationId).flatMap { startupsByLocation =>
         if (marketId != -1) Future.sequence(startupsByLocation)
-          .map(_.map(_.filter(filterByInt("markets", "id", marketId))).flatten)
+          .map(_.map(_.filter(intFilter("markets", "id", marketId))).flatten)
         else Future.sequence(startupsByLocation).map(_.flatten)
       }
     }
 
 //    Filter by quality and creationDate
     initialStartupsToSend map { startups =>
-      val filteredByQuality = if (quality != -1) startups.filter(filterByInt("quality", quality)) else startups
-      if (creationDate != "") startups.filter(filterByDate("created_at", DateTime.parse(creationDate)))
+      val filteredByQuality = if (quality != -1) startups.filter(intFilter("quality", quality)) else startups
+      if (creationDate != "") startups.filter(dateFilter("created_at", DateTime.parse(creationDate)))
       else filteredByQuality
-    }
+    } map(_ filter validResultFilter)
   }
 
-  def filterByInt(field: String, value: Int)(json: JsValue): Boolean =
+  def intFilter(field: String, value: Int)(json: JsValue): Boolean =
     (json \ field).as[Int] == value
 
-  def filterByInt(field: String, subField: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[JsArray].value.exists(filterByInt(subField, value))
+  def intFilter(field: String, subField: String, value: Int)(json: JsValue): Boolean =
+    (json \ field).as[JsArray].value.exists(intFilter(subField, value))
 
-  def filterByDate(field: String, value: DateTime)(json: JsValue): Boolean =
+  def dateFilter(field: String, value: DateTime)(json: JsValue): Boolean =
     DateTime.parse((json \ field).as[String]) isAfter value
 
+  def validResultFilter(json: JsValue): Boolean = (json \\ "success").isEmpty
+  
 //  Json Constructors *********************************************************************
 
   def minimalStartUp(startup: JsValue) = Json.obj(

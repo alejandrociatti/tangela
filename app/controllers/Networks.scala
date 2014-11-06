@@ -1,7 +1,9 @@
 package controllers
 
+import com.fasterxml.jackson.core.JsonParseException
 import controllers.Startups.startupsByCriteriaNonBlocking
-import play.api.libs.json.{JsValue, Json, JsArray}
+import play.api.libs.json
+import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.Future
@@ -118,11 +120,15 @@ object Networks extends Controller {
   def getStartupRoles(startup: JsValue): Future[Seq[JsValue]] = {
     val startupId: Int = (startup \ "id").as[Int]
     AngelListServices.getRolesFromStartupId(startupId) map { response =>
-      (response \ "startup_roles").as[JsArray].value map { role =>
-        userRole(role, startup)
+      (response \ "startup_roles").asOpt[JsArray].fold {
+        Seq[JsValue]()
+      }{ roles =>
+        roles.value.filter(notNullUserFilter).map(userRole(_, startup))
       }
     }
   }
+
+  def notNullUserFilter(role: JsValue) = (role \ "user") != JsNull
 
   def userRole(role: JsValue, startup: JsValue ) = Json.obj(
     "userId" -> (role \ "user" \ "id").as[Int],
