@@ -19,7 +19,6 @@ public class TorController {
         return ourInstance;
     }
 
-    private static final String HASH_PWD = "16:872860B76453A77D60CA2BB8C1A7042072093276A3D701AD684053EC4C";
     private PrintWriter out;
     private BufferedReader in;
 
@@ -29,7 +28,7 @@ public class TorController {
             socket = new Socket("localhost", 9051);
             out = new PrintWriter(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out.write("AUTHENTICATE "+HASH_PWD);
+            out.write("AUTHENTICATE \"\"");
             System.out.println(in.readLine());
         }catch (Exception e){
             e.printStackTrace();

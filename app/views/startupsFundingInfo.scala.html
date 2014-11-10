@@ -2,11 +2,9 @@
 
     <div class="row" ng-app="AAC" ng-controller="startupsFundingInfo">
 
-        <div class="row">
             <div class="col-lg-12">
                 <div class="panel panel-default">
                     <div class="panel-body">
-
                         <form role="form">
                             <div class="form-group">
                                 <label class="control-label" for="location">Location</label>
@@ -42,39 +40,20 @@
                             <div class="form-group">
                                 <button type="submit" class="btn btn-primary" ng-click="submit()">Search</button>
                             </div>
-                            @*<div class="form-group">*@
-                            @*<label for="startupName">Startup</label>*@
-                            @*<div class="input-group">*@
-                            @*<input type="text" name="startupName" id="startupName" placeholder="Write startup name here ..." class="form-control" ng-model="startupName"/>*@
-                            @*<span class="input-group-btn">*@
-                            @*<button class="btn btn-default" ng-click="searchForStartupsByFeatures();">Search</button>*@
-                            @*</span>*@
-                            @*</div>*@
-                            @*</div>*@
                         </form>
-
                         <div class="alert alert-danger" ng-if="!startupsResultsReached" >
                             <p><strong>There are not startups with that features</strong></p>
                         </div>
-
                     </div>
-
                 </div>
             </div>
-        </div>
-
-        <div class="row">
 
             <div class="col-lg-12">
-
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Persons
-
-                            <div class="pull-right">
-                                <button ng-click="exportCSV()"  class="btn btn-xs btn-primary">Export</button>
-                            </div>
+                            <button ng-click="exportCSV()"  class="btn btn-xs btn-primary pull-right">Export</button>
                         </h2>
                     </div>
                     <div class="panel-body">
@@ -110,14 +89,10 @@
                 </div>
             </div>
 
-        </div>
-
     </div><!-- /.row -->
-
 }{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
     <script src="@routes.Assets.at("javascripts/startupsFundingInfo.js")"></script>
-
 }
