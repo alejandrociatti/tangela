@@ -165,3 +165,5 @@ td .icon-spacer{width: 16px;}
 
 .network-wrapper{position:relative; height: 400px;}
 #network-container{position: absolute;width: 98%;height: 95%;}
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }

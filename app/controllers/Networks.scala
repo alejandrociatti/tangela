@@ -1,13 +1,15 @@
 package controllers
 
-import com.fasterxml.jackson.core.JsonParseException
+import java.io._
+import _root_.util.DiskSaver
+import com.github.tototoshi.csv.CSVWriter
 import controllers.Startups.startupsByCriteriaNonBlocking
-import play.api.libs.json
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.io.Source
 
 /**
  * Created by Javier Isoldi.
@@ -16,23 +18,72 @@ import scala.concurrent.ExecutionContext.Implicits.global
  */
 
 object Networks extends Controller {
+  val jsonSaver = DiskSaver(new File("storedCSVs"), ".csv")
 
   /**
    *
    * @param locationId    location tag filter.
    * @param marketId      market tag filter.
-   * @param quality       quality Int filter. Can be from 1 to 10.
-   * @param creationDate  date filter.
-   * @return A Future of a JsArray that contains all the connections between
-   *         startups throw people
+   * @param quality       quality Int filter. Value must be between 1 to 10.
+   * @param creationDate  creation date filter.
+   * @return A Future of a JsArray that contains all the connections between startups by roles/people
    */
-  
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { startupsToSend =>
+        jsonSaver.put(
+          s"startup-net-$locationId-$marketId-$quality-$creationDate",
+          makeStartupsNetworkCSV(startupsToSend)
+        )
+        //TODO: ESTO ES UN ASCO. Para que carajo usamos JSON si no le vas a poner nombre a las cosas.
         Ok("["+startupsToSend+","+JsArray(startups)+"]")
       }
     }
+  }
+
+  /**
+   * This method gets a Startups Network in jsArray form and converts it to CSV
+   *
+   * @param startups a jsArray containing startupsConnection jsObjects
+   * @return the CSV Result.
+   */
+  def makeStartupsNetworkCSV(startups:JsArray) = {
+    val headers:List[String] = List(
+        "startup ID one", "startup name one", "user role in startup one",
+        "startup id two", "startup name two", "user role in startup two",
+        "user in common ID", "user in common name"
+      )
+    val values:List[List[String]] = startups.as[List[JsValue]].map{ startup =>
+      List(
+        (startup \ "startupIdOne").as[String],
+        (startup \ "startupNameOne").as[String],
+        (startup \ "roleOne").as[String],
+        (startup \ "startupIdTwo").as[String],
+        (startup \ "startupNameTwo").as[String],
+        (startup \ "roleTwo").as[String],
+        (startup \ "userId").as[String],
+        (startup \ "userName").as[String]
+      )
+    }
+    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
+    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
+    writer.writeRow(headers)
+    writer.writeAll(values)
+    writer.close()
+    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
+      byteArrayOutputStream.toByteArray
+    ))
+    Source.fromInputStream(streamReader).mkString("")
+  }
+
+  def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+      Future(
+        jsonSaver.get(s"startup-net-$locationId-$marketId-$quality-$creationDate").fold {
+          Ok(Json.obj("error" -> "could not find that CSV"))
+        }{ result =>
+          Ok(result)
+        }
+      )
   }
 
   def getStartupsNetworkFuture(startups: Seq[JsValue]): Future[JsArray] = {

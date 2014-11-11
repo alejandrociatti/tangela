@@ -13,7 +13,7 @@ import scala.io.Source
  * Date: 05/11/14.
  * Project: tangela.
  */
-case class DiskSaver(directory: File) {
+case class DiskSaver(directory: File, extension:String) {
   if(directory.exists && !directory.isDirectory) throw new NotDirectoryException(directory.getAbsolutePath)
 
   def put(key: String, value: String): Unit = {
@@ -25,13 +25,14 @@ case class DiskSaver(directory: File) {
     }
 
     val printWriter = new PrintWriter(fileToSave)
+    println(value.substring(0, 50))
     printWriter.write(value)
     printWriter.flush()
     printWriter.close()
   }
 
   private def fileFromKey(key: String): File =
-    new File(directory.getPath + separator + keyToFileName(key) + ".json")
+    new File(directory.getPath + separator + keyToFileName(key) + extension)
 
 
   def get(key: String): Option[String] = {
@@ -43,12 +44,14 @@ case class DiskSaver(directory: File) {
       val result = file.mkString("")
 
       // To clear some errors
-      try {
-        Json.parse(result)
-      } catch {
-        case e: JsonParseException =>
-          fileToSave.delete()
-          return None
+      if(extension.equals(".json")){
+        try {
+          Json.parse(result)
+        } catch {
+          case e: JsonParseException =>
+            fileToSave.delete()
+            return None
+        }
       }
 
       file.close()

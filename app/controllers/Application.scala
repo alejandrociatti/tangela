@@ -6,7 +6,7 @@ import models.authentication.Role._
 import com.github.tototoshi.csv.CSVWriter
 import play.api._
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{JsArray}
+import play.api.libs.json.JsArray
 import play.api.mvc._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -39,6 +39,7 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupFunding,
         routes.javascript.Startups.startupCriteriaSearch,
         routes.javascript.Networks.getStartupsNetwork,
+        routes.javascript.Networks.getStartupsNetworkCSV,
         routes.javascript.Networks.getPeopleNetwork,
         routes.javascript.Startups.getAllInfoOfPeopleInStartups,
         routes.javascript.Startups.startupsFundingByCriteria,
@@ -78,20 +79,13 @@ object Application extends Controller with Secured{
 
   def writeCSVWithHeaders(headers: List[String], values: List[List[String]]): SimpleResult = {
     val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val streamWriter: OutputStreamWriter = new OutputStreamWriter(byteArrayOutputStream)
-
-    val writer = CSVWriter.open(streamWriter)
-
+    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
     writer.writeRow(headers)
-
     writer.writeAll(values)
-
     writer.close()
-
-    val bytes: Array[Byte] = byteArrayOutputStream.toByteArray
-
-    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(bytes))
-
+    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
+      byteArrayOutputStream.toByteArray
+    ))
     Ok.chunked(Enumerator.fromStream(streamReader)).as("text/csv")
   }
 
