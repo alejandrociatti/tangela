@@ -31,10 +31,14 @@
                         </div>
                         <div class="form-group">
                             <label class="control-label" for="creation-date">Creation date</label>
-                            <input type="date" class="form-control" ng-model="date" name="creation-date" id="creation-date"/>
+                            <input type="date" class="form-control" ng-model="main.date" name="creation-date" id="creation-date"/>
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-primary" ng-click="main.searchForStartupsNetwork();">Search</button>
+                            <label for="quality" class="control-label">Quality</label>
+                            <input type="number" class="form-control" name="quality" id="quality" ng-model="main.quality"/>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" ng-click="main.submit();">Search</button>
                         </div>
                         <div class="alert alert-danger" ng-if="main.markOne" >
                             <p><strong>You must mark either a location or a market to search</strong></p>

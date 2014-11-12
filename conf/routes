@@ -39,6 +39,7 @@ GET         /startups/startup-fundings              controllers.Startups.startup
 GET         /startups/startup-network               controllers.Networks.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startup-network-csv           controllers.Networks.getStartupsNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startup-people-network        controllers.Networks.getPeopleNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
+GET         /startups/startup-people-network-csv    controllers.Networks.getPeopleNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 
 # Users
 GET         /user/list                              controllers.Users.listUsers

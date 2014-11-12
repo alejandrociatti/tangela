@@ -1,7 +1,7 @@
 /**
  * Created by Joaquin on 17/09/2014.
+ * Angularified by Alejandro on 11/11/2014.
  */
-
 
 angular.module('JB3', ['app.controllers']);
 
@@ -11,20 +11,21 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             var scope = this;
             var lastReq;
+            var dateHolder = $("#creation-date");
             this.startupsResultsReached= true;
             this.searching= false;
             this.optionSelectMsg = 'Search first.';
-            this.startups= [] ;
-            this.startupsToShow= [] ;
+            this.startups = [];
+            this.startupsToShow = [];
             this.markOne = false;
 
-            this.searchForStartupsNetwork = function () {
+            this.submit = function () {
                 this.optionSelectMsg = 'Loading results...';
                 this.startupsResultsReached = true;
                 this.searching = true;
                 this.markOne = !(this.location || this.market);
                 if(!this.markOne) {
-                    dataAccess.getStartupsNetwork(this.location, $("#creation-date").val(), this.market, -1, function (response) {
+                    dataAccess.getStartupsNetwork(this.location, dateHolder.val(), this.market, -1, function (response) {
                         var startups = JSON.parse(response);
                         //en startups to show tengo los startups que tengo q mostrar en otra tablita
                         scope.startupsToShow= (startups[1]);
@@ -32,7 +33,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                         scope.searching = false;
                         scope.startupsResultsReached = startups.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
-                        lastReq = {loc:scope.location, creation:$("#creation-date").val(), market:scope.market};
+                        lastReq = {loc:scope.location, creation:dateHolder.val(), market:scope.market};
                         $scope.$apply();
                     });
                 }
@@ -45,15 +46,11 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                     }else{
                         var pom = document.createElement('a');
                         pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'startupsNetwork.csv');
+                        pom.setAttribute('download', 'startups-net-'+lastReq.loc+'.csv');
                         pom.click();
                     }
                 });
-
             };
-
-
-
         }]
 );
 

@@ -1,177 +1,77 @@
 /**
  * Created by Joaquin on 17/09/2014.
+ * Angularified by Alejandro on 12/11/2014.
  */
-
 
 angular.module('AAC', ['app.controllers']);
 
-var module = angular.module('app.controllers', ['app.services']);
+var module = angular.module('app.controllers', ['app.services', 'ui.bootstrap']);
 
 module.controller('startupsPplNetCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
+            var scope = this;
+            var lastReq;
+            var dateHolder = $('#creation-date');
+            this.startupsResultsReached= true;
+            this.searching= false;
+            this.optionSelectMsg = 'Search first.';
+            this.people= [];
+            this.startupsToShow= [];
+            this.markOne = false;
 
-            $scope.startupsResultsReached= true;
-            $scope.searching= false;
-            $scope.optionSelectMsg = 'Search first.';
-            $scope.persons= [] ;
-            $scope.markOne = false;
-
-            $scope.submit = function () {
-                $scope.optionSelectMsg = 'Loading results...';
-                $scope.startupsResultsReached= true;
-                $scope.searching= true;
-                $scope.markOne = !($scope.location || $scope.market);
-                if(!$scope.markOne) {
-                    dataAccess.getPeopleNetwork($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function (persons) {
-                        persons= JSON.parse(persons);
+            this.submit = function () {
+                this.optionSelectMsg = 'Loading results...';
+                this.startupsResultsReached= true;
+                this.searching= true;
+                this.markOne = !(this.location || this.market);
+                if(!this.markOne) {
+                    dataAccess.getPeopleNetwork(this.location, dateHolder.val(), this.market, this.quality, function (response) {
+                        response = JSON.parse(response);
                         //en startups to show tengo los startups que tengo q mostrar en otra tablita
-                        $scope.startupsToShow= (persons[1]);
-                        $scope.persons = (persons[0]);
-                        $scope.searching = false;
-                        $scope.startupsResultsReached = persons.length != 0;
-                        $scope.optionSelectMsg = 'Select a startup.';
+                        scope.startupsToShow= (response[1]);
+                        scope.people = (response[0]);
+                        scope.searching = false;
+                        scope.startupsResultsReached = response.length != 0;
+                        scope.optionSelectMsg = 'Select a startup.';
+                        lastReq = {loc:scope.location, creation:dateHolder.val(), market:scope.market};
                         $scope.$apply();
                     });
                 }
             };
 
-            $scope.export = function () {
-                var obj = {
-                    headers: ["User Id One", "User Name One","User Role One","User Id Two"
-                        ,"User Name Two", "User Role Two","Startup in common Id","Startup in common Name"],
-                    values: []
-                } ;
-                for (var i = 0; i < $scope.persons.length; i++) {
-                    var person= $scope.persons[i];
-                    obj.values.push([person.userIdOne,person.userNameOne,person.roleOne,
-                        person.userIdTwo,person.userNameTwo,person.roleTwo,person.startupId,person.startupName]);
-                }
-
-                dataAccess.getCSV(JSON.stringify(obj), function(file){
-                    var pom = document.createElement('a');
-                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                    pom.setAttribute('download', 'peopleNetwork.csv');
-                    pom.click();
+            this.exportCSV = function () {
+                dataAccess.getPeopleNetworkCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function(file){
+                    if(file.error){
+                        console.log(file.error)
+                    }else{
+                        var pom = document.createElement('a');
+                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                        pom.setAttribute('download', 'people-net-'+lastReq.loc+'.csv');
+                        pom.click();
+                    }
                 });
             };
-
-
-
-
-            //Pagination control:
-            $scope.itemsPerPage = 5;
-            $scope.currentPage = 0;
-
-            $scope.range = function() {
-                var rangeSize = 5;
-                var ret = [];
-                var start;
-
-                start = $scope.currentPage;
-                if ( start > $scope.pageCount()-rangeSize ) {
-                    start = $scope.pageCount()-rangeSize+1;
-                }
-
-                for (var i=start; i<start+rangeSize; i++) {
-                    if(i >= 0) {
-                        ret.push(i);
-                    }
-                }
-                return ret;
-            };
-
-            $scope.prevPage = function() {
-                if ($scope.currentPage > 0) {
-                    $scope.currentPage--;
-                }
-            };
-
-            $scope.setPage = function(n) {
-                $scope.currentPage = n;
-            };
-
-            $scope.nextPage = function() {
-                if ($scope.currentPage < $scope.pageCount()) {
-                    $scope.currentPage++;
-                }
-            };
-
-            $scope.nextPageDisabled = function() {
-                return $scope.currentPage === $scope.pageCount() ? "disabled" : "";
-            };
-
-            $scope.prevPageDisabled = function() {
-                return $scope.currentPage === 0 ? "disabled" : "";
-            };
-
-            $scope.pageCount = function() {
-                return Math.ceil($scope.persons.length/$scope.itemsPerPage)-1;
-            };
-
-            //Pagination control2:
-            $scope.itemsPerPage2 = 5;
-            $scope.currentPage2 = 0;
-
-            $scope.range2 = function() {
-                var rangeSize = 5;
-                var ret = [];
-                var start;
-
-                start = $scope.currentPage2;
-                if ( start > $scope.pageCount2()-rangeSize ) {
-                    start = $scope.pageCount2()-rangeSize+1;
-                }
-
-                for (var i=start; i<start+rangeSize; i++) {
-                    if(i >= 0) {
-                        ret.push(i);
-                    }
-                }
-                return ret;
-            };
-
-            $scope.prevPage2 = function() {
-                if ($scope.currentPage2 > 0) {
-                    $scope.currentPage2--;
-                }
-            };
-
-            $scope.setPage2 = function(n) {
-                $scope.currentPage2 = n;
-            };
-
-            $scope.nextPage2 = function() {
-                if ($scope.currentPage2 < $scope.pageCount2()) {
-                    $scope.currentPage2++;
-                }
-            };
-
-            $scope.nextPageDisabled2 = function() {
-                return $scope.currentPage2 === $scope.pageCount2() ? "disabled" : "";
-            };
-
-            $scope.prevPageDisabled2 = function() {
-                return $scope.currentPage2 === 0 ? "disabled" : "";
-            };
-
-            $scope.pageCount2 = function() {
-                return Math.ceil($scope.startupsToShow.length/$scope.itemsPerPage2)-1;
-            };
-
-
         }]
 );
 
+/**
+ * Pagination control
+ */
+module.controller('tableController', ['$scope', function($scope){
+    $scope.itemsPerPage = 6;
+    $scope.currentPage = 1;
+
+    $scope.setPage = function (pageNo) {
+        $scope.currentPage = pageNo;
+    };
+}]);
+
+/**
+ * Offset filter
+ */
 module.filter('offset', function() {
     return function(input, start) {
         start = parseInt(start, 10);
-        /**
-         * Changed input.slice(start); in case input is undefined.
-         * This 'offset' function is used on ng-repeat directives,
-         * to change the starting element of the repeat.
-         * In this startupsInfo, it is used on $scope.roles, which for some reason was undefined.
-         * TODO: Check why typeof($scope.roles) == undefined at any given moment.
-         */
         return (input || []).slice(start);
     };
 });

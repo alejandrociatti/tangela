@@ -137,9 +137,15 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             })
+        },
+        getPeopleNetworkCSV: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.Networks.getPeopleNetworkCSV(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
         }
-
-
     };
 });
 

@@ -21,7 +21,6 @@ object Networks extends Controller {
   val jsonSaver = DiskSaver(new File("storedCSVs"), ".csv")
 
   /**
-   *
    * @param locationId    location tag filter.
    * @param marketId      market tag filter.
    * @param quality       quality Int filter. Value must be between 1 to 10.
@@ -31,9 +30,11 @@ object Networks extends Controller {
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { startupsToSend =>
-        jsonSaver.put(
-          s"startup-net-$locationId-$marketId-$quality-$creationDate",
-          makeStartupsNetworkCSV(startupsToSend)
+        Future(
+          jsonSaver.put(
+            s"startup-net-$locationId-$marketId-$quality-$creationDate",
+            makeStartupsNetworkCSV(startupsToSend)
+          )
         )
         //TODO: ESTO ES UN ASCO. Para que carajo usamos JSON si no le vas a poner nombre a las cosas.
         Ok("["+startupsToSend+","+JsArray(startups)+"]")
@@ -87,7 +88,6 @@ object Networks extends Controller {
   }
 
   def getStartupsNetworkFuture(startups: Seq[JsValue]): Future[JsArray] = {
-
     def differentStartupFilter(user1: JsValue, user2: JsValue) =
       (user1 \ "startupId").as[Int] != (user2 \ "startupId").as[Int]
     def equalUserFilter(user1: JsValue, user2: JsValue) =
@@ -110,26 +110,68 @@ object Networks extends Controller {
         }
       getMatches(userRoles, Seq())
     }
-
     startupConnections map JsArray
   }
 
   /**
-   *
    * @param locationId    location tag filter.
    * @param marketId      market tag filter.
    * @param quality       quality Int filter. Can be from 1 to 10.
    * @param creationDate  date filter.
-   * @return A Future of a JsArray that contains all the connections between
-   *         people throw startups
+   * @return A Future of a JsArray that contains all the connections between people by startups in common
    */
-
   def getPeopleNetwork(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async{
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
       getPeopleNetworkFuture(startups) map { startupsToSend =>
+        Future(
+          jsonSaver.put(
+            s"people-net-$locationId-$marketId-$quality-$creationDate",
+            makePeopleNetworkCSV(startupsToSend)
+          )
+        )
+        //TODO: Arreglar este otro asko
         Ok("["+startupsToSend+","+startups+"]")
       }
     }
+  }
+
+  def makePeopleNetworkCSV(connections:JsArray) = {
+    val headers:List[String] = List(
+      "user ID one", "user name one", "user role one",
+      "user id two", "user name two", "user role two",
+      "startup in common ID", "startup in common name"
+    )
+    val values:List[List[String]] = connections.as[List[JsValue]].map{ row =>
+      List(
+        (row \ "userIdOne").as[String],
+        (row \ "userNameOne").as[String],
+        (row \ "roleOne").as[String],
+        (row \ "userIdTwo").as[String],
+        (row \ "userNameTwo").as[String],
+        (row \ "roleTwo").as[String],
+        (row \ "startupId").as[String],
+        (row \ "startupName").as[String]
+      )
+    }
+    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
+    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
+    writer.writeRow(headers)
+    writer.writeAll(values)
+    writer.close()
+    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
+      byteArrayOutputStream.toByteArray
+    ))
+    Source.fromInputStream(streamReader).mkString("")
+  }
+
+  def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+    Future(
+      jsonSaver.get(s"people-net-$locationId-$marketId-$quality-$creationDate").fold {
+        Ok(Json.obj("error" -> "could not find that CSV"))
+      }{ result =>
+        Ok(result)
+      }
+    )
   }
 
   def getPeopleNetworkFuture(startups: Seq[JsValue]) : Future[JsArray] = {
@@ -202,7 +244,7 @@ object Networks extends Controller {
 
   def usersConnection(user1: JsValue, user2: JsValue) = Json.obj(
     "userIdOne" -> (user1 \ "userId").as[Int].toString,
-    "userIdTwp" -> (user2 \ "userId").as[Int].toString,
+    "userIdTwo" -> (user2 \ "userId").as[Int].toString,
     "userNameOne" -> (user1 \ "userName").as[String],
     "userNameTwo" -> (user2 \ "userName").as[String],
     "roleOne" -> (user1 \ "userRole").as[String],

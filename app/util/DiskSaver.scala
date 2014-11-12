@@ -25,7 +25,6 @@ case class DiskSaver(directory: File, extension:String) {
     }
 
     val printWriter = new PrintWriter(fileToSave)
-    println(value.substring(0, 50))
     printWriter.write(value)
     printWriter.flush()
     printWriter.close()
