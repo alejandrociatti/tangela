@@ -36,8 +36,10 @@ object Networks extends Controller {
             makeStartupsNetworkCSV(startupsToSend)
           )
         )
-        //TODO: ESTO ES UN ASCO. Para que carajo usamos JSON si no le vas a poner nombre a las cosas.
-        Ok("["+startupsToSend+","+JsArray(startups)+"]")
+        Ok(Json.obj(
+          "startups" -> startups,
+          "rows" -> startupsToSend
+        ))
       }
     }
   }
@@ -129,8 +131,10 @@ object Networks extends Controller {
             makePeopleNetworkCSV(startupsToSend)
           )
         )
-        //TODO: Arreglar este otro asko
-        Ok("["+startupsToSend+","+startups+"]")
+        Ok(Json.obj(
+          "startups" -> startups,
+        "rows" -> startupsToSend
+        ))
       }
     }
   }

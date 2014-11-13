@@ -26,12 +26,10 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                 this.markOne = !(this.location || this.market);
                 if(!this.markOne) {
                     dataAccess.getStartupsNetwork(this.location, dateHolder.val(), this.market, -1, function (response) {
-                        var startups = JSON.parse(response);
-                        //en startups to show tengo los startups que tengo q mostrar en otra tablita
-                        scope.startupsToShow= (startups[1]);
-                        scope.startups = (startups[0]);
+                        scope.startupsToShow= response.startups;
+                        scope.startups = response.rows;
                         scope.searching = false;
-                        scope.startupsResultsReached = startups.length != 0;
+                        scope.startupsResultsReached = scope.startups.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
                         lastReq = {loc:scope.location, creation:dateHolder.val(), market:scope.market};
                         $scope.$apply();

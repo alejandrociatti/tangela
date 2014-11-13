@@ -1,6 +1,5 @@
 package util
 
-import java.io.File.separator
 import java.io.{File, PrintWriter}
 
 import com.fasterxml.jackson.core.JsonParseException
@@ -16,43 +15,34 @@ import scala.io.Source
 case class DiskSaver(directory: File, extension:String) {
   if(directory.exists && !directory.isDirectory) throw new NotDirectoryException(directory.getAbsolutePath)
 
-  def put(key: String, value: String): Unit = {
+  def put(key: String, value: String):Unit = {
     checkDirectory()
-
     val fileToSave = fileFromKey(key)
-    if (fileToSave.exists()) {
-      fileToSave.delete()
-    }
-
+    if(fileToSave.exists())  fileToSave.delete()
     val printWriter = new PrintWriter(fileToSave)
     printWriter.write(value)
     printWriter.flush()
     printWriter.close()
   }
 
-  private def fileFromKey(key: String): File =
-    new File(directory.getPath + separator + keyToFileName(key) + extension)
-
+  private def fileFromKey(key: String):File = new File(directory.getPath + keyToFileName(key) + extension)
 
   def get(key: String): Option[String] = {
     checkDirectory()
-
-    val fileToSave = fileFromKey(key)
-    if (fileToSave.exists()) {
-      val file = Source.fromFile(fileToSave)
+    val fileToRead = fileFromKey(key)
+    if (fileToRead.exists()) {
+      val file = Source.fromFile(fileToRead)
       val result = file.mkString("")
-
-      // To clear some errors
+      // Check json for errors
       if(extension.equals(".json")){
         try {
           Json.parse(result)
         } catch {
           case e: JsonParseException =>
-            fileToSave.delete()
+            fileToRead.delete()
             return None
         }
       }
-
       file.close()
       Some(result)
     } else {
@@ -60,15 +50,9 @@ case class DiskSaver(directory: File, extension:String) {
     }
   }
 
-  private def keyToFileName(key: String) = {
-    key.replaceAll("/", "-")
-  }
+  private def keyToFileName(key: String) =  key.replaceAll("/", "-")
 
-  def checkDirectory() {
-    if (!directory.exists()) {
-      directory.mkdir()
-    }
-  }
+  def checkDirectory() = if(!directory.exists()) directory.mkdir()
 }
 
 case class NotDirectoryException(message: String) extends Exception(message)

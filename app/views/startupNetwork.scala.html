@@ -77,7 +77,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="startup in main.startupsToShow | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                            <tr ng-repeat="startup in main.startupsToShow | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
                                 <td>{{startup.id}}</td>
                                 <td>{{startup.name}}</td>
                             </tr>
@@ -115,7 +115,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="startup in main.startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                            <tr ng-repeat="startup in main.startups | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
                                 <td>{{startup.startupIdOne}}</td>
                                 <td>{{startup.startupNameOne}}</td>
                                 <td>{{startup.roleOne}}</td>
