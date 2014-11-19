@@ -1,6 +1,7 @@
 package util
 
 import java.io.{File, PrintWriter}
+import java.io.File.separator
 
 import com.fasterxml.jackson.core.JsonParseException
 import play.api.libs.json.Json
@@ -18,14 +19,14 @@ case class DiskSaver(directory: File, extension:String) {
   def put(key: String, value: String):Unit = {
     checkDirectory()
     val fileToSave = fileFromKey(key)
-    if(fileToSave.exists())  fileToSave.delete()
+    if(fileToSave.exists()) fileToSave.delete()
     val printWriter = new PrintWriter(fileToSave)
     printWriter.write(value)
     printWriter.flush()
     printWriter.close()
   }
 
-  private def fileFromKey(key: String):File = new File(directory.getPath + keyToFileName(key) + extension)
+  private def fileFromKey(key: String):File = new File(directory.getPath + separator + keyToFileName(key) + extension)
 
   def get(key: String): Option[String] = {
     checkDirectory()
