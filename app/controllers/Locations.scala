@@ -23,7 +23,7 @@ object Locations extends Controller{
   }
 
   def loadCountriesToDB() = {
-    val countries = Json.parse(scala.io.Source.fromFile("public/data/countries-reduced.json").getLines().mkString)
+    val countries = Json.parse(scala.io.Source.fromFile("storedJsons/countries-reduced.json").getLines().mkString)
     val names:Seq[JsValue] = countries \\ "name"
     for(i <- 0 until names.size){
       //Next line turns strings like "Sri Lanka" to sri-lanka, so country names match their AngelList 'slugs'
