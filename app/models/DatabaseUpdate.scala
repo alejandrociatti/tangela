@@ -8,4 +8,8 @@ import org.joda.time.DateTime
  * Time: 19:21
  */
 
-class DatabaseUpdate(guteDate: DateTime = DateTime.now, folder: String)
+class DatabaseUpdate(guteDate: DateTime, folder: String)
+
+object DatabaseUpdate {
+  def getLast = DateTime.now
+}
