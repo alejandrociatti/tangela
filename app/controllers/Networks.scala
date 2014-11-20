@@ -202,7 +202,6 @@ object Networks extends Controller {
         }
       getMatches(userRoles, Seq())
     }
-
     peopleConnections map JsArray
   }
 

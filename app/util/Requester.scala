@@ -3,10 +3,10 @@ package util
 import java.io.{FileNotFoundException, IOException}
 import java.net.{InetSocketAddress, Proxy, URL}
 
-import akka.actor.{Actor, Props}
 import akka.pattern.ask
-import akka.routing.SmallestMailboxRouter
 import akka.util.Timeout
+import akka.actor.{Actor, Props}
+import akka.routing.SmallestMailboxRouter
 
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
