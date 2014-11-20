@@ -36,10 +36,7 @@ object Networks extends Controller {
             makeStartupsNetworkCSV(startupsToSend)
           )
         )
-        Ok(Json.obj(
-          "startups" -> startups,
-          "rows" -> startupsToSend
-        ))
+        Ok(Json.obj("startups" -> startups, "rows" -> startupsToSend))
       }
     }
   }
@@ -131,10 +128,7 @@ object Networks extends Controller {
             makePeopleNetworkCSV(startupsToSend)
           )
         )
-        Ok(Json.obj(
-          "startups" -> startups,
-        "rows" -> startupsToSend
-        ))
+        Ok(Json.obj("startups" -> startups, "rows" -> startupsToSend))
       }
     }
   }
@@ -198,7 +192,7 @@ object Networks extends Controller {
               .filter(differentUserFilter(_, userRole))
               .filter(equalStartupFilter(_, userRole))
               .map(usersConnection(_, userRole))
-            getMatches(userRoles, matches ++ peopleConnections)
+            getMatches(userRolesTail, matches ++ peopleConnections)
         }
       getMatches(userRoles, Seq())
     }

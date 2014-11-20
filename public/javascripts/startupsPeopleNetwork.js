@@ -27,9 +27,9 @@ module.controller('startupsPplNetCtrl', ['$scope', 'dataAccess',
                 if(!this.markOne) {
                     dataAccess.getPeopleNetwork(this.location, dateHolder.val(), this.market, this.quality, function (response) {
                         scope.startupsToShow = response.startups;
-                        scope.startups = response.rows;
+                        scope.people = response.rows;
                         scope.searching = false;
-                        scope.startupsResultsReached = scope.startups.length != 0;
+                        scope.startupsResultsReached = scope.people.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
                         lastReq = {loc:scope.location, creation:dateHolder.val(), market:scope.market};
                         $scope.$apply();
