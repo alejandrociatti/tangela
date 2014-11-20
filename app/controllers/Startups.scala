@@ -72,13 +72,6 @@ object Startups extends Controller with Secured {
     }
   }
 
-  def getNumberOfStartupsFundraising = withAsyncAuth(Admin, Researcher){username => implicit request =>
-    AngelListServices.getStartupsWithFoundRaising map { response =>
-      val total = (response \ "total").as[Int]
-      Ok(views.html.fundraisingCount(total))
-    }
-  }
-
   def getStartupById(startupId: Long) = Action.async {
     AngelListServices.getStartupById(startupId).map { jsResponse =>
       (jsResponse \\ "success").headOption.fold {
