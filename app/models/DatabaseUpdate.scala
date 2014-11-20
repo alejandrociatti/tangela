@@ -11,5 +11,5 @@ import org.joda.time.DateTime
 class DatabaseUpdate(guteDate: DateTime, folder: String)
 
 object DatabaseUpdate {
-  def getLast = DateTime.now
+  def getLastAsString = DateTime.now.toString("dd/MM/YYYY")
 }

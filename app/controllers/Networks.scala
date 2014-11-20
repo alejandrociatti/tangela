@@ -2,6 +2,7 @@ package controllers
 
 import _root_.util.CSVManager
 import controllers.Startups.startupsByCriteriaNonBlocking
+import models.DatabaseUpdate
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
@@ -39,6 +40,7 @@ object Networks extends Controller {
   }
 
   def makeStartupsNetworkCSVHeaders = List(
+    "tangela request date",
     "startup ID one", "startup name one", "user role in startup one",
     "startup id two", "startup name two", "user role in startup two",
     "user in common ID", "user in common name"
@@ -52,6 +54,7 @@ object Networks extends Controller {
    */
   def makeStartupsNetworkCSVValues(startups: JsArray) = startups.as[List[JsValue]].map{ startup =>
     List(
+      DatabaseUpdate.getLastAsString,
       (startup \ "startupIdOne").as[String],
       (startup \ "startupNameOne").as[String],
       (startup \ "roleOne").as[String],
