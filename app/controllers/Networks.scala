@@ -1,15 +1,12 @@
 package controllers
 
-import java.io._
-import _root_.util.DiskSaver
-import com.github.tototoshi.csv.CSVWriter
+import _root_.util.CSVManager
 import controllers.Startups.startupsByCriteriaNonBlocking
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.io.Source
 
 /**
  * Created by Javier Isoldi.
@@ -18,7 +15,6 @@ import scala.io.Source
  */
 
 object Networks extends Controller {
-  val jsonSaver = DiskSaver(new File("storedCSVs"), ".csv")
 
   /**
    * @param locationId    location tag filter.
@@ -31,9 +27,10 @@ object Networks extends Controller {
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { startupsToSend =>
         Future(
-          jsonSaver.put(
+          CSVManager.put(
             s"startup-net-$locationId-$marketId-$quality-$creationDate",
-            makeStartupsNetworkCSV(startupsToSend)
+            makeStartupsNetworkCSVHeaders,
+            makeStartupsNetworkCSVValues(startupsToSend)
           )
         )
         Ok(Json.obj(
@@ -44,44 +41,34 @@ object Networks extends Controller {
     }
   }
 
+  def makeStartupsNetworkCSVHeaders = List(
+    "startup ID one", "startup name one", "user role in startup one",
+    "startup id two", "startup name two", "user role in startup two",
+    "user in common ID", "user in common name"
+  )
+
   /**
-   * This method gets a Startups Network in jsArray form and converts it to CSV
+   * This method gets a Startups Network in jsArray form and converts it to a list of list of strings
    *
    * @param startups a jsArray containing startupsConnection jsObjects
-   * @return the CSV Result.
+   * @return list of list of string values.
    */
-  def makeStartupsNetworkCSV(startups:JsArray) = {
-    val headers:List[String] = List(
-        "startup ID one", "startup name one", "user role in startup one",
-        "startup id two", "startup name two", "user role in startup two",
-        "user in common ID", "user in common name"
-      )
-    val values:List[List[String]] = startups.as[List[JsValue]].map{ startup =>
-      List(
-        (startup \ "startupIdOne").as[String],
-        (startup \ "startupNameOne").as[String],
-        (startup \ "roleOne").as[String],
-        (startup \ "startupIdTwo").as[String],
-        (startup \ "startupNameTwo").as[String],
-        (startup \ "roleTwo").as[String],
-        (startup \ "userId").as[String],
-        (startup \ "userName").as[String]
-      )
-    }
-    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
-    writer.writeRow(headers)
-    writer.writeAll(values)
-    writer.close()
-    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
-      byteArrayOutputStream.toByteArray
-    ))
-    Source.fromInputStream(streamReader).mkString("")
+  def makeStartupsNetworkCSVValues(startups: JsArray) = startups.as[List[JsValue]].map{ startup =>
+    List(
+      (startup \ "startupIdOne").as[String],
+      (startup \ "startupNameOne").as[String],
+      (startup \ "roleOne").as[String],
+      (startup \ "startupIdTwo").as[String],
+      (startup \ "startupNameTwo").as[String],
+      (startup \ "roleTwo").as[String],
+      (startup \ "userId").as[String],
+      (startup \ "userName").as[String]
+    )
   }
 
   def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
       Future(
-        jsonSaver.get(s"startup-net-$locationId-$marketId-$quality-$creationDate").fold {
+        CSVManager.get(s"startup-net-$locationId-$marketId-$quality-$creationDate").fold {
           Ok(Json.obj("error" -> "could not find that CSV"))
         }{ result =>
           Ok(result)
@@ -126,9 +113,10 @@ object Networks extends Controller {
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
       getPeopleNetworkFuture(startups) map { startupsToSend =>
         Future(
-          jsonSaver.put(
+          CSVManager.put(
             s"people-net-$locationId-$marketId-$quality-$creationDate",
-            makePeopleNetworkCSV(startupsToSend)
+            makePeopleNetworkCSVHeaders(),
+            makePeopleNetworkCSVValues(startupsToSend)
           )
         )
         Ok(Json.obj(
@@ -139,38 +127,28 @@ object Networks extends Controller {
     }
   }
 
-  def makePeopleNetworkCSV(connections:JsArray) = {
-    val headers:List[String] = List(
-      "user ID one", "user name one", "user role one",
-      "user id two", "user name two", "user role two",
-      "startup in common ID", "startup in common name"
+  def makePeopleNetworkCSVHeaders() = List(
+    "user ID one", "user name one", "user role one",
+    "user id two", "user name two", "user role two",
+    "startup in common ID", "startup in common name"
+  )
+
+  def makePeopleNetworkCSVValues(connections: JsArray) = connections.as[List[JsValue]].map{ row =>
+    List(
+      (row \ "userIdOne").as[String],
+      (row \ "userNameOne").as[String],
+      (row \ "roleOne").as[String],
+      (row \ "userIdTwo").as[String],
+      (row \ "userNameTwo").as[String],
+      (row \ "roleTwo").as[String],
+      (row \ "startupId").as[String],
+      (row \ "startupName").as[String]
     )
-    val values:List[List[String]] = connections.as[List[JsValue]].map{ row =>
-      List(
-        (row \ "userIdOne").as[String],
-        (row \ "userNameOne").as[String],
-        (row \ "roleOne").as[String],
-        (row \ "userIdTwo").as[String],
-        (row \ "userNameTwo").as[String],
-        (row \ "roleTwo").as[String],
-        (row \ "startupId").as[String],
-        (row \ "startupName").as[String]
-      )
-    }
-    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
-    writer.writeRow(headers)
-    writer.writeAll(values)
-    writer.close()
-    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
-      byteArrayOutputStream.toByteArray
-    ))
-    Source.fromInputStream(streamReader).mkString("")
   }
 
   def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     Future(
-      jsonSaver.get(s"people-net-$locationId-$marketId-$quality-$creationDate").fold {
+      CSVManager.get(s"people-net-$locationId-$marketId-$quality-$creationDate").fold {
         Ok(Json.obj("error" -> "could not find that CSV"))
       }{ result =>
         Ok(result)

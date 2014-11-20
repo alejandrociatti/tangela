@@ -38,16 +38,18 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
             };
 
             this.exportCSV = function () {
-                dataAccess.getStartupsNetworkCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function(file){
-                    if(file.error){
-                        console.log(file.error)
-                    }else{
-                        var pom = document.createElement('a');
-                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'startups-net-'+lastReq.loc+'.csv');
-                        pom.click();
-                    }
-                });
+                if(lastReq) {
+                    dataAccess.getStartupsNetworkCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                        if (file.error) {
+                            console.log(file.error)
+                        } else {
+                            var pom = document.createElement('a');
+                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                            pom.setAttribute('download', 'startups-net-' + lastReq.loc + '.csv');
+                            pom.click();
+                        }
+                    });
+                }
             };
         }]
 );
