@@ -1,16 +1,15 @@
 package controllers
 
-import models.Startup
+import models.{DatabaseUpdate, Startup}
 import org.joda.time.DateTime
-import models.authentication.Role._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
+import _root_.util.CSVManager
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.concurrent.duration.Duration
 
 /**
  * Created by Javier Isoldi.
@@ -123,8 +122,17 @@ object Startups extends Controller with Secured {
       // TODO: Check if success check is necessary
       val success = response \\ "success"
       if (success.size == 0) {
+        val startupsCompleteData: JsArray = (response \ "startup_roles").as[JsArray]
 
-        val startups = (response \ "startup_roles").as[JsArray].value map { role =>
+        Future(
+          CSVManager.put(
+            s"startup-roles-$startupId",
+            CSVs.makeStartupRolesCSVHeaders,
+            CSVs.makeStartupRolesCSVValues(startupsCompleteData, startupId)
+          )
+        )
+
+        val startupsCutData = startupsCompleteData.value map { role =>
           Json.obj(
             "id" -> (role \ "user" \ "id").as[Int],
             "name" -> (role \ "user" \ "name").as[String],
@@ -133,7 +141,7 @@ object Startups extends Controller with Secured {
           )
         }
 
-        Ok(JsArray(startups))
+        Ok(JsArray(startupsCutData))
       } else {
         Ok(Json.obj("id" -> "error", "msg" -> s"Startup $startupId does not exist"))
       }

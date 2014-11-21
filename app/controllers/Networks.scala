@@ -30,50 +30,13 @@ object Networks extends Controller {
         Future(
           CSVManager.put(
             s"startup-net-$locationId-$marketId-$quality-$creationDate",
-            makeStartupsNetworkCSVHeaders,
-            makeStartupsNetworkCSVValues(startupsToSend)
+            CSVs.makeStartupsNetworkCSVHeaders,
+            CSVs.makeStartupsNetworkCSVValues(startupsToSend)
           )
         )
         Ok(Json.obj("startups" -> startups, "rows" -> startupsToSend))
       }
     }
-  }
-
-  def makeStartupsNetworkCSVHeaders = List(
-    "tangela request date",
-    "startup ID one", "startup name one", "user role in startup one",
-    "startup id two", "startup name two", "user role in startup two",
-    "user in common ID", "user in common name"
-  )
-
-  /**
-   * This method gets a Startups Network in jsArray form and converts it to a list of list of strings
-   *
-   * @param startups a jsArray containing startupsConnection jsObjects
-   * @return list of list of string values.
-   */
-  def makeStartupsNetworkCSVValues(startups: JsArray) = startups.as[List[JsValue]].map{ startup =>
-    List(
-      DatabaseUpdate.getLastAsString,
-      (startup \ "startupIdOne").as[String],
-      (startup \ "startupNameOne").as[String],
-      (startup \ "roleOne").as[String],
-      (startup \ "startupIdTwo").as[String],
-      (startup \ "startupNameTwo").as[String],
-      (startup \ "roleTwo").as[String],
-      (startup \ "userId").as[String],
-      (startup \ "userName").as[String]
-    )
-  }
-
-  def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
-      Future(
-        CSVManager.get(s"startup-net-$locationId-$marketId-$quality-$creationDate").fold {
-          Ok(Json.obj("error" -> "could not find that CSV"))
-        }{ result =>
-          Ok(result)
-        }
-      )
   }
 
   def getStartupsNetworkFuture(startups: Seq[JsValue]): Future[JsArray] = {
@@ -115,42 +78,13 @@ object Networks extends Controller {
         Future(
           CSVManager.put(
             s"people-net-$locationId-$marketId-$quality-$creationDate",
-            makePeopleNetworkCSVHeaders(),
-            makePeopleNetworkCSVValues(startupsToSend)
+            CSVs.makePeopleNetworkCSVHeaders(),
+            CSVs.makePeopleNetworkCSVValues(startupsToSend)
           )
         )
         Ok(Json.obj("startups" -> startups, "rows" -> startupsToSend))
       }
     }
-  }
-
-  def makePeopleNetworkCSVHeaders() = List(
-    "user ID one", "user name one", "user role one",
-    "user id two", "user name two", "user role two",
-    "startup in common ID", "startup in common name"
-  )
-
-  def makePeopleNetworkCSVValues(connections: JsArray) = connections.as[List[JsValue]].map{ row =>
-    List(
-      (row \ "userIdOne").as[String],
-      (row \ "userNameOne").as[String],
-      (row \ "roleOne").as[String],
-      (row \ "userIdTwo").as[String],
-      (row \ "userNameTwo").as[String],
-      (row \ "roleTwo").as[String],
-      (row \ "startupId").as[String],
-      (row \ "startupName").as[String]
-    )
-  }
-
-  def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
-    Future(
-      CSVManager.get(s"people-net-$locationId-$marketId-$quality-$creationDate").fold {
-        Ok(Json.obj("error" -> "could not find that CSV"))
-      }{ result =>
-        Ok(result)
-      }
-    )
   }
 
   def getPeopleNetworkFuture(startups: Seq[JsValue]) : Future[JsArray] = {

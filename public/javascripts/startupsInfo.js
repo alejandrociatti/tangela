@@ -12,6 +12,7 @@ var module = angular.module('app.controllers', ['app.services']);
 
 module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
+            var lastReq;
             $scope.roles = [];
             $scope.rounds = [];
             $scope.startupsResultsReached= true;
@@ -28,6 +29,7 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
             };
 
             $scope.loadInfo = function(){
+                lastReq = {startupId: $scope.startupId};
                 $scope.searchNumberOfFounders();
                 $scope.searchRolesOfStartup();
                 $scope.searchStartupFunding();
@@ -52,6 +54,21 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                     }
                     $scope.$apply();
                 })
+            };
+
+            $scope.exportStartupRoles = function(){
+                if(lastReq) {
+                    dataAccess.getStartupRolesCSV(lastReq.startupId, function (file) {
+                        if (file.error) {
+                            console.log(file.error)
+                        } else {
+                            var pom = document.createElement('a');
+                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                            pom.setAttribute('download', 'startups-net-' + lastReq.startupId + '.csv');
+                            pom.click();
+                        }
+                    });
+                }
             };
 
             $scope.exportStartupFunding = function(){

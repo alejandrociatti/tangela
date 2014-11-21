@@ -131,7 +131,7 @@ serviceModule.factory('dataAccess', function() {
             })
         },
         getStartupsNetworkCSV: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Networks.getStartupsNetworkCSV(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.CSVs.getStartupsNetworkCSV(locationId, market, undefined, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -139,7 +139,15 @@ serviceModule.factory('dataAccess', function() {
             })
         },
         getPeopleNetworkCSV: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Networks.getPeopleNetworkCSV(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
+        },
+        getStartupRolesCSV: function(startupId, successHandler, errorHandler){
+            jsRoutes.controllers.CSVs.getStartupRolesCSV(startupId).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
