@@ -81,6 +81,50 @@ object CSVs {
     )
   }
 
+  /* Startups CSV ********************************************************************************************************/
+
+
+  def makeStartupsCSVHeaders() = List(
+    "Tangela Request Date",
+    "id","hidden","community_profile","name","angellist_url","logo_url","thumb_url","quality",
+    "product_desc","high_concept","follower_count","company_url","created_at","updated_at",
+    "twitter_url","blog_url","video_url"
+  )
+
+  def makeStartupsCSVValues(values: Seq[JsValue]):List[List[String]]= values.toList.map { startup =>
+    List(
+      DatabaseUpdate.getLastAsString,
+      (startup \ "id").asOpt[Int].getOrElse(0).toString,
+      (startup \ "hidden").asOpt[Boolean].getOrElse(false).toString,
+      (startup \ "community_profile").asOpt[Boolean].getOrElse(false).toString,
+      (startup \ "name").asOpt[String].getOrElse(""),
+      (startup \ "angellist_url").asOpt[String].getOrElse(""),
+      (startup \ "logo_url").asOpt[String].getOrElse(""),
+      (startup \ "thumb_url").asOpt[String].getOrElse(""),
+      (startup \ "quality").asOpt[Int].getOrElse(0).toString,
+      (startup \ "product_desc").asOpt[String].getOrElse(""),
+      (startup \ "high_concept").asOpt[String].getOrElse(""),
+      (startup \ "follower_count").asOpt[Int].getOrElse(0).toString,
+      (startup \ "company_url").asOpt[String].getOrElse(""),
+      (startup \ "created_at").asOpt[String].getOrElse(""),
+      (startup \ "updated_at").asOpt[String].getOrElse(""),
+      (startup \ "twitter_url").asOpt[String].getOrElse(""),
+      (startup \ "blog_url").asOpt[String].getOrElse(""),
+      (startup \ "video_url").asOpt[String].getOrElse("")
+    )
+  }
+
+  def getStartupsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+    Future(
+      CSVManager.get(s"startups-$locationId-$marketId-$quality-$creationDate").fold {
+        Ok(Json.obj("error" -> "could not find that CSV"))
+      }{ result =>
+        Ok(result)
+      }
+    )
+  }
+
+
   /* Roles CSV ********************************************************************************************************/
 
   def makeStartupRolesCSVHeaders = List(

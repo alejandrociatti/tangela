@@ -138,6 +138,14 @@ serviceModule.factory('dataAccess', function() {
                 error: errorHandler
             })
         },
+        getStartupsCSV: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            })
+        },
         getPeopleNetworkCSV: function(locationId, date, market, quality, successHandler, errorHandler){
             jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, undefined, date).ajax({
                 method:'GET',

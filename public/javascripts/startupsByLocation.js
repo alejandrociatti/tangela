@@ -11,10 +11,36 @@ var module = angular.module('app.controllers', ['app.services']);
 
 module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
     function ($scope, dataAccess, graphUtil) {
-        $scope.startupsMsg = '';
-        $scope.childrenSelectMsg = 'Select a country first.';
-        $scope.startups = [];
+//        $scope.startupsMsg = '';
+//        $scope.childrenSelectMsg = 'Select a country first.';
+//        $scope.startups = [];
 
+        var scope = $scope;
+        var lastReq;
+        var dateHolder = $("#creation-date");
+        $scope.startupsResultsReached= true;
+        $scope.searching= false;
+        $scope.optionSelectMsg = 'Search first.';
+        $scope.startups = [];
+        $scope.startupsToShow = [];
+        $scope.markOne = false;
+
+        $scope.submit = function () {
+            $scope.optionSelectMsg = 'Loading results...';
+            $scope.startupsResultsReached = true;
+            $scope.searching = true;
+            $scope.markOne = !($scope.location || $scope.market);
+            if(!$scope.markOne) {
+                dataAccess.getStartupsByFeatures($scope.location, dateHolder.val(), $scope.market, -1, function (response) {
+                    $scope.startups = response;
+                    $scope.searching = false;
+                    $scope.startupsResultsReached = scope.startups.length != 0;
+                    $scope.optionSelectMsg = 'Select a startup.';
+                    lastReq = {loc:$scope.location, creation:dateHolder.val(), market:$scope.market};
+                    $scope.$apply();
+                });
+            }
+        };
         $scope.loadChildren = function(){
             $scope.children = [];
             $scope.childrenSelectMsg = 'Loading areas...';
@@ -27,21 +53,23 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
                     console.log(error);
                 });
         };
-
-        $scope.submit = function(){
-            $scope.startupsMsg = 'Loading startups...';
-            var locationId;
-            if($scope.area) locationId = $scope.area;
-            else locationId = $scope.country;
-            (locationId) && dataAccess.getStartupsByLocation(locationId, function(startups){
-                $scope.startups = startups;
-                if(startups.length > 0) $scope.startupsMsg = '';
-                else $scope.startupsMsg = 'No startups were found...';
-                $scope.$apply();
-            });
+        $scope.exportCSV = function () {
+            if(lastReq) {
+                dataAccess.getStartupsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                    if (file.error) {
+                        console.log(file.error)
+                    } else {
+                        var pom = document.createElement('a');
+                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                        pom.setAttribute('download', 'startups-net-' + lastReq.loc + '.csv');
+                        pom.click();
+                    }
+                });
+            }
         };
 
         $scope.showNetwork = function(startupId){
+
             $('#network-container').empty();
             var s = new sigma('network-container');
             var edgeId = 0;

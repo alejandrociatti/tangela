@@ -1,15 +1,19 @@
 package controllers
 
-import models.{DatabaseUpdate, Startup}
+import controllers.Networks._
+import models.Startup
 import org.joda.time.DateTime
+import models.authentication.Role._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 import _root_.util.CSVManager
+import _root_.models.DatabaseUpdate
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import scala.concurrent.duration.Duration
 
 /**
  * Created by Javier Isoldi.
@@ -282,6 +286,7 @@ object Startups extends Controller with Secured {
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) map JsArray
   }
 
+
   def startupsByCriteriaNonBlocking(locationId: Int, marketId: Int, quality: Int,
                                     creationDate: String): Future[Seq[JsValue]] = {
 //    Filter by location and market
@@ -296,11 +301,23 @@ object Startups extends Controller with Secured {
     }
 
 //    Filter by quality and creationDate
-    initialStartupsToSend map { startups =>
+    val filtered= initialStartupsToSend map { startups =>
       val filteredByQuality = if (quality != -1) startups.filter(intFilter("quality", quality)) else startups
       if (creationDate != "") startups.filter(dateFilter("created_at", DateTime.parse(creationDate)))
       else filteredByQuality
     } map(_ filter validResultFilter)
+
+    filtered map { startups =>
+      Future {
+        println("h")
+        val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
+        val headers: List[String] = CSVs.makeStartupsCSVHeaders()
+        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups)
+        println("key = " + key)
+        CSVManager.put(key, headers, values)
+      }
+    }
+    filtered
   }
 
   def intFilter(field: String, value: Int)(json: JsValue): Boolean =
@@ -322,11 +339,23 @@ object Startups extends Controller with Secured {
   )
 
   def relevantStartupInfo(startup: JsValue) = Json.obj(
-    "id" -> (startup \ "id").as[JsNumber],
-    "name" -> (startup \ "name").as[JsString],
-    "markets" -> (startup \ "markets").as[JsArray],
-    "quality" -> (startup \ "quality").as[JsNumber],
-    "created_at" -> (startup \ "created_at").as[JsString]
+    "id" -> (startup \ "id"),
+    "hidden" -> (startup \ "hidden"),
+    "community_profile" -> (startup \ "community_profile"),
+    "name" -> (startup \ "name"),
+    "angellist_url" -> (startup \ "angellist_url"),
+    "logo_url" -> (startup \ "logo_url"),
+    "thumb_url" -> (startup \ "thumb_url"),
+    "quality" -> (startup \ "quality"),
+    "product_desc" -> (startup \ "product_desc"),
+    "high_concept" -> (startup \ "high_concept"),
+    "follower_count" -> (startup \ "follower_count"),
+    "company_url" -> (startup \ "company_url"),
+    "created_at" -> (startup \ "created_at"),
+    "updated_at" -> (startup \ "updated_at"),
+    "twitter_url" -> (startup \ "twitter_url"),
+    "blog_url" -> (startup \ "blog_url"),
+    "video_url" -> (startup \ "video_url")
   )
 
   def fullUserInfo(user: JsValue) = Json.obj(

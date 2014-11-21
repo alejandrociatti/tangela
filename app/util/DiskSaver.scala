@@ -13,7 +13,7 @@ import scala.io.Source
  * Date: 05/11/14.
  * Project: tangela.
  */
-case class DiskSaver(directory: File, extension:String) {
+case class DiskSaver(directory: File, extension: String) {
   if(directory.exists && !directory.isDirectory) throw new NotDirectoryException(directory.getAbsolutePath)
 
   def put(key: String, value: String):Unit = {
@@ -25,8 +25,6 @@ case class DiskSaver(directory: File, extension:String) {
     printWriter.flush()
     printWriter.close()
   }
-
-  private def fileFromKey(key: String):File = new File(directory.getPath + separator + keyToFileName(key) + extension)
 
   def get(key: String): Option[String] = {
     checkDirectory()
@@ -45,11 +43,14 @@ case class DiskSaver(directory: File, extension:String) {
         }
       }
       file.close()
+
       Some(result)
     } else {
       None
     }
   }
+
+  private def fileFromKey(key: String):File = new File(directory.getPath + separator + keyToFileName(key) + extension)
 
   private def keyToFileName(key: String) =  key.replaceAll("/", "-")
 
