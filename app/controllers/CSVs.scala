@@ -165,31 +165,31 @@ object CSVs {
     )
   }
 
-  /* Funding CSV ******************************************************************************************************/
+  /* Funding CSV for one or more startups *****************************************************************************/
 
   def makeStartupFundingCSVHeaders = List(
     "tangela request date", "startup ID", "round type", "round raised", "round closed at",
     "round id", "round source url", "participant name", "participant type", "participant id"
   )
 
-  def makeStartupFundingCSVValues(fundings: JsValue, startupId: Long): List[List[String]] = fundings.as[List[JsValue]].map{ funding =>
-      Json.parse((funding \ "participants").as[String]).as[List[JsValue]] match {
-        case Nil => List(emptyParticipant(funding, startupId))
-        case nonEmpty => nonEmpty map (nonEmptyParticipant(_, funding, startupId))
-      }
-    }.flatten
+  def makeStartupFundingCSVValues(fundings: JsValue): List[List[String]] = fundings.as[List[JsValue]].map{ funding =>
+    Json.parse((funding \ "participants").as[String]).as[List[JsValue]] match {
+      case Nil => List(emptyParticipant(funding))
+      case nonEmpty => nonEmpty map (nonEmptyParticipant(_, funding))
+    }
+  }.flatten
 
-  def nonEmptyParticipant(participant: JsValue, funding: JsValue, startupId: Long): List[String] = startupFundingList(funding, startupId) ++ List(
+  def nonEmptyParticipant(participant: JsValue, funding: JsValue): List[String] = startupFundingList(funding) ++ List(
     (participant \ "name").asOpt[String].getOrElse(""),
     (participant \ "type").asOpt[String].getOrElse(""),
     (participant \ "id").asOpt[String].getOrElse("").toString
   )
 
-  def emptyParticipant(funding: JsValue, startupId: Long) = startupFundingList(funding, startupId) ++ List("", "", "")
+  def emptyParticipant(funding: JsValue) = startupFundingList(funding) ++ List("", "", "")
 
-  def startupFundingList(funding: JsValue, startupId: Long):List[String] = List(
+  def startupFundingList(funding: JsValue):List[String] = List(
     DatabaseUpdate.getLastAsString,
-    startupId.toString,
+    (funding \ "startup_id").asOpt[String].getOrElse(""),
     (funding \ "round_type").asOpt[String].getOrElse(""),
     (funding \ "amount").asOpt[Int].getOrElse("").toString,
     (funding \ "closed_at").asOpt[String].getOrElse(""),
@@ -200,6 +200,16 @@ object CSVs {
   def getStartupFundingCSV(startupId: Long) = Action.async {
     Future(
       CSVManager.get(s"startup-funding-$startupId").fold {
+        Ok(Json.obj("error" -> "could not find that CSV"))
+      } { result =>
+        Ok(result)
+      }
+    )
+  }
+
+  def getStartupsFundingsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+    Future(
+      CSVManager.get(s"startups-funding-$locationId-$marketId-$quality-$creationDate").fold {
         Ok(Json.obj("error" -> "could not find that CSV"))
       } { result =>
         Ok(result)

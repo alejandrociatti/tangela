@@ -12,6 +12,8 @@ var module = angular.module('app.controllers', ['app.services']);
 module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
 
+            var lastReq;
+            var dateHolder = $("#creation-date");
             $scope.startupsResultsReached= true;
             $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
@@ -23,6 +25,7 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
+                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market};
                     $scope.fundings = sortByKeys(fundings, "name");
                     $scope.searching = false;
                     $scope.startupsResultsReached= fundings.length != 0;
@@ -42,21 +45,18 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
             }
 
             $scope.exportCSV = function () {
-                var obj = {
-                    headers: ["id", "startup name","round type","amount", "closed at"],
-                    values: []
-                } ;
-                for (var i = 0; i < $scope.fundings.length; i++) {
-                    var fund = $scope.fundings[i];
-                    obj.values.push([fund.id, fund.name, fund.round_type, fund.amount, fund.closed_at]);
+                if(lastReq) {
+                    dataAccess.getStartupsFundingsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                        if (file.error) {
+                            console.log(file.error)
+                        } else {
+                            var pom = document.createElement('a');
+                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                            pom.setAttribute('download', 'startups-fundings-' + lastReq.loc + '.csv');
+                            pom.click();
+                        }
+                    });
                 }
-
-                dataAccess.getCSV(JSON.stringify(obj), function(file){
-                    var pom = document.createElement('a');
-                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                    pom.setAttribute('download', 'data.csv');
-                    pom.click();
-                });
             };
 
 
