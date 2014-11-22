@@ -161,6 +161,14 @@ serviceModule.factory('dataAccess', function() {
                 success: successHandler,
                 error: errorHandler
             });
+        },
+        getStartupFundingCSV: function(startupId, successHandler, errorHandler){
+            jsRoutes.controllers.CSVs.getStartupFundingCSV(startupId).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
         }
     };
 });

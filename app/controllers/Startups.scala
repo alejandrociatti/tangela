@@ -154,6 +154,14 @@ object Startups extends Controller with Secured {
 
   def getStartupFunding(startupId: Long) = Action.async {
     getStartupFund(startupId).map { startupFund =>
+      Future(
+        CSVManager.put(
+          s"startup-funding-$startupId",
+          CSVs.makeStartupFundingCSVHeaders,
+          CSVs.makeStartupFundingCSVValues(startupFund, startupId)
+        )
+      )
+
       Ok(startupFund)
     }
   }
@@ -230,10 +238,10 @@ object Startups extends Controller with Secured {
           val participants: JsArray = (aFundraisingRound \ "participants").as[JsArray]
 
           val id: Int = (aFundraisingRound \ "id").as[Int]
-//          val round_type: String = (aFundraisingRound \ "round_type").as[String]
           val round_type: String = (aFundraisingRound \ "round_type").asOpt[String].getOrElse("")
           val amount: Int = (aFundraisingRound \ "amount").as[Int]
           val closed_at: String = (aFundraisingRound \ "closed_at").as[String]
+          val source_url: String = (aFundraisingRound \ "source_url").asOpt[String].getOrElse("")
 
           for (participant <- participants.value) {
             val id: Int = (participant \ "id").as[Int]
@@ -243,7 +251,7 @@ object Startups extends Controller with Secured {
           }
 
           seqFunding = seqFunding.+:(Map("id" -> id.toString, "name" -> startupName, "round_type" -> round_type, "amount" -> amount.toString,
-            "closed_at" -> closed_at, "participants" -> Json.toJson(seqParticipants).toString()))
+            "closed_at" -> closed_at, "source_url" -> source_url, "participants" -> Json.toJson(seqParticipants).toString()))
         }
         Json.toJson(seqFunding.reverse)
       } else {

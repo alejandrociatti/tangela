@@ -34,6 +34,7 @@ GET         /startups/persons/:id                       controllers.Startups.get
 GET         /startups/startupCriteriaSearch             controllers.Startups.startupCriteriaSearch(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startup-fundings                  controllers.Startups.startupsFundingByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startup-roles-csv/:startupId      controllers.CSVs.getStartupRolesCSV(startupId: Long)
+GET         /startups/startup-funding-csv/:startupId    controllers.CSVs.getStartupFundingCSV(startupId: Long)
 GET         /startups/startups-csv                      controllers.CSVs.getStartupsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 
 #Networks

@@ -64,7 +64,7 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                         } else {
                             var pom = document.createElement('a');
                             pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                            pom.setAttribute('download', 'startups-net-' + lastReq.startupId + '.csv');
+                            pom.setAttribute('download', 'startup-roles-' + lastReq.startupId + '.csv');
                             pom.click();
                         }
                     });
@@ -72,38 +72,15 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
             };
 
             $scope.exportStartupFunding = function(){
-                var rounds = {
-                    headers: ["Round Id", "Type", "Raised", "Closed at"],
-                    values: []
-                } ;
-
-                var participants = {
-                    headers: ["Round Id", "Participant Id", "Name", "Type"],
-                    values: []
-                } ;
-
-                for (var i = 0; i < $scope.rounds.length; i++) {
-                    var round = $scope.rounds[i];
-                    rounds.values.push([round.id, round.round_type, round.amount, round.closed_at]);
-
-                    var participants2 = round.participants;
-                    for(var j = 0; j < participants2.length; j++){
-                        var auxParticipant = participants2[j];
-                        participants.values.push([round.id, auxParticipant.id, auxParticipant.name, auxParticipant.type])
+                dataAccess.getStartupFundingCSV(lastReq.startupId, function (file) {
+                    if (file.error) {
+                        console.log(file.error)
+                    } else {
+                        var pom = document.createElement('a');
+                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                        pom.setAttribute('download', 'startup-funding-' + lastReq.startupId + '.csv');
+                        pom.click();
                     }
-                }
-
-                dataAccess.getCSV(JSON.stringify(rounds),  function(file){
-                    var pom = document.createElement('a');
-                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                    pom.setAttribute('download', 'rounds.csv');
-                    pom.click();
-                });
-                dataAccess.getCSV(JSON.stringify(participants), function(file){
-                    var pom = document.createElement('a');
-                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                    pom.setAttribute('download', 'participants.csv');
-                    pom.click();
                 });
             };
 
@@ -120,9 +97,6 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                     $scope.$apply();
                 })
             };
-
-
-            //Pagination control:
 
             //Pagination control:
 
