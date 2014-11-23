@@ -81,8 +81,8 @@ serviceModule.factory('dataAccess', function() {
                 error: errorHandler
             });
         },
-        getStartupPeopleInfo: function(startupId, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.getAllInfoOfPeopleInStartups(startupId).ajax({
+        getStartupPeopleInfo: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.getUsersInfoByCriteria(locationId, market, undefined, date).ajax({
                 method: 'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -140,6 +140,14 @@ serviceModule.factory('dataAccess', function() {
         },
         getStartupsCSV: function(locationId, date, market, quality, successHandler, errorHandler){
             jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            })
+        },
+        getUsersCSV: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.CSVs.getUsersCSV(locationId, market, undefined, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,

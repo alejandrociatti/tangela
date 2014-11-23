@@ -125,6 +125,47 @@ object CSVs extends Controller{
   }
 
 
+  /* Users CSV ********************************************************************************************************/
+
+
+
+  def makeUsersCSVHeaders(): List[String] = List(
+    "id", "name", "bio", "role", "follower_count", "angellist_url", "image", "blog_url",
+    "online_bio_url", "twitter_url", "facebook_url", "linkedin_url", "what_ive_built",
+    "what_i_do", "investor"
+  )
+
+
+  def makeUsersCSVValues(users: Seq[JsValue]): List[List[String]] = users.toList.map {user =>
+    List(
+      (user \ "id").asOpt[Long].getOrElse(0).toString,
+      (user \ "name").asOpt[String].getOrElse[String](""),
+      (user \ "bio").asOpt[String].getOrElse[String](""),
+      (user \ "role").asOpt[String].getOrElse[String](""),
+      (user \ "follower_count").asOpt[Int].getOrElse(0).toString,
+      (user \ "angellist_url").asOpt[String].getOrElse[String](""),
+      (user \ "image").asOpt[String].getOrElse[String](""),
+      (user \ "blog_url").asOpt[String].getOrElse[String](""),
+      (user \ "online_bio_url").asOpt[String].getOrElse[String](""),
+      (user \ "twitter_url").asOpt[String].getOrElse[String](""),
+      (user \ "facebook_url").asOpt[String].getOrElse[String](""),
+      (user \ "linkedin_url").asOpt[String].getOrElse[String](""),
+      (user \ "what_ive_built").asOpt[String].getOrElse[String](""),
+      (user \ "what_i_do").asOpt[String].getOrElse[String](""),
+      (user \ "investor").asOpt[Boolean].getOrElse(false).toString
+    )
+  }
+
+  def getUsersCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+    Future(
+      CSVManager.get(s"users-$locationId-$marketId-$quality-$creationDate").fold {
+        Ok(Json.obj("error" -> "could not find that CSV"))
+      }{ result =>
+        Ok(result)
+      }
+    )
+  }
+
   /* Startups Tags CSV ********************************************************************************************************/
 
   def makeStartupsTagsCSVHeaders(): List[String] = List(
@@ -141,7 +182,6 @@ object CSVs extends Controller{
       val locations:JsArray= (startup \ "locations").as[JsArray]
       val companies:JsArray= (startup \ "company_type").as[JsArray]
       val id= (startup \ "id").asOpt[Int].getOrElse[Int](0)
-      println("id = " + id)
       group= group ++ markets.value.toList ++ locations.value.toList ++ companies.value.toList
       group2= group2 ++ group.map { value =>
         Json.obj(

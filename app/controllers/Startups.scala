@@ -166,7 +166,33 @@ object Startups extends Controller with Secured {
     }
   }
 
-  def getAllInfoOfPeopleInStartups(startupId: Long) = Action.async {
+  def getUsersInfoByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async
+  {
+    startupsByCriteria(locationId, marketId, quality, creationDate).flatMap { startups =>
+      //      val futureUsers = (0 to startups.value.size-1).map( startups.value.map { startup =>
+      //        val id = (startup \ "id").asOpt[Int].getOrElse(0)
+      //        getAllInfoOfPeopleInStartups(id).map { info =>
+      //          info.map { list => JsArray(list)}
+      //        }}
+      //      )
+      val futureUsers = startups.value.map { startup =>
+        val id = (startup \ "id").asOpt[Int].getOrElse(0)
+        getAllInfoOfPeopleInStartups(id)
+      }
+
+      Future.sequence(futureUsers).map { usrs =>
+        Future (
+          CSVManager.put(s"users-$locationId-$marketId-$quality-$creationDate",
+            CSVs.makeUsersCSVHeaders(),
+            CSVs.makeUsersCSVValues(usrs.flatten))
+        )
+        JsArray(usrs.flatten)
+
+      }
+    } map (result => Ok(result))
+  }
+
+  def getAllInfoOfPeopleInStartups(startupId: Long) :Future[Seq[JsValue]] = {
 
     def getFutureUserInfoById(userId: Int, userRole: String): Future[JsValue] = {
       AngelListServices.getUserById(userId) map { userResponse =>
@@ -174,6 +200,7 @@ object Startups extends Controller with Secured {
         val user = userResponse
         val userSuccess = user \\ "success"
         if (userSuccess.size == 0) {
+          //          println("fullUserInfo() = " + fullUserInfo(user))
           fullUserInfo(user)
         } else {
           Json.obj()
@@ -181,23 +208,28 @@ object Startups extends Controller with Secured {
       }
     }
 
+    //    var usersInfo : Seq[JsValue]= Seq()
+
     AngelListServices.getRolesFromStartupId(startupId) flatMap { response =>
-      // TODO: Check if success check is necessary
-      val success = response \\ "success"
-      if (success.size == 0) {
 
-        val userInfoFutures = (response \ "startup_roles").as[JsArray].value map { role =>
-          val userRole: String = (role \ "role").as[String]
-          val userId: Int = (role \ "user" \ "id").as[Int]
-          getFutureUserInfoById(userId, userRole)
-        }
-        val usersInfo = Future.sequence(userInfoFutures)
-        usersInfo map (usersInfo => Ok(JsArray(usersInfo)))
-      } else {
-        Future(Ok(Json.obj("id" -> "error", "msg" -> s"Startup $startupId does not exist")))
+      val userInfoFutures = (response \ "startup_roles").as[JsArray].value map { role =>
+        val userRole: String = (role \ "role").as[String]
+        val userId: Int = (role \ "user" \ "id").as[Int]
+        getFutureUserInfoById(userId, userRole)
       }
-
+      println("userInfoFutures = " + userInfoFutures)
+      val usersInfo2 = Future.sequence(userInfoFutures)
+      println("usersInfo2 = " + usersInfo2)
+      usersInfo2
     }
+    //    val pages: Int = (response \ "last_page").as[Int]
+    //    val futureResponses = (2 to pages).map(AngelListServices.getStartupsByTagIdAndPage(tagId))
+    //      .map(futureResponse => futureResponse.map(responseToStartupSeq))
+    //    val firstPageResponses = responseToStartupSeq(response).map(Seq(_)).map(Future(_))
+    //
+    //    // Add first page to result\
+    //    firstPageResponses ++ futureResponses
+    //    usersInfo
 
   }
 
@@ -340,7 +372,7 @@ object Startups extends Controller with Secured {
         val key: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
         val headers: List[String] = CSVs.makeStartupsTagsCSVHeaders()
         val values: List[List[String]] = CSVs.makeStartupsTagsCSVValues(startups)
-        println("values = " + values)
+//        println("values = " + values)
         CSVManager.put(key, headers, values)
       }
     }

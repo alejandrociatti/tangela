@@ -13,53 +13,40 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.startupsResultsReached= true;
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
+        var lastReq;
+        var dateHolder = $("#creation-date");
         $scope.markOne= false;
 
-        $scope.searchForStartupsByFeatures= function () {
+
+        $scope.submit = function(){
             $scope.optionSelectMsg = 'Loading results...';
             $scope.startupsResultsReached= true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
-                dataAccess.getStartupsByFeatures($scope.location, $("#creation-date").val(), $scope.market, -1, function (startupsByName) {
-                    $scope.startupsByName = startupsByName;
-                    $scope.startupsResultsReached = startupsByName.length != 0;
-                    $scope.optionSelectMsg = 'Select a startup.';
+                dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, -1,  function (persons) {
+                    console.log(persons);
+                    $scope.persons = persons;
+                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market};
                     $scope.$apply();
                 });
             }
         };
 
-        $scope.searchPeopleInfo= function(){
-            dataAccess.getStartupPeopleInfo($scope.startupId, function(persons){
-                console.log(persons);
-                $scope.persons= persons;
-                $scope.$apply();
-            });
-        };
 
-
-        $scope.export= function () {
-
-
-            var obj = {
-                headers: ["Id","Name","Bio","Role","Followers","AngelList","Image","Blog","Online Bio","Twitter","Facebook",
-                    "Linkedin","What He'd Built","What He Does","Investor"],
-                values: []
-            } ;
-            for (var i = 0; i < $scope.persons.length; i++) {
-                var person = $scope.persons[i];
-                obj.values.push([person.id,person.name,person.bio,person.role,person.follower_count,person.angellist_url,
-                    person.image,person.blog_url,person.online_bio_url,person.twitter_url,
-                    person.facebook_url,person.linkedin_url,person.what_ive_built,person.what_i_do,person.investor]);
+        $scope.exportCSV = function () {
+            if(lastReq) {
+                console.log(dataAccess)
+                dataAccess.getUsersCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                    if (file.error) {
+                        console.log(file.error)
+                    } else {
+                        var pom = document.createElement('a');
+                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                        pom.setAttribute('download', 'users-' + lastReq.loc + '.csv');
+                        pom.click();
+                    }
+                });
             }
-
-            dataAccess.getCSV(JSON.stringify(obj), function(file){
-                var pom = document.createElement('a');
-                pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                pom.setAttribute('download', 'peopleinfo.csv');
-                pom.click();
-            });
-
         };
 
 

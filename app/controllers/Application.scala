@@ -38,6 +38,7 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.getStartupsByName,
         routes.javascript.Startups.getStartupFunding,
         routes.javascript.CSVs.getStartupsCSV,
+        routes.javascript.CSVs.getUsersCSV,
         routes.javascript.CSVs.getStartupsTagsCSV,
         routes.javascript.Startups.startupCriteriaSearch,
         routes.javascript.Networks.getStartupsNetwork,
@@ -47,7 +48,7 @@ object Application extends Controller with Secured{
         routes.javascript.CSVs.getStartupRolesCSV,
         routes.javascript.CSVs.getStartupFundingCSV,
         routes.javascript.CSVs.getStartupsFundingsCSV,
-        routes.javascript.Startups.getAllInfoOfPeopleInStartups,
+        routes.javascript.Startups.getUsersInfoByCriteria,
         routes.javascript.Startups.startupsFundingByCriteria,
         routes.javascript.Application.tableToCSV
       )
