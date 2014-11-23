@@ -328,11 +328,19 @@ object Startups extends Controller with Secured {
 
     filtered map { startups =>
       Future {
-        println("h")
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
         val headers: List[String] = CSVs.makeStartupsCSVHeaders()
         val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups)
         println("key = " + key)
+        CSVManager.put(key, headers, values)
+      }
+    }
+    filtered map { startups =>
+      Future {
+        val key: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
+        val headers: List[String] = CSVs.makeStartupsTagsCSVHeaders()
+        val values: List[List[String]] = CSVs.makeStartupsTagsCSVValues(startups)
+        println("values = " + values)
         CSVManager.put(key, headers, values)
       }
     }
@@ -358,23 +366,26 @@ object Startups extends Controller with Secured {
   )
 
   def relevantStartupInfo(startup: JsValue) = Json.obj(
-    "id" -> (startup \ "id"),
-    "hidden" -> (startup \ "hidden"),
-    "community_profile" -> (startup \ "community_profile"),
-    "name" -> (startup \ "name"),
-    "angellist_url" -> (startup \ "angellist_url"),
-    "logo_url" -> (startup \ "logo_url"),
-    "thumb_url" -> (startup \ "thumb_url"),
-    "quality" -> (startup \ "quality"),
-    "product_desc" -> (startup \ "product_desc"),
-    "high_concept" -> (startup \ "high_concept"),
-    "follower_count" -> (startup \ "follower_count"),
-    "company_url" -> (startup \ "company_url"),
-    "created_at" -> (startup \ "created_at"),
-    "updated_at" -> (startup \ "updated_at"),
-    "twitter_url" -> (startup \ "twitter_url"),
-    "blog_url" -> (startup \ "blog_url"),
-    "video_url" -> (startup \ "video_url")
+    "id" -> (startup \ "id").asOpt[Long].getOrElse[Long](0),
+    "hidden" -> (startup \ "hidden").asOpt[Boolean].getOrElse[Boolean](false),
+    "community_profile" -> (startup \ "community_profile").asOpt[String].getOrElse[String](""),
+    "name" -> (startup \ "name").asOpt[String].getOrElse[String](""),
+    "angellist_url" -> (startup \ "angellist_url").asOpt[String].getOrElse[String](""),
+    "logo_url" -> (startup \ "logo_url").asOpt[String].getOrElse[String](""),
+    "thumb_url" -> (startup \ "thumb_url").asOpt[String].getOrElse[String](""),
+    "quality" -> (startup \ "quality").asOpt[Int].getOrElse[Int](-1),
+    "product_desc" -> (startup \ "product_desc").asOpt[String].getOrElse[String](""),
+    "high_concept" -> (startup \ "high_concept").asOpt[String].getOrElse[String](""),
+    "follower_count" -> (startup \ "follower_count").asOpt[Int].getOrElse[Int](0),
+    "company_url" -> (startup \ "company_url").asOpt[String].getOrElse[String](""),
+    "created_at" -> (startup \ "created_at").asOpt[String].getOrElse[String](""),
+    "updated_at" -> (startup \ "updated_at").asOpt[String].getOrElse[String](""),
+    "twitter_url" -> (startup \ "twitter_url").asOpt[String].getOrElse[String](""),
+    "blog_url" -> (startup \ "blog_url").asOpt[String].getOrElse[String](""),
+    "video_url" -> (startup \ "video_url").asOpt[String].getOrElse[String](""),
+    "markets" -> (startup \ "markets").asOpt[JsArray].getOrElse[JsArray](JsArray.apply()),
+    "locations" -> (startup \ "locations").asOpt[JsArray].getOrElse[JsArray](JsArray.apply()),
+    "company_type" -> (startup \ "company_type").asOpt[JsArray].getOrElse[JsArray](JsArray.apply())
   )
 
   def fullUserInfo(user: JsValue) = Json.obj(

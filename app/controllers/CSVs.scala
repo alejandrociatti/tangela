@@ -1,9 +1,8 @@
 package controllers
 
-import controllers.Networks._
 import models.DatabaseUpdate
 import play.api.libs.json.{Json, JsValue, JsArray}
-import play.api.mvc.Action
+import play.api.mvc.{Action, Controller}
 import util.CSVManager
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
@@ -15,7 +14,8 @@ import scala.concurrent.Future
  * Date: 21/11/14
  * Time: 01:58
  */
-object CSVs {
+object CSVs extends Controller{
+
 
   /* People Network CSV ***********************************************************************************************/
 
@@ -123,6 +123,61 @@ object CSVs {
       }
     )
   }
+
+
+  /* Startups Tags CSV ********************************************************************************************************/
+
+  def makeStartupsTagsCSVHeaders(): List[String] = List(
+    "Tangela Request Date",
+    "startup ID", "Tag Id", "Tag Type",
+    "Name", "Display Name", "AngelList Url"
+  )
+
+  def makeStartupsTagsCSVValues(values: Seq[JsValue]): List[List[String]] = {
+    var group:List[JsValue]= List()
+    var group2:List[JsValue]= List()
+    values.toList.map { startup =>
+      val markets:JsArray= (startup \ "markets").as[JsArray]
+      val locations:JsArray= (startup \ "locations").as[JsArray]
+      val companies:JsArray= (startup \ "company_type").as[JsArray]
+      val id= (startup \ "id").asOpt[Int].getOrElse[Int](0)
+      println("id = " + id)
+      group= group ++ markets.value.toList ++ locations.value.toList ++ companies.value.toList
+      group2= group2 ++ group.map { value =>
+        Json.obj(
+          "startup_id" -> id,
+          "id" -> (value \ "id").asOpt[Int].getOrElse[Int](0),
+          "tag_type" -> (value \ "tag_type").asOpt[String].getOrElse[String](""),
+          "name" -> (value \ "name").asOpt[String].getOrElse[String](""),
+          "display_name" -> (value \ "display_name").asOpt[String].getOrElse[String](""),
+          "angellist_url" -> (value \ "angellist_url").asOpt[String].getOrElse[String]("")
+        )
+      }
+    }
+    group2.map { value =>
+      List(
+        DatabaseUpdate.getLastAsString,
+        (value \ "startup_id").asOpt[Int].getOrElse(0).toString,
+        (value \ "id").asOpt[Int].getOrElse(0).toString,
+        (value \ "tag_type").asOpt[String].getOrElse(""),
+        (value \ "name").asOpt[String].getOrElse(""),
+        (value \ "display_name").asOpt[String].getOrElse(""),
+        (value \ "angellist_url").asOpt[String].getOrElse("")
+      )
+    }
+  }
+
+
+  def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+    Future(
+      CSVManager.get(s"startups-tags-$locationId-$marketId-$quality-$creationDate").fold {
+        Ok(Json.obj("error" -> "could not find that CSV"))
+      }{ result =>
+        Ok(result)
+      }
+    )
+  }
+
 
 
   /* Roles CSV ********************************************************************************************************/

@@ -22,6 +22,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
         $scope.searching= false;
         $scope.optionSelectMsg = 'Search first.';
         $scope.startups = [];
+        $scope.tags= [];
         $scope.startupsToShow = [];
         $scope.markOne = false;
 
@@ -33,6 +34,24 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
             if(!$scope.markOne) {
                 dataAccess.getStartupsByFeatures($scope.location, dateHolder.val(), $scope.market, -1, function (response) {
                     $scope.startups = response;
+                    for (var i = 0; i < $scope.startups.length; i++) {
+                        var startup = $scope.startups[i];
+                        for (var j = 0; j < startup.markets.length; j++) {
+                            var market = startup.markets[j];
+                            market.startup = startup.id;
+                            $scope.tags.push(market);
+                        }
+                        for (var k = 0; k < startup.locations.length; k++) {
+                            var location = startup.locations[k];
+                            location.startup = startup.id;
+                            $scope.tags.push(location);
+                        }
+                        for (var l = 0; l < startup.company_type.length; l++) {
+                            var company = startup.company_type[l];
+                            company.startup = startup.id;
+                            $scope.tags.push(company);
+                        }
+                    }
                     $scope.searching = false;
                     $scope.startupsResultsReached = scope.startups.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
@@ -61,7 +80,21 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
                     } else {
                         var pom = document.createElement('a');
                         pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'startups-net-' + lastReq.loc + '.csv');
+                        pom.setAttribute('download', 'startups-' + lastReq.loc + '.csv');
+                        pom.click();
+                    }
+                });
+            }
+        };
+        $scope.exportTagsCSV = function() {
+            if(lastReq) {
+                dataAccess.getStartupsTagsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                    if (file.error) {
+                        console.log(file.error)
+                    } else {
+                        var pom = document.createElement('a');
+                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                        pom.setAttribute('download', 'startups-tags-' + lastReq.loc + '.csv');
                         pom.click();
                     }
                 });

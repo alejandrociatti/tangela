@@ -4,7 +4,7 @@
 
 # Home page
 GET         /                                           controllers.Application.index
-GET         /startups-by-location                       controllers.Application.startupsByLocation
+GET         /startups                                   controllers.Application.startupsByLocation
 GET         /startups-info                              controllers.Application.startupsInfo
 GET         /startup-people-info                        controllers.Application.startupsPeopleInfo
 GET         /startup-network                            controllers.Application.startupsNetwork
@@ -37,6 +37,7 @@ GET         /startups/startup-roles-csv/:startupId      controllers.CSVs.getStar
 GET         /startups/startup-funding-csv/:startupId    controllers.CSVs.getStartupFundingCSV(startupId: Long)
 GET         /startups/startups-fundings-csv             controllers.CSVs.getStartupsFundingsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 GET         /startups/startups-csv                      controllers.CSVs.getStartupsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
+GET         /startups/startups-tags-csv                 controllers.CSVs.getStartupsTagsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
 
 #Networks
 GET         /startups/startup-network                   controllers.Networks.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: Int ?= -1, creationDate: String ?= "")
