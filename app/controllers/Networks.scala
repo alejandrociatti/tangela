@@ -45,9 +45,10 @@ object Networks extends Controller {
     def equalUserFilter(user1: JsValue, user2: JsValue) =
       (user1 \ "userId").as[Int] == (user2 \ "userId").as[Int]
 
-    val userRoles = Future.sequence(
-      startups map getStartupRoles
-    ).map(_.flatten)
+    val userRoles =
+      Future.sequence(startups map getStartupRoles)
+        .map(_.flatten)
+        .flatMap(getExtendedRoles)
 
     val startupConnections = userRoles map { userRoles =>
       def getMatches(userRoles: Seq[JsValue], matches: Seq[JsValue]): Seq[JsValue] =
@@ -128,14 +129,43 @@ object Networks extends Controller {
       (response \ "startup_roles").asOpt[JsArray].fold {
         Seq[JsValue]()
       }{ roles =>
-        roles.value.filter(notNullUserFilter).map(userRole(_, startup))
+        roles.value.filter(notNullUserFilter).map(userRoleFromStartup(_, startup))
       }
     }
   }
 
+  /**
+   * Obtains all the roles that belong to a startup and the associated users
+   * @param roles JsValue that contains the startup id and name
+   * @return A Future of Seq of all corresponding roles from all people as JsValues
+   */
+
+  def getExtendedRoles(roles: Seq[JsValue]): Future[Seq[JsValue]] = {
+    val userMap = (roles map { role => ((role \ "userId").as[Int], (role \ "userName").as[String])}).toMap
+    val extendedRoles = userMap map { case (id, name) =>
+      AngelListServices.getRolesFromUserId(id) map { response =>
+        (response \ "startup_roles").asOpt[JsArray].fold {
+          Seq[JsValue]()
+        } { roles =>
+          roles.value.filter(notNullUserFilter)
+            .map(userRoleFromUser(_, Json.obj("id" -> id, "name" -> name)))
+        }
+      }
+    }
+    Future.sequence(extendedRoles.toSeq) map { seq => seq.flatten}
+  }
+
   def notNullUserFilter(role: JsValue) = (role \ "user") != JsNull
 
-  def userRole(role: JsValue, startup: JsValue ) = Json.obj(
+  def userRoleFromUser(role: JsValue, user: JsValue) = Json.obj(
+    "userId" -> (user \ "id").as[Int],
+    "userName" -> (user \ "name").as[String],
+    "userRole" -> (role \ "role").as[String],
+    "startupId" -> (role \ "startup" \ "id").as[Int],
+    "startupName" -> (role \ "startup" \ "name").as[String]
+  )
+
+  def userRoleFromStartup(role: JsValue, startup: JsValue) = Json.obj(
     "userId" -> (role \ "user" \ "id").as[Int],
     "userName" -> (role \ "user" \ "name").as[String],
     "userRole" -> (role \ "role").as[String],
