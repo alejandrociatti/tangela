@@ -1,6 +1,7 @@
 package controllers
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Future, Await, ExecutionContext}
 import play.api.libs.ws.WS
 import ExecutionContext.Implicits.global
 import models.{Kind, Location}
@@ -25,16 +26,22 @@ object Locations extends Controller{
   def loadCountriesToDB() = {
     val countries = Json.parse(scala.io.Source.fromFile("storedJsons/countries-reduced.json").getLines().mkString)
     val names:Seq[JsValue] = countries \\ "name"
-    for(i <- 0 until names.size){
+    val locations = (0 until names.size) map { i =>
       //Next line turns strings like "Sri Lanka" to sri-lanka, so country names match their AngelList 'slugs'
       val uriName = URLEncoder.encode(names(i).as[String].replace(" ", "-").toLowerCase, "UTF-8")
-      AngelListServices.searchLocationBySlug(uriName) map { jsResponse =>
-        val id = (jsResponse \ "id").as[Long]
-        val name = (jsResponse \ "name").as[String]
-        val newLocation = Location(name, id, Kind.Country.toString)
-        Location.save(newLocation)
-      }
+        AngelListServices.searchLocationBySlug(uriName) map { jsResponse =>
+          try {
+            val id = (jsResponse \ "id").as[Long]
+            val name = (jsResponse \ "name").as[String]
+            val newLocation = Location(name, id, Kind.Country.toString)
+            Location.save(newLocation)
+          } catch {
+            case e: Exception =>
+          }
+        }
     }
+    Await.result( Future.sequence(locations), Duration.Inf
+      )
   }
 
   def getCountriesByString(countryName:String) = Action.async {

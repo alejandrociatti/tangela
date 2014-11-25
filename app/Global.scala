@@ -1,15 +1,22 @@
-import controllers.{ Markets, Locations}
-import models.{Market, Location}
-import models.authentication.{Users, Role, User}
-import org.joda.time.{LocalDate, LocalTime}
+import java.io.File
+import java.util.UUID
+
+import controllers.{Locations, Markets, Networks, Startups}
+import models.authentication.{Role, User, Users}
+import models.{DatabaseUpdate, Location, Market}
+import org.apache.commons.io.FileUtils
+import org.joda.time.DateTimeConstants.SUNDAY
+import org.joda.time.{DateTime, LocalDate, LocalTime}
+import play.api.Play.current
 import play.api._
+import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick._
 import play.libs.Akka
-import scala.concurrent.duration._
+
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.Play.current
+import scala.concurrent.duration._
 import scala.slick.lifted.Query
-import play.api.db.slick.Config.driver.simple._
 
 /**
  * Created with IntelliJ IDEA by: alejandro
@@ -22,8 +29,10 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     super.onStart(app)
     createAdmin()
-    Locations.loadCountriesToDB()
-    Markets.loadMarketsToDB()
+    populateCountries()
+    populateMarket()
+    clearCSVs()
+    loadNetworks()
     dropTablesCRON()
   }
 
@@ -38,19 +47,30 @@ object Global extends GlobalSettings {
 
   def dropTablesCRON() = {
     //Start On: Today at 3:00 AM (24-hour format)
-    val startOn = LocalDate.now().toLocalDateTime(new LocalTime(3,00))
-    //Schedule task:
-    Akka.system.scheduler.schedule(
-      //Initial delay: time remaining from now to startOn(3AM)
-      new org.joda.time.Duration(startOn.toDateTime, null).getMillis.millis,
-      //Once every day
-      1.days
-    ){
-      //Task:
-      //TODO: 'TRUNCATE TABLE X' SQL WHEN WE HAVE THEM
+    val startDay = calculateNextFriday(LocalDate.now())
+    val startTime = LocalTime.fromMillisOfDay(10800000l)
+    val startDate = startDay.toDateTime(startTime)
+
+    val initialDelay = new org.joda.time.Duration(null, startDate).getMillis.millis
+    val repeatDelay = new org.joda.time.Duration(2419200000l /* 4 weeks*/).getMillis.millis
+
+    Akka.system.scheduler.schedule(initialDelay, repeatDelay) { () =>
       println("Cron Job just ran.")
+//      populateCountries()
+      populateMarket()
+      clearCSVs()
+      loadNetworks()
     }
   }
+
+  private def calculateNextFriday(initialDate: LocalDate): LocalDate  =
+    if (initialDate.getDayOfWeek < SUNDAY) {
+      initialDate
+    } else {
+      initialDate.plusWeeks(1)
+    }
+    .withDayOfWeek(SUNDAY)
+
 
   def populateCountries() = {
     Location.clearAll()
@@ -64,4 +84,19 @@ object Global extends GlobalSettings {
     println("Markets Loaded!")
   }
 
+  def loadNetworks() = {
+    DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
+    Location.getCountries map { country =>
+      println("country = " + country)
+      Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
+      Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
+
+
+    }
+  }
+
+  def clearCSVs() = {
+    val directory = new File("storedCSVs")
+    FileUtils.deleteDirectory(directory)
+  }
 }

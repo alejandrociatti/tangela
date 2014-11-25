@@ -5,6 +5,7 @@ import java.net.{URL, InetSocketAddress, Proxy}
 
 import _root_.util.{DiskSaver, RequestManager}
 import com.fasterxml.jackson.core.JsonParseException
+import models.DatabaseUpdate
 import play.api.Play.current
 import play.api.cache.Cache
 import play.api.libs.json._
@@ -21,7 +22,7 @@ import scala.concurrent.Future
 
 object AngelListServices {
   val AngelApi = "https://api.angel.co/1"
-  val jsonSaver = DiskSaver(new File("storedJsons"), ".json")
+  val jsonSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), ".json")
 
   private def cache(key: String, value: JsValue) =
     if((value\"error").isInstanceOf[JsUndefined]) Cache.set(key, value, 300)

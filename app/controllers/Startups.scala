@@ -1,19 +1,15 @@
 package controllers
 
-import controllers.Networks._
+import _root_.util.CSVManager
 import models.Startup
 import org.joda.time.DateTime
-import models.authentication.Role._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
-import _root_.util.CSVManager
-import _root_.models.DatabaseUpdate
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.concurrent.duration.Duration
 
 /**
  * Created by Javier Isoldi.
@@ -166,30 +162,25 @@ object Startups extends Controller with Secured {
     }
   }
 
-  def getUsersInfoByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async
-  {
+  def getUsersInfoByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
+    Action.async { getUsersInfoByCriteriaToLoad(locationId, marketId, quality, creationDate)}
+
+  def getUsersInfoByCriteriaToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
     startupsByCriteria(locationId, marketId, quality, creationDate).flatMap { startups =>
-      //      val futureUsers = (0 to startups.value.size-1).map( startups.value.map { startup =>
-      //        val id = (startup \ "id").asOpt[Int].getOrElse(0)
-      //        getAllInfoOfPeopleInStartups(id).map { info =>
-      //          info.map { list => JsArray(list)}
-      //        }}
-      //      )
       val futureUsers = startups.value.map { startup =>
         val id = (startup \ "id").asOpt[Int].getOrElse(0)
         getAllInfoOfPeopleInStartups(id)
       }
 
       Future.sequence(futureUsers).map { usrs =>
-        Future (
+        Future(
           CSVManager.put(s"users-$locationId-$marketId-$quality-$creationDate",
             CSVs.makeUsersCSVHeaders(),
             CSVs.makeUsersCSVValues(usrs.flatten))
         )
-        JsArray(usrs.flatten)
-
+        Ok(JsArray(usrs.flatten))
       }
-    } map (result => Ok(result))
+    }
   }
 
   def getAllInfoOfPeopleInStartups(startupId: Long) :Future[Seq[JsValue]] = {
@@ -200,7 +191,6 @@ object Startups extends Controller with Secured {
         val user = userResponse
         val userSuccess = user \\ "success"
         if (userSuccess.size == 0) {
-          //          println("fullUserInfo() = " + fullUserInfo(user))
           fullUserInfo(user)
         } else {
           Json.obj()
@@ -217,9 +207,7 @@ object Startups extends Controller with Secured {
         val userId: Int = (role \ "user" \ "id").as[Int]
         getFutureUserInfoById(userId, userRole)
       }
-      println("userInfoFutures = " + userInfoFutures)
       val usersInfo2 = Future.sequence(userInfoFutures)
-      println("usersInfo2 = " + usersInfo2)
       usersInfo2
     }
     //    val pages: Int = (response \ "last_page").as[Int]
@@ -363,7 +351,6 @@ object Startups extends Controller with Secured {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
         val headers: List[String] = CSVs.makeStartupsCSVHeaders()
         val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups)
-        println("key = " + key)
         CSVManager.put(key, headers, values)
       }
     }
