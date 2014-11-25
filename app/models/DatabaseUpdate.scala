@@ -1,6 +1,5 @@
 package models
 
-
 import java.sql.Timestamp
 
 import org.joda.time.DateTime

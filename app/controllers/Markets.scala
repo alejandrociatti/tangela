@@ -2,9 +2,7 @@ package controllers
 
 import models.Market
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
-import play.api.libs.ws.WS
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import play.api.mvc._
 import play.api.libs.json._
@@ -39,29 +37,22 @@ object Markets extends Controller{
 
   def loadMarketsToDB() = {
     val magicNumber = 9217
-    AngelListServices.getChildrenOfTag(magicNumber) map { jsResponse =>
+    AngelListServices.getChildrenOfTag(magicNumber).map { jsResponse =>
       val pages: Int = (jsResponse \ "last_page").as[Int]
-      val markets: JsArray = (jsResponse \ "children").as[JsArray]
 
-      markets.value.filter { market => (market \ "statistics" \ "direct" \ "startups").as[Int] > 10}.map { market =>
-        saveMarketToDB(market)
+      (jsResponse \ "children").as[Seq[JsValue]].filter { market =>
+        (market \ "statistics" \ "direct" \ "startups").as[Int] > 10
+      }.map { market => saveMarketToDB(market) }
+
+      for (i <- 2 until pages) {
+        getFutureMarketsByPage(i)
       }
-
-      var futures = Seq.empty[Future[_]]
-
-      for (i <- 2 until 20) {
-        futures = futures.+:(getFutureMarketsByPage(i))
-      }
-
-      Await.result(Future.sequence[Any, Seq](futures), Duration.Inf)
 
       def getFutureMarketsByPage(page: Int) = {
-        AngelListServices.getChildrenOfTagAndPage(magicNumber)(page) map { jsResponse =>
-          val markets: JsArray = (jsResponse \ "children").as[JsArray]
-
-          markets.value.filter { market => (market \ "statistics" \ "direct" \ "startups").as[Int] > 10}.map { market =>
-            saveMarketToDB(market)
-          }
+        AngelListServices.getChildrenOfTagAndPage(magicNumber)(page).map { jsResponse =>
+          (jsResponse \ "children").as[Seq[JsValue]].filter { market =>
+            (market \ "statistics" \ "direct" \ "startups").as[Int] > 10
+          }.map { market => saveMarketToDB(market) }
         }
       }
     }

@@ -56,7 +56,7 @@ object Global extends GlobalSettings {
 
     Akka.system.scheduler.schedule(initialDelay, repeatDelay) { () =>
       println("Cron Job just ran.")
-//      populateCountries()
+      //populateCountries()
       populateMarket()
       clearCSVs()
       loadNetworks()
@@ -90,8 +90,6 @@ object Global extends GlobalSettings {
       println("country = " + country)
       Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
       Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
-
-
     }
   }
 

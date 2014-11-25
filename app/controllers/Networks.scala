@@ -2,7 +2,6 @@ package controllers
 
 import _root_.util.CSVManager
 import controllers.Startups.startupsByCriteriaNonBlocking
-import models.DatabaseUpdate
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 

@@ -1,15 +1,12 @@
 package controllers
 
-import java.io.{File, InputStreamReader, BufferedReader}
-import java.net.{URL, InetSocketAddress, Proxy}
+import java.io.File
 
 import _root_.util.{DiskSaver, RequestManager}
-import com.fasterxml.jackson.core.JsonParseException
 import models.DatabaseUpdate
 import play.api.Play.current
 import play.api.cache.Cache
 import play.api.libs.json._
-import play.api.libs.ws.Response
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
