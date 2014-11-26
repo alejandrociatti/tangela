@@ -13,7 +13,7 @@ import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick._
 import play.libs.Akka
 
-import scala.concurrent.Await
+import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.slick.lifted.Query
@@ -86,11 +86,16 @@ object Global extends GlobalSettings {
 
   def loadNetworks() = {
     DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
-    Location.getCountries map { country =>
-      println("country = " + country)
-      Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
-      Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
-    }
+    Future({
+      println("Loading countries.")
+      Location.getCountries map { country =>
+        Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
+        Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
+
+        val name = country.name
+        println(s"Country $name loaded.")
+      }
+    })
   }
 
   def clearCSVs() = {

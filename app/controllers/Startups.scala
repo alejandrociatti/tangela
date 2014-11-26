@@ -162,16 +162,12 @@ object Startups extends Controller with Secured {
     }
   }
 
-  def getUsersInfoByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
-    Action.async { getUsersInfoByCriteriaToLoad(locationId, marketId, quality, creationDate)}
-
-  def getUsersInfoByCriteriaToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
+  def getUsersInfoByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     startupsByCriteria(locationId, marketId, quality, creationDate).flatMap { startups =>
       val futureUsers = startups.value.map { startup =>
         val id = (startup \ "id").asOpt[Int].getOrElse(0)
         getAllInfoOfPeopleInStartups(id)
       }
-
       Future.sequence(futureUsers).map { usrs =>
         Future(
           CSVManager.put(s"users-$locationId-$marketId-$quality-$creationDate",
@@ -179,6 +175,15 @@ object Startups extends Controller with Secured {
             CSVs.makeUsersCSVValues(usrs.flatten))
         )
         Ok(JsArray(usrs.flatten))
+      }
+    }
+  }
+
+  def getUsersInfoByCriteriaToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
+    startupsByCriteria(locationId, marketId, quality, creationDate).map { startups =>
+      startups.value.map { startup =>
+        val id = (startup \ "id").asOpt[Int].getOrElse(0)
+        getAllInfoOfPeopleInStartups(id)
       }
     }
   }

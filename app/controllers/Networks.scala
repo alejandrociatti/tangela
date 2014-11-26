@@ -24,11 +24,6 @@ object Networks extends Controller {
    * @return A Future of a JsArray that contains all the connections between startups by roles/people
    */
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
-    getStartupsNetworkToLoad(locationId, marketId, quality, creationDate)
-  }
-
-  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
-    println("locationId = " + locationId)
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { startupsToSend =>
         Future(
@@ -40,6 +35,14 @@ object Networks extends Controller {
         )
         Ok(Json.obj("startups" -> startups, "rows" -> startupsToSend))
       }
+    }
+  }
+
+  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
+    startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
+      Future.sequence(startups map getStartupRoles)
+        .map(_.flatten)
+        .flatMap(getExtendedRoles)
     }
   }
 
