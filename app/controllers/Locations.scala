@@ -1,6 +1,7 @@
 package controllers
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future, ExecutionContext}
 import ExecutionContext.Implicits.global
 import models.{Kind, Location}
 import play.api.mvc._
@@ -21,9 +22,8 @@ object Locations extends Controller{
   }
 
   def loadCountriesToDB() = {
-    Future {
       val countries = Json.parse(scala.io.Source.fromFile("storedJsons/countries-reduced.json").getLines().mkString)
-      countries.as[Seq[JsValue]].map { jsValue =>
+      val responses = countries.as[Seq[JsValue]].map { jsValue =>
         val uriName = URLEncoder.encode((jsValue \ "name").as[String].replace(" ", "-").toLowerCase, "UTF-8")
         AngelListServices.searchLocationBySlug(uriName).map { jsResponse =>
           try {
@@ -39,7 +39,7 @@ object Locations extends Controller{
           }
         }
       }
-    }
+      Await.ready(Future.sequence(responses), Duration.Inf)
   }
 
   def getCountriesByString(countryName:String) = Action.async {

@@ -28,6 +28,7 @@ object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
     super.onStart(app)
+    DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
     createAdmin()
     populateCountries()
     populateMarket()
@@ -56,7 +57,8 @@ object Global extends GlobalSettings {
 
     Akka.system.scheduler.schedule(initialDelay, repeatDelay) { () =>
       println("Cron Job just ran.")
-      //populateCountries()
+      DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
+      populateCountries()
       populateMarket()
       clearCSVs()
       loadNetworks()
@@ -85,7 +87,6 @@ object Global extends GlobalSettings {
   }
 
   def loadNetworks() = {
-    DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
     Future({
       println("Loading countries.")
       Location.getCountries map { country =>
