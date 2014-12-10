@@ -40,6 +40,10 @@ object DatabaseUpdate {
     Query(DatabaseUpdates).sortBy(_.guteDate).list.last.folder
   }
 
+  def getLastFolderOption = DB.withSession { implicit  session: Session =>
+    Query(DatabaseUpdates).sortBy(_.guteDate).list.lastOption.map(_.folder)
+  }
+
   def save(databaseUpdate: DatabaseUpdate) = DB.withSession { implicit  session: Session =>
 //    Query(DatabaseUpdate).filter( _.id === databaseUpdate.id ).firstOption.getOrElse {
       DatabaseUpdates.insert(databaseUpdate)

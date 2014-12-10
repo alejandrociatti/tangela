@@ -28,7 +28,9 @@ object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
     super.onStart(app)
-    DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
+    DatabaseUpdate.getLastFolderOption.getOrElse({
+      DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
+    })
     createAdmin()
     populateCountries()
     populateMarket()
