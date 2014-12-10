@@ -48,7 +48,7 @@ class Requester(id: String) extends Actor{
       val connection = new URL(url).openConnection(proxy)
       connection.setRequestProperty("User-Agent", "Mozilla/5.0")
       try {
-        sender ! Source.fromInputStream(connection.getInputStream, "UTF-8").mkString("")
+        sender ! Source.fromInputStream(connection.getInputStream).mkString("")
       } catch {
         case exception: FileNotFoundException =>
           sender ! "{\"success\": false}"
