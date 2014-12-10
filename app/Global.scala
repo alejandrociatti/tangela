@@ -89,7 +89,7 @@ object Global extends GlobalSettings {
   def loadNetworks() = {
     Future({
       println("Loading countries.")
-      Location.getCountries map { country =>
+      Location.getCountries foreach { country =>
         Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
         Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
 

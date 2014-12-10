@@ -15,5 +15,5 @@ dist
 /.settings
 /target
 /tangelaDB
-/storedJsons
 /storedCSVs
+storedJsons.zip
