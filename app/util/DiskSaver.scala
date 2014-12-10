@@ -30,7 +30,7 @@ case class DiskSaver(directory: File, extension: String) {
     checkDirectory()
     val fileToRead = fileFromKey(key)
     if (fileToRead.exists()) {
-      val file = Source.fromFile(fileToRead, "ISO-8859-1")
+      val file = Source.fromFile(fileToRead, "UTF-8")
       val result = file.mkString("")
       // Check json for errors
       if(extension.equals(".json")){

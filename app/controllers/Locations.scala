@@ -8,6 +8,8 @@ import play.api.mvc._
 import play.api.libs.json._
 import java.net.URLEncoder
 
+import scala.io.Source
+
 /**
  * User: Martin Gutierrez
  * Date: 22/05/14
@@ -22,7 +24,9 @@ object Locations extends Controller{
   }
 
   def loadCountriesToDB() = {
-      val countries = Json.parse(scala.io.Source.fromFile("storedJsons/countries-reduced.json").getLines().mkString)
+    val countriesFile = Source.fromFile("storedJsons/countries-reduced.json", "UTF-8")
+    val countries = Json.parse(countriesFile.getLines().mkString)
+    countriesFile.close()
       val responses = countries.as[Seq[JsValue]].map { jsValue =>
         val uriName = URLEncoder.encode((jsValue \ "name").as[String].replace(" ", "-").toLowerCase, "UTF-8")
         AngelListServices.searchLocationBySlug(uriName).map { jsResponse =>
