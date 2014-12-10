@@ -58,7 +58,7 @@ object Global extends GlobalSettings {
     val repeatDelay = new org.joda.time.Duration(2419200000l /* 4 weeks*/).getMillis.millis
 
     Akka.system.scheduler.schedule(initialDelay, repeatDelay) { () =>
-      println("Cron Job just ran.")
+      Logger.info("Cron Job just ran.")
       DatabaseUpdate.save(DatabaseUpdate(DateTime.now(), UUID.randomUUID().toString))
       populateCountries()
       populateMarket()
@@ -79,25 +79,26 @@ object Global extends GlobalSettings {
   def populateCountries() = {
     Location.clearAll()
     Locations.loadCountriesToDB()
-    println("Countries Loaded!")
+    Logger.info("Countries Loaded!")
   }
 
   def populateMarket() = {
     Market.clearAll()
     Markets.loadMarketsToDB()
-    println("Markets Loaded!")
+    Logger.info("Markets Loaded!")
   }
 
   def loadNetworks() = {
     Future({
-      println("Loading countries.")
+      Logger.info("Loading countries.")
       Location.getCountries foreach { country =>
         Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
         Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
 
         val name = country.name
-        println(s"Country $name loaded.")
+        Logger.info(s"Country $name loaded.")
       }
+      Logger.info("Network loaded.")
     })
   }
 

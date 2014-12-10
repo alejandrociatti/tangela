@@ -7,6 +7,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import akka.actor.{Actor, Props}
 import akka.routing.SmallestMailboxRouter
+import play.api.Logger
 
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
@@ -44,7 +45,7 @@ class Requester(id: String) extends Actor{
   override def receive: Receive = {
     case SocketRequest(url) =>
       RequestManager.count = RequestManager.count + 1
-      if(RequestManager.count % 100 == 0) println(s"Requester: $id Request = " + RequestManager.count)
+      if(RequestManager.count % 100 == 0) Logger.info(s"Requester: $id Request = " + RequestManager.count)
       val connection = new URL(url).openConnection(proxy)
       connection.setRequestProperty("User-Agent", "Mozilla/5.0")
       try {
@@ -53,7 +54,7 @@ class Requester(id: String) extends Actor{
         case exception: FileNotFoundException =>
           sender ! "{\"success\": false}"
         case exception: IOException =>
-          println("ioException = " + exception)
+          Logger.warn("ioException = " + exception)
           self forward SocketRequest(url)
       }
   }
