@@ -179,7 +179,7 @@ object Startups extends Controller with Secured {
     }
   }
 
-  def getUsersInfoByCriteriaToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
+  def getUsersInfoByCriteriaToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String): Future[Unit] = {
     startupsByCriteria(locationId, marketId, quality, creationDate).map { startups =>
       startups.value.map { startup =>
         val id = (startup \ "id").asOpt[Int].getOrElse(0)
@@ -215,15 +215,6 @@ object Startups extends Controller with Secured {
       val usersInfo2 = Future.sequence(userInfoFutures)
       usersInfo2
     }
-    //    val pages: Int = (response \ "last_page").as[Int]
-    //    val futureResponses = (2 to pages).map(AngelListServices.getStartupsByTagIdAndPage(tagId))
-    //      .map(futureResponse => futureResponse.map(responseToStartupSeq))
-    //    val firstPageResponses = responseToStartupSeq(response).map(Seq(_)).map(Future(_))
-    //
-    //    // Add first page to result\
-    //    firstPageResponses ++ futureResponses
-    //    usersInfo
-
   }
 
   def startupsFundingByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
@@ -253,6 +244,17 @@ object Startups extends Controller with Secured {
 
   def startupCriteriaSearch(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     startupsByCriteria(locationId, marketId, quality, creationDate).map { json =>
+      Future {
+        val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
+        val headers: List[String] = CSVs.makeStartupsCSVHeaders()
+        val values: List[List[String]] = CSVs.makeStartupsCSVValues(json.value)
+        CSVManager.put(key, headers, values)
+
+        val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
+        val tagsHeaders: List[String] = CSVs.makeStartupsTagsCSVHeaders()
+        val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(json.value)
+        CSVManager.put(tagsKey, tagsHeaders, tagsValues)
+      }
       Ok(json)
     }
   }
@@ -345,30 +347,11 @@ object Startups extends Controller with Secured {
     }
 
 //    Filter by quality and creationDate
-    val filtered= initialStartupsToSend map { startups =>
+    initialStartupsToSend map { startups =>
       val filteredByQuality = if (quality != -1) startups.filter(intFilter("quality", quality)) else startups
       if (creationDate != "") startups.filter(dateFilter("created_at", DateTime.parse(creationDate)))
       else filteredByQuality
     } map(_ filter validResultFilter)
-
-    filtered map { startups =>
-      Future {
-        val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
-        val headers: List[String] = CSVs.makeStartupsCSVHeaders()
-        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups)
-        CSVManager.put(key, headers, values)
-      }
-    }
-    filtered map { startups =>
-      Future {
-        val key: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
-        val headers: List[String] = CSVs.makeStartupsTagsCSVHeaders()
-        val values: List[List[String]] = CSVs.makeStartupsTagsCSVValues(startups)
-//        println("values = " + values)
-        CSVManager.put(key, headers, values)
-      }
-    }
-    filtered
   }
 
   def intFilter(field: String, value: Int)(json: JsValue): Boolean =

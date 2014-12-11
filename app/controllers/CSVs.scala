@@ -182,8 +182,8 @@ object CSVs extends Controller{
       val locations:JsArray= (startup \ "locations").as[JsArray]
       val companies:JsArray= (startup \ "company_type").as[JsArray]
       val id= (startup \ "id").asOpt[Int].getOrElse[Int](0)
-      group= group ++ markets.value.toList ++ locations.value.toList ++ companies.value.toList
-      group2= group2 ++ group.map { value =>
+      group = group ++ markets.value.toList ++ locations.value.toList ++ companies.value.toList
+      group2 = group2 ++ group.map { value =>
         Json.obj(
           "startup_id" -> id,
           "id" -> (value \ "id").asOpt[Int].getOrElse[Int](0),
@@ -206,7 +206,6 @@ object CSVs extends Controller{
       )
     }
   }
-
 
   def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     Future(
@@ -277,7 +276,7 @@ object CSVs extends Controller{
   def nonEmptyParticipant(participant: JsValue, funding: JsValue): List[String] = startupFundingList(funding) ++ List(
     (participant \ "name").asOpt[String].getOrElse(""),
     (participant \ "type").asOpt[String].getOrElse(""),
-    (participant \ "id").asOpt[String].getOrElse("").toString
+    (participant \ "id").asOpt[String].getOrElse("")
   )
 
   def emptyParticipant(funding: JsValue) = startupFundingList(funding) ++ List("", "", "")

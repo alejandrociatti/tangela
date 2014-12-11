@@ -1,4 +1,5 @@
 import java.io.File
+import java.text.NumberFormat
 import java.util.UUID
 
 import controllers.{Locations, Markets, Networks, Startups}
@@ -95,6 +96,24 @@ object Global extends GlobalSettings {
         Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
         Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
 
+        System.gc()
+        val runtime: Runtime = Runtime.getRuntime
+
+        val format: NumberFormat = NumberFormat.getInstance()
+
+        val sb: StringBuilder = new StringBuilder()
+        val maxMemory = runtime.maxMemory()
+        val allocatedMemory = runtime.totalMemory()
+        val freeMemory = runtime.freeMemory()
+
+        sb.append("free memory: " + format.format(freeMemory / 1024) + "\t")
+        sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\t")
+        sb.append("max memory: " + format.format(maxMemory / 1024) + "\t")
+        sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\t")
+
+        Logger.info(sb.toString())
+
+        System.gc()
         val name = country.name
         Logger.info(s"Country $name loaded.")
       }
