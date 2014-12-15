@@ -174,37 +174,30 @@ object CSVs extends Controller{
     "Name", "Display Name", "AngelList Url"
   )
 
+  /**
+   * This method returns a List full of Tags in the form of a List of that tags attributes
+   *
+   * @param values: Seq[JsValue] containing all the tags to return (markets, locations, company_type)
+   * @return List[List[String]] each tag is a List[String], each string is the value of an attribute.
+   */
   def makeStartupsTagsCSVValues(values: Seq[JsValue]): List[List[String]] = {
-    var group:List[JsValue]= List()
-    var group2:List[JsValue]= List()
-    values.toList.map { startup =>
-      val markets:JsArray= (startup \ "markets").as[JsArray]
-      val locations:JsArray= (startup \ "locations").as[JsArray]
-      val companies:JsArray= (startup \ "company_type").as[JsArray]
-      val id= (startup \ "id").asOpt[Int].getOrElse[Int](0)
-      group = group ++ markets.value.toList ++ locations.value.toList ++ companies.value.toList
-      group2 = group2 ++ group.map { value =>
-        Json.obj(
-          "startup_id" -> id,
-          "id" -> (value \ "id").asOpt[Int].getOrElse[Int](0),
-          "tag_type" -> (value \ "tag_type").asOpt[String].getOrElse[String](""),
-          "name" -> (value \ "name").asOpt[String].getOrElse[String](""),
-          "display_name" -> (value \ "display_name").asOpt[String].getOrElse[String](""),
-          "angellist_url" -> (value \ "angellist_url").asOpt[String].getOrElse[String]("")
-        )
-      }
-    }
-    group2.map { value =>
-      List(
-        DatabaseUpdate.getLastAsString,
-        (value \ "startup_id").asOpt[Int].getOrElse(0).toString,
-        (value \ "id").asOpt[Int].getOrElse(0).toString,
-        (value \ "tag_type").asOpt[String].getOrElse(""),
-        (value \ "name").asOpt[String].getOrElse(""),
-        (value \ "display_name").asOpt[String].getOrElse(""),
-        (value \ "angellist_url").asOpt[String].getOrElse("")
-      )
-    }
+    //Helper function used to turn a Tag to a List of its attributes.
+    def makeList(tag:JsValue):List[String] = List(
+      DatabaseUpdate.getLastAsString,
+      (tag \ "startup_id").asOpt[Int].getOrElse(0).toString,
+      (tag \ "id").asOpt[Int].getOrElse(0).toString,
+      (tag \ "tag_type").asOpt[String].getOrElse(""),
+      (tag \ "name").asOpt[String].getOrElse(""),
+      (tag \ "display_name").asOpt[String].getOrElse(""),
+      (tag \ "angellist_url").asOpt[String].getOrElse("")
+    )
+    // This maps the startup's tags to a list of their attributes,
+    // and flatMaps those lists to return the infamous List[List[String]]
+    values.flatMap{ startup =>
+      (startup \ "markets").as[Seq[JsValue]].map { marketTag => makeList(marketTag) } ++
+        (startup \ "locations").as[Seq[JsValue]].map { locationTag => makeList(locationTag)} ++
+        (startup \ "company_type").as[Seq[JsValue]].map(marketTag => makeList(marketTag))
+    }.toList
   }
 
   def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {

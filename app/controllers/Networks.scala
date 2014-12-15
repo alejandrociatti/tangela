@@ -52,10 +52,7 @@ object Networks extends Controller {
     def equalUserFilter(user1: JsValue, user2: JsValue) =
       (user1 \ "userId").as[Int] == (user2 \ "userId").as[Int]
 
-    val userRoles =
-      Future.sequence(startups map getStartupRoles)
-        .map(_.flatten)
-        .flatMap(getExtendedRoles)
+    val userRoles = Future.sequence(startups map getStartupRoles).map(_.flatten).flatMap(getExtendedRoles)
 
     val startupConnections = userRoles map { userRoles =>
       def getMatches(userRoles: Seq[JsValue], matches: Seq[JsValue]): Seq[JsValue] =

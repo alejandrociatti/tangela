@@ -12,16 +12,16 @@ import scala.io.Source
  * Time: 17:15
  */
 object CSVManager {
-  val jsonSaver = DiskSaver(new File("storedCSVs"), ".csv")
+  val csvSaver = DiskSaver(new File("storedCSVs"), ".csv")
 
-  def put(fileName: String, headers: List[String], values: List[List[String]]): Unit = {
+  def put(fileName: String, headers: List[String], values: List[List[String]]) {
     val maybeString: Option[String] = get(fileName)
     maybeString.getOrElse {
-      jsonSaver.put(fileName, getCSVStringFromHeadersValues(headers, values))
+      csvSaver.put(fileName, makeCSVString(headers, values))
     }
   }
 
-  private def getCSVStringFromHeadersValues(headers: List[String], values: List[List[String]]): String = {
+  private def makeCSVString(headers: List[String], values: List[List[String]]): String = {
     val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
     val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
     writer.writeRow(headers)
@@ -33,7 +33,5 @@ object CSVManager {
     Source.fromInputStream(streamReader).mkString("")
   }
 
-  def get(fileName: String): Option[String] = {
-    jsonSaver.get(fileName)
-  }
+  def get(fileName: String): Option[String] = csvSaver.get(fileName)
 }
