@@ -278,9 +278,9 @@ object CSVs extends Controller{
     DatabaseUpdate.getLastAsString,
     (funding \ "startup_id").asOpt[String].getOrElse(""),
     (funding \ "round_type").asOpt[String].getOrElse(""),
-    (funding \ "amount").asOpt[Int].getOrElse("").toString,
+    (funding \ "amount").asOpt[String].getOrElse(""),
     (funding \ "closed_at").asOpt[String].getOrElse(""),
-    (funding \ "id").asOpt[Int].getOrElse("").toString,
+    (funding \ "id").asOpt[String].getOrElse(""),
     (funding \ "source_url").asOpt[String].getOrElse("")
   )
 
