@@ -4,7 +4,7 @@ import models.DatabaseUpdate
 import play.api.libs.json.{Json, JsValue, JsArray}
 import play.api.mvc.{Action, Controller}
 import util.CSVManager
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
