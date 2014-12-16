@@ -130,7 +130,7 @@ object CSVs extends Controller{
   /* Funding CSV for one or more startups *****************************************************************************/
 
   def makeStartupFundingCSVHeaders = List(
-    "tangela request date", "startup ID", "round type", "round raised", "round closed at",
+    "tangela request date", "startup ID", "startup name", "round type", "round raised", "round closed at",
     "round id", "round source url", "participant name", "participant type", "participant id"
   )
 
@@ -147,7 +147,7 @@ object CSVs extends Controller{
   def emptyParticipant(funding: JsValue) = startupFundingList(funding) ++ List("", "", "")
 
   def startupFundingList(funding: JsValue):List[String] = List(DatabaseUpdate.getLastAsString) ++
-    valueListFromJsValue(funding, Seq("startup_id", "round_type", "amount", "closed_at", "id", "source_url"))
+    valueListFromJsValue(funding, Seq("startup_id", "name", "round_type", "amount", "closed_at", "id", "source_url"))
 
   def getStartupFundingCSV(startupId: Long) = getCsv(s"startup-funding-$startupId")
 
