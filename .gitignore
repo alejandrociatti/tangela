@@ -17,3 +17,7 @@ dist
 /tangelaDB
 /storedCSVs
 storedJsons.zip
+*_jsons
+*.map
+*.file
+.DS_Store

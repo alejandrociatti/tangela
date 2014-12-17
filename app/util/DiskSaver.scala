@@ -1,58 +1,69 @@
 package util
 
-import java.io.{File, PrintWriter}
-import java.io.File.separator
-
-import com.fasterxml.jackson.core.JsonParseException
-import play.api.libs.json.Json
-
-import scala.io.Source
+import java.io._
+import scala.collection.mutable
 
 /**
  * Created by Javier Isoldi.
  * Date: 05/11/14.
  * Project: tangela.
  */
-case class DiskSaver(directory: File, extension: String) {
-  if(directory.exists && !directory.isDirectory) throw new NotDirectoryException(directory.getAbsolutePath)
+case class DiskSaver(directory: File) {
+  checkDirectory()
+  if(!directory.isDirectory) throw new NotDirectoryException(directory.getAbsolutePath)
 
-  def put(key: String, value: String):Unit = {
-    checkDirectory()
-    val fileToSave = fileFromKey(key)
-    if(fileToSave.exists()) fileToSave.delete()
-    val printWriter = new PrintWriter(fileToSave)
-    printWriter.write(value)
-    printWriter.flush()
-    printWriter.close()
+  val indexFile = new File(directory.getAbsolutePath + File.separator + "index.map")
+  val indexMap: mutable.Map[String, Long] = if (indexFile.exists() && indexFile.isFile) {
+    val indexFileSource = new ObjectInputStream(new FileInputStream(indexFile))
+    indexFileSource.readObject().asInstanceOf[mutable.HashMap[String, Long]]
+  } else {
+    mutable.HashMap.empty[String, Long]
   }
 
-  def get(key: String): Option[String] = {
+  // This file contains the data.
+  val dataFile = new File(directory.getAbsolutePath + File.separator + "data.file")
+
+  def put(key: String, value: String):Unit = this.synchronized {
     checkDirectory()
-    val fileToRead = fileFromKey(key)
-    if (fileToRead.exists()) {
-      val file = Source.fromFile(fileToRead)
-      val result = file.mkString("")
-      // Check json for errors
-      if(extension.equals(".json")){
-        try {
-          Json.parse(result)
-        } catch {
-          case e: JsonParseException =>
-            fileToRead.delete()
-            return None
-        }
+    indexMap.getOrElse(key, {
+      try {
+        indexMap.put(key, writeString(value))
+        saveIndex()
+      } catch {
+        case e:Exception => e.printStackTrace()
       }
-      file.close()
-
-      Some(result)
-    } else {
-      None
-    }
+    })
   }
 
-  private def fileFromKey(key: String):File = new File(directory.getPath + separator + keyToFileName(key) + extension)
+  def get(key: String): Option[String] = this.synchronized {
+    checkDirectory()
+    indexMap.get(key) map readString
+  }
 
-  private def keyToFileName(key: String) =  key.replaceAll("/", "-")
+  def writeString(value: String): Long = this.synchronized {
+    val dataRandomAccessFile = new RandomAccessFile(dataFile, "rw")
+    val index = dataRandomAccessFile.length()
+    dataRandomAccessFile.seek(index)
+    dataRandomAccessFile.writeLong(value.length)
+    dataRandomAccessFile.writeChars(value)
+    dataRandomAccessFile.close()
+    index
+  }
+
+  def readString(index: Long): String = this.synchronized {
+    val dataRandomAccessFile = new RandomAccessFile(dataFile, "r")
+    dataRandomAccessFile.seek(index)
+    val length: Long = dataRandomAccessFile.readLong()
+    (0l to length).map { index => dataRandomAccessFile.readChar()}.mkString
+  }
+
+  def saveIndex(): Unit = {
+    indexFile.delete()
+    val indexFileSource = new ObjectOutputStream(new FileOutputStream(indexFile))
+    indexFileSource.writeObject(indexMap)
+    indexFileSource.flush()
+    indexFileSource.close()
+  }
 
   def checkDirectory() = if(!directory.exists()) directory.mkdir()
 }
