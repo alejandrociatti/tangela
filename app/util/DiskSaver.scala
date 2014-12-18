@@ -50,6 +50,16 @@ case class DiskSaver(directory: File, extension: String) {
     }
   }
 
+  def getFile(key: String): Option[File] = {
+    checkDirectory()
+    val fileToRead = fileFromKey(key)
+    if (fileToRead.exists()) {
+      Some(fileToRead)
+    } else {
+      None
+    }
+  }
+
   private def fileFromKey(key: String):File = new File(directory.getPath + separator + keyToFileName(key) + extension)
 
   private def keyToFileName(key: String) =  key.replaceAll("/", "-")

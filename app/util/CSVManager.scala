@@ -34,4 +34,6 @@ object CSVManager {
   }
 
   def get(fileName: String): Option[String] = csvSaver.get(fileName)
+
+  def getFile(fileName: String): Option[File] = csvSaver.getFile(fileName)
 }

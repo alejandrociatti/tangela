@@ -73,10 +73,10 @@ object CSVs extends Controller{
 
   def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
     Future(
-      CSVManager.get(s"startup-net-$locationId-$marketId-$quality-$creationDate").fold {
-        Ok(Json.obj("error" -> "could not find that CSV"))
+      CSVManager.getFile(s"startup-net-$locationId-$marketId-$quality-$creationDate").fold {
+        NotFound("<h1>CSV not found</h1>")
       }{ result =>
-        Ok(result)
+        Ok.sendFile(content = result, fileName = _ => "startup-network.csv")
       }
     )
   }
