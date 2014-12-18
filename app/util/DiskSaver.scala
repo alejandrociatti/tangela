@@ -24,16 +24,10 @@ case class DiskSaver(directory: File) {
 
   def put(key: String, value: String):Unit = this.synchronized {
     checkDirectory()
-    indexMap.getOrElse(key, {
-      try {
-        saveNewIndex((key, writeString(value)))
-      } catch {
-        case e:Exception => e.printStackTrace()
-      }
-    })
+    indexMap.getOrElse(key, { saveNewIndex((key, writeString(value)))})
   }
 
-  def get(key: String): Option[String] = this.synchronized {
+  def get(key: String): Option[String] = {
     checkDirectory()
     indexMap.get(key) map readString
   }
@@ -54,6 +48,7 @@ case class DiskSaver(directory: File) {
     dataRandomAccessFile.seek(index)
     val length: Long = dataRandomAccessFile.readLong()
     val string = (0l until length).map { index => dataRandomAccessFile.readChar()}.mkString
+    dataRandomAccessFile.close()
     string
   }
 
@@ -76,6 +71,7 @@ case class DiskSaver(directory: File) {
 //    Retrieves the size of the map
     val size = indexSource.readLong()
     val values = (0l until size) map {index => (indexSource.readUTF(), indexSource.readLong())}
+    indexSource.close()
     mutable.HashMap[String, Long](values: _*)
   }
 
