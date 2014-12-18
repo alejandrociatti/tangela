@@ -19,7 +19,7 @@ import scala.concurrent.Future
 
 object AngelListServices {
   val AngelApi = "https://api.angel.co/1"
-  val jsonSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), ".json")
+  val jsonSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"))
 
   private def cache(key: String, value: JsValue) =
     if((value\"error").isInstanceOf[JsUndefined]) Cache.set(key, value, 300)

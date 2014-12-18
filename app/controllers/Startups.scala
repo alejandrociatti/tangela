@@ -259,6 +259,27 @@ object Startups extends Controller with Secured {
     }
   }
 
+  def startupCriteriaSearchAndTags(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
+    startupsByCriteria(locationId, marketId, quality, creationDate).map { startups =>
+      val tags = JsArray(startups.value flatMap { startup =>
+        val allTags  = (startup \ "markets").as[Seq[JsValue]] ++ (startup \ "locations").as[Seq[JsValue]] ++ (startup \ "company_type").as[Seq[JsValue]]
+        allTags map { tag => tag.as[JsObject] +("startup" -> (startup \ "id"))}
+      })
+      Future {
+        val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
+        val headers: List[String] = CSVs.makeStartupsCSVHeaders()
+        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups.value)
+        CSVManager.put(key, headers, values)
+
+        val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
+        val tagsHeaders: List[String] = CSVs.makeStartupsTagsCSVHeaders()
+        val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(tags.value)
+        CSVManager.put(tagsKey, tagsHeaders, tagsValues)
+      }
+      Ok(Json.obj("startups" -> startups, "tags" -> tags))
+    }
+  }
+
 //  Helpers **********************************************************************************
 
   def getStartupFund(startupId: Long, startupName: String = ""): Future[JsValue] = {

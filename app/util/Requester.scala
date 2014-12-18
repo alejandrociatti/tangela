@@ -45,7 +45,7 @@ class Requester(id: String) extends Actor{
   override def receive: Receive = {
     case SocketRequest(url) =>
       RequestManager.count = RequestManager.count + 1
-      if(RequestManager.count % 100 == 0) Logger.info(s"Requester: $id Request = " + RequestManager.count)
+      if(RequestManager.count % 500 == 0) Logger.info(s"Requester: $id Request = " + RequestManager.count)
       val connection = new URL(url).openConnection(proxy)
       connection.setRequestProperty("User-Agent", "Mozilla/5.0")
       try {

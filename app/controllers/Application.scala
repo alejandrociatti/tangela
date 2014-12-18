@@ -41,6 +41,7 @@ object Application extends Controller with Secured{
         routes.javascript.CSVs.getUsersCSV,
         routes.javascript.CSVs.getStartupsTagsCSV,
         routes.javascript.Startups.startupCriteriaSearch,
+        routes.javascript.Startups.startupCriteriaSearchAndTags,
         routes.javascript.Networks.getStartupsNetwork,
         routes.javascript.Networks.getPeopleNetwork,
         routes.javascript.CSVs.getStartupsNetworkCSV,

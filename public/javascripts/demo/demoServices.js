@@ -97,6 +97,14 @@ serviceModule.factory('dataAccess', function() {
                 error: errorHandler
             });
         },
+        getStartupsAndTagsByFeatures: function(locationId, date, market, quality, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.startupCriteriaSearchAndTags(locationId, market, undefined, date).ajax({
+                method:'GET',
+                responseType: 'application/json',
+                success: successHandler,
+                error: errorHandler
+            });
+        },
         getStartupsNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
             jsRoutes.controllers.Networks.getStartupsNetwork(locationId, market, undefined, date).ajax({
                 method:'GET',
