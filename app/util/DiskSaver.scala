@@ -1,6 +1,6 @@
 package util
 
-import java.io._
+import java.io.{EOFException, File, RandomAccessFile, ObjectInputStream, ObjectOutputStream, FileInputStream, FileOutputStream}
 import scala.collection.mutable
 
 /**
@@ -14,8 +14,7 @@ case class DiskSaver(directory: File) {
 
   val indexFile = new File(directory.getAbsolutePath + File.separator + "index.map")
   val indexMap: mutable.Map[String, Long] = if (indexFile.exists() && indexFile.isFile) {
-    val indexFileSource = new ObjectInputStream(new FileInputStream(indexFile))
-    indexFileSource.readObject().asInstanceOf[mutable.HashMap[String, Long]]
+    retrieveIndex()
   } else {
     mutable.HashMap.empty[String, Long]
   }
@@ -27,8 +26,7 @@ case class DiskSaver(directory: File) {
     checkDirectory()
     indexMap.getOrElse(key, {
       try {
-        indexMap.put(key, writeString(value))
-        saveIndex()
+        saveNewIndex((key, writeString(value)))
       } catch {
         case e:Exception => e.printStackTrace()
       }
@@ -42,7 +40,8 @@ case class DiskSaver(directory: File) {
 
   def writeString(value: String): Long = this.synchronized {
     val dataRandomAccessFile = new RandomAccessFile(dataFile, "rw")
-    val index = dataRandomAccessFile.length()
+    val fileLength = dataRandomAccessFile.length()
+    val index = if(fileLength <= 0) 0 else fileLength
     dataRandomAccessFile.seek(index)
     dataRandomAccessFile.writeLong(value.length)
     dataRandomAccessFile.writeChars(value)
@@ -50,19 +49,34 @@ case class DiskSaver(directory: File) {
     index
   }
 
-  def readString(index: Long): String = this.synchronized {
+  def readString(index: Long): String = {
     val dataRandomAccessFile = new RandomAccessFile(dataFile, "r")
     dataRandomAccessFile.seek(index)
     val length: Long = dataRandomAccessFile.readLong()
-    (0l to length).map { index => dataRandomAccessFile.readChar()}.mkString
+    val string = (0l until length).map { index => dataRandomAccessFile.readChar()}.mkString
+    string
   }
 
-  def saveIndex(): Unit = {
-    indexFile.delete()
-    val indexFileSource = new ObjectOutputStream(new FileOutputStream(indexFile))
-    indexFileSource.writeObject(indexMap)
-    indexFileSource.flush()
-    indexFileSource.close()
+  def saveNewIndex(value: (String, Long)): Unit = {
+    val indexSource = new RandomAccessFile(indexFile, "rw")
+    if (indexSource.length() == 0)  indexSource.writeLong(0)
+    indexSource.seek(indexSource.length())
+    indexSource.writeUTF(value._1)
+    indexSource.writeLong(value._2)
+    indexMap += value
+//    Store the size of the map at the beginning of the file
+    indexSource.seek(0)
+    indexSource.writeLong(indexMap.size)
+    indexSource.close()
+  }
+
+  def retrieveIndex(): mutable.HashMap[String, Long] = {
+    val indexSource = new RandomAccessFile(indexFile, "r")
+    indexSource.seek(0)
+//    Retrieves the size of the map
+    val size = indexSource.readLong()
+    val values = (0l until size) map {index => (indexSource.readUTF(), indexSource.readLong())}
+    mutable.HashMap[String, Long](values: _*)
   }
 
   def checkDirectory() = if(!directory.exists()) directory.mkdir()
