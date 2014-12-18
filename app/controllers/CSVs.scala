@@ -2,9 +2,9 @@ package controllers
 
 import models.DatabaseUpdate
 import play.api.libs.json.{JsUndefined, Json, JsValue, JsArray}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{ResponseHeader, SimpleResult, Action, Controller}
 import util.CSVManager
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
@@ -163,10 +163,19 @@ object CSVs extends Controller{
 
   def getCsv(name: String) = Action.async {
     Future(
-      CSVManager.get(name).fold {
-        Ok(Json.obj("error" -> "could not find that CSV"))
+      CSVManager.getFile(name).fold {
+        NotFound("<h1>CSV NOT FOUND</h1>")
       } { result =>
-        Ok(result)
+        SimpleResult(
+          header = ResponseHeader(200,
+            Map(
+              CONTENT_LENGTH -> result._2.toString,
+              CONTENT_TYPE -> "text/csv",
+              CONTENT_DISPOSITION -> s"attachment;filename=$name.csv"
+            )
+          ),
+          body = result._1
+        )
       }
     )
   }

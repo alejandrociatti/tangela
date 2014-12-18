@@ -1,7 +1,9 @@
 package util
 
-import java.io.{EOFException, File, RandomAccessFile, ObjectInputStream, ObjectOutputStream, FileInputStream, FileOutputStream}
+import java.io._
+import play.api.libs.iteratee.Enumerator
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Created by Javier Isoldi.
@@ -32,6 +34,15 @@ case class DiskSaver(directory: File) {
     indexMap.get(key) map readString
   }
 
+  def getFile(key: String): Option[(Enumerator[Array[Byte]], Int)] = {
+    checkDirectory()
+    indexMap.get(key) map{
+      value =>
+        val stringBytes = readString(value).getBytes
+        (Enumerator.fromStream(new ByteArrayInputStream(stringBytes)), stringBytes.length)
+      }
+  }
+
   def writeString(value: String): Long = this.synchronized {
     val dataRandomAccessFile = new RandomAccessFile(dataFile, "rw")
     val fileLength = dataRandomAccessFile.length()
@@ -51,17 +62,6 @@ case class DiskSaver(directory: File) {
     dataRandomAccessFile.close()
     string
   }
-  def getFile(key: String): Option[File] = {
-    checkDirectory()
-    val fileToRead = fileFromKey(key)
-    if (fileToRead.exists()) {
-      Some(fileToRead)
-    } else {
-      None
-    }
-  }
-
-  private def fileFromKey(key: String):File = new File(directory.getPath + separator + keyToFileName(key) + extension)
 
   def saveNewIndex(value: (String, Long)): Unit = {
     val indexSource = new RandomAccessFile(indexFile, "rw")

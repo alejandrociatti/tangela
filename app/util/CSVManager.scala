@@ -3,6 +3,7 @@ package util
 import java.io._
 
 import com.github.tototoshi.csv.CSVWriter
+import play.api.libs.iteratee.Enumerator
 
 import scala.io.Source
 
@@ -35,5 +36,5 @@ object CSVManager {
 
   def get(fileName: String): Option[String] = csvSaver.get(fileName)
 
-  def getFile(fileName: String): Option[File] = csvSaver.getFile(fileName)
+  def getFile(fileName: String): Option[(Enumerator[Array[Byte]], Int)] = csvSaver.getFile(fileName)
 }

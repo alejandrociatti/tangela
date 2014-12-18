@@ -10,7 +10,6 @@ var module = angular.module('app.controllers', ['app.services', 'ui.bootstrap'])
 module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             var scope = this;
-            var lastReq;
             var dateHolder = $("#creation-date");
             this.startupsResultsReached= true;
             this.searching= false;
@@ -31,23 +30,10 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                         scope.searching = false;
                         scope.startupsResultsReached = scope.startups.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
-                        lastReq = {loc:scope.location, creation:dateHolder.val(), market:scope.market};
+                        scope.exportURL = dataAccess.getStartupsNetworkCSVURL(
+                            scope.location, scope.creation, scope.market
+                        );
                         $scope.$apply();
-                    });
-                }
-            };
-
-            this.exportCSV = function () {
-                if(lastReq) {
-                    dataAccess.getStartupsNetworkCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
-                        if (file.error) {
-                            console.log(file.error)
-                        } else {
-                            var pom = document.createElement('a');
-                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                            pom.setAttribute('download', 'startups-net-' + lastReq.loc + '.csv');
-                            pom.click();
-                        }
                     });
                 }
             };
