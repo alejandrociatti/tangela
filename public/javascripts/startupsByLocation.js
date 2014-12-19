@@ -16,7 +16,6 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
 //        $scope.startups = [];
 
         var scope = $scope;
-        var lastReq;
         var dateHolder = $("#creation-date");
         $scope.startupsResultsReached= true;
         $scope.searching= false;
@@ -34,11 +33,16 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
             if(!$scope.markOne) {
                 dataAccess.getStartupsAndTagsByFeatures($scope.location, dateHolder.val(), $scope.market, -1, function (response) {
                     $scope.startups = response.startups;
+                    $scope.exportStartupsURL = dataAccess.getStartupsCSVURL(
+                        scope.location, scope.creation, scope.market
+                    );
                     $scope.tags = response.tags;
+                    $scope.exportStartupsTagsURL = dataAccess.getStartupsTagsCSVURL(
+                        scope.location, scope.creation, scope.market
+                    );
                     $scope.searching = false;
                     $scope.startupsResultsReached = scope.startups.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
-                    lastReq = {loc:$scope.location, creation:dateHolder.val(), market:$scope.market};
                     $scope.$apply();
                 });
             }
@@ -54,34 +58,6 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
                 function(error){
                     console.log(error);
                 });
-        };
-        $scope.exportCSV = function () {
-            if(lastReq) {
-                dataAccess.getStartupsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
-                    if (file.error) {
-                        console.log(file.error)
-                    } else {
-                        var pom = document.createElement('a');
-                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'startups-' + lastReq.loc + '.csv');
-                        pom.click();
-                    }
-                });
-            }
-        };
-        $scope.exportTagsCSV = function() {
-            if(lastReq) {
-                dataAccess.getStartupsTagsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
-                    if (file.error) {
-                        console.log(file.error)
-                    } else {
-                        var pom = document.createElement('a');
-                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'startups-tags-' + lastReq.loc + '.csv');
-                        pom.click();
-                    }
-                });
-            }
         };
 
         $scope.showNetwork = function(startupId){

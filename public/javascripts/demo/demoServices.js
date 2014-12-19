@@ -140,53 +140,26 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
         getStartupsNetworkCSVURL: function(locationId, date, market, quality){
             return jsRoutes.controllers.CSVs.getStartupsNetworkCSV(locationId, market, undefined, date).url;
         },
-        getStartupsCSV: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, undefined, date).ajax({
-                method:'GET',
-                responseType: 'application/json',
-                success: successHandler,
-                error: errorHandler
-            })
+        getStartupsCSVURL: function(locationId, date, market, quality){
+            return jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, undefined, date).url;
         },
-        getUsersCSV: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.CSVs.getUsersCSV(locationId, market, undefined, date).ajax({
-                method:'GET',
-                responseType: 'application/json',
-                success: successHandler,
-                error: errorHandler
-            })
+        getUsersCSVURL: function(locationId, date, market, quality){
+            return jsRoutes.controllers.CSVs.getUsersCSV(locationId, market, undefined, date).url;
         },
-        getStartupsTagsCSV: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.CSVs.getStartupsTagsCSV(locationId, market, undefined, date).ajax({
-                method:'GET',
-                responseType: 'application/json',
-                success: successHandler,
-                error: errorHandler
-            })
+        getStartupsTagsCSVURL: function(locationId, date, market, quality){
+            return jsRoutes.controllers.CSVs.getStartupsTagsCSV(locationId, market, undefined, date).url;
         },
-        getPeopleNetworkCSVURL: function(locationId, date, market, quality, successHandler, errorHandler){
+        getPeopleNetworkCSVURL: function(locationId, date, market, quality){
             return jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, undefined, date).url;
         },
-        getStartupRolesCSV: function(startupId, successHandler, errorHandler){
-            jsRoutes.controllers.CSVs.getStartupRolesCSV(startupId).ajax({
-                responseType: 'application/json',
-                success: successHandler,
-                error: errorHandler
-            });
+        getStartupRolesCSVURL: function(startupId){
+            return jsRoutes.controllers.CSVs.getStartupRolesCSV(startupId).url;
         },
-        getStartupFundingCSV: function(startupId, successHandler, errorHandler){
-            jsRoutes.controllers.CSVs.getStartupFundingCSV(startupId).ajax({
-                responseType: 'application/json',
-                success: successHandler,
-                error: errorHandler
-            });
+        getStartupFundingCSVURL: function(startupId){
+            return jsRoutes.controllers.CSVs.getStartupFundingCSV(startupId).url;
         },
-        getStartupsFundingsCSV: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.CSVs.getStartupsFundingsCSV(locationId, market, undefined, date).ajax({
-                responseType: 'application/json',
-                success: successHandler,
-                error: errorHandler
-            });
+        getStartupsFundingsCSVURL: function(locationId, date, market, quality){
+            return jsRoutes.controllers.CSVs.getStartupsFundingsCSV(locationId, market, undefined, date).url;
         }
     };
 }]);

@@ -13,7 +13,6 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.startupsResultsReached= true;
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
-        var lastReq;
         var dateHolder = $("#creation-date");
         $scope.markOne= false;
 
@@ -26,30 +25,11 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
                 dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, -1,  function (persons) {
                     console.log(persons);
                     $scope.persons = persons;
-                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market};
+                    $scope.exportStartupPeopleInfoCSVURL = dataAccess.getUsersCSVURL($scope.location, $scope.creation, $scope.market);
                     $scope.$apply();
                 });
             }
         };
-
-
-        $scope.exportCSV = function () {
-            if(lastReq) {
-                console.log(dataAccess)
-                dataAccess.getUsersCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
-                    if (file.error) {
-                        console.log(file.error)
-                    } else {
-                        var pom = document.createElement('a');
-                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'users-' + lastReq.loc + '.csv');
-                        pom.click();
-                    }
-                });
-            }
-        };
-
-
 
         //Pagination control:
         $scope.itemsPerPage = 5;

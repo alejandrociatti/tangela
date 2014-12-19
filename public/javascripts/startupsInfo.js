@@ -12,7 +12,6 @@ var module = angular.module('app.controllers', ['app.services']);
 
 module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
-            var lastReq;
             $scope.roles = [];
             $scope.rounds = [];
             $scope.startupsResultsReached= true;
@@ -29,7 +28,6 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
             };
 
             $scope.loadInfo = function(){
-                lastReq = {startupId: $scope.startupId};
                 $scope.searchNumberOfFounders();
                 $scope.searchRolesOfStartup();
                 $scope.searchStartupFunding();
@@ -40,6 +38,7 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                     $scope.rounds = fundraising;
                     $scope.totalFunding = 0;
                     $scope.numberOfRounds = fundraising.length;
+                    $scope.exportStartupFundingCSVURL = dataAccess.getStartupFundingCSVURL($scope.startupId);
 
                     console.log(fundraising);
 
@@ -56,34 +55,6 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
                 })
             };
 
-            $scope.exportStartupRoles = function(){
-                if(lastReq) {
-                    dataAccess.getStartupRolesCSV(lastReq.startupId, function (file) {
-                        if (file.error) {
-                            console.log(file.error)
-                        } else {
-                            var pom = document.createElement('a');
-                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                            pom.setAttribute('download', 'startup-roles-' + lastReq.startupId + '.csv');
-                            pom.click();
-                        }
-                    });
-                }
-            };
-
-            $scope.exportStartupFunding = function(){
-                dataAccess.getStartupFundingCSV(lastReq.startupId, function (file) {
-                    if (file.error) {
-                        console.log(file.error)
-                    } else {
-                        var pom = document.createElement('a');
-                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
-                        pom.setAttribute('download', 'startup-funding-' + lastReq.startupId + '.csv');
-                        pom.click();
-                    }
-                });
-            };
-
             $scope.searchNumberOfFounders= function(){
                 dataAccess.getNumberOfFoundersByStartupId($scope.startupId, function(number){
                     $scope.numberOfFounders= number;
@@ -93,6 +64,7 @@ module.controller('startupInfoCtrl', ['$scope', 'dataAccess',
 
             $scope.searchRolesOfStartup= function(){
                 dataAccess.getRolesNetInfo($scope.startupId, function(persons){
+                    $scope.exportStartupRolesCSVURL = dataAccess.getStartupRolesCSVURL($scope.startupId);
                     $scope.roles= persons;
                     $scope.$apply();
                 })
