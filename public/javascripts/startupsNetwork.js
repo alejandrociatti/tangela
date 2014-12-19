@@ -24,14 +24,14 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                 this.searching = true;
                 this.markOne = !(this.location || this.market);
                 if(!this.markOne) {
-                    dataAccess.getStartupsNetwork(this.location, dateHolder.val(), this.market, -1, function (response) {
+                    dataAccess.getStartupsNetwork(this.location, dateHolder.val(), this.market, this.quality, function (response) {
                         scope.startupsToShow= response.startups;
                         scope.startups = response.rows;
                         scope.searching = false;
                         scope.startupsResultsReached = scope.startups.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
                         scope.exportURL = dataAccess.getStartupsNetworkCSVURL(
-                            scope.location, scope.creation, scope.market
+                            scope.location, scope.creation, scope.market, scope.quality
                         );
                         $scope.$apply();
                     });

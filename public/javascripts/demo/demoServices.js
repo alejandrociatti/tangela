@@ -81,7 +81,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             });
         },
         getStartupPeopleInfo: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.getUsersInfoByCriteria(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Startups.getUsersInfoByCriteria(locationId, market, quality, date).ajax({
                 method: 'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -89,7 +89,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             });
         },
         getStartupsByFeatures: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.startupCriteriaSearch(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Startups.startupCriteriaSearch(locationId, market, quality, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -97,7 +97,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             });
         },
         getStartupsAndTagsByFeatures: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.startupCriteriaSearchAndTags(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Startups.startupCriteriaSearchAndTags(locationId, market, quality, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -105,7 +105,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             });
         },
         getStartupsNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Networks.getStartupsNetwork(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Networks.getStartupsNetwork(locationId, market, quality, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -113,7 +113,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             });
         },
         getPeopleNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Networks.getPeopleNetwork(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Networks.getPeopleNetwork(locationId, market, quality, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -121,7 +121,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             });
         },
         startupsFundingByCriteria: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.startupsFundingByCriteria(locationId, market, undefined, date).ajax({
+            jsRoutes.controllers.Startups.startupsFundingByCriteria(locationId, market, quality, date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -138,19 +138,19 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             })
         },
         getStartupsNetworkCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsNetworkCSV(locationId, market, undefined, date).url;
+            return jsRoutes.controllers.CSVs.getStartupsNetworkCSV(locationId, market, quality, date).url;
         },
         getStartupsCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, undefined, date).url;
+            return jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, quality, date).url;
         },
         getUsersCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getUsersCSV(locationId, market, undefined, date).url;
+            return jsRoutes.controllers.CSVs.getUsersCSV(locationId, market, quality, date).url;
         },
         getStartupsTagsCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsTagsCSV(locationId, market, undefined, date).url;
+            return jsRoutes.controllers.CSVs.getStartupsTagsCSV(locationId, market, quality, date).url;
         },
         getPeopleNetworkCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, undefined, date).url;
+            return jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, quality, date).url;
         },
         getStartupRolesCSVURL: function(startupId){
             return jsRoutes.controllers.CSVs.getStartupRolesCSV(startupId).url;
@@ -159,7 +159,7 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
             return jsRoutes.controllers.CSVs.getStartupFundingCSV(startupId).url;
         },
         getStartupsFundingsCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsFundingsCSV(locationId, market, undefined, date).url;
+            return jsRoutes.controllers.CSVs.getStartupsFundingsCSV(locationId, market, quality, date).url;
         }
     };
 }]);
@@ -170,13 +170,13 @@ serviceModule.factory('graphUtil', function() {
         {threshold: 200, base: 20, scale: 0.1},
         {threshold: 500, base: 50, scale: 0.1},
         {threshold: 1500, base: 100, scale: 0.1},
-        {threshold: undefined, base: 300, scale: 0.01}
+        {threshold: quality, base: 300, scale: 0.01}
     ];
 
     return {
         getRoleSize: function (sizeVariable) {
             for(var i = 0; i < _scales.length; i++){
-                if(sizeVariable < _scales[i].threshold || _scales[i].threshold === undefined){
+                if(sizeVariable < _scales[i].threshold || _scales[i].threshold === quality){
                     return  _scales[i].base+sizeVariable*_scales[i].scale;
                 }
             }
@@ -184,7 +184,7 @@ serviceModule.factory('graphUtil', function() {
         getStartupSize: function(sizeVariable){
             var size;
             for(var i = 0; i < _scales.length; i++){
-                if(sizeVariable < _scales[i].threshold || _scales[i].threshold === undefined){
+                if(sizeVariable < _scales[i].threshold || _scales[i].threshold === quality){
                     size=  _scales[i].base+sizeVariable*_scales[i].scale; break;
                 }
             }

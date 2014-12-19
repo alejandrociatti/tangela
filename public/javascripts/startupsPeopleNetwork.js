@@ -31,7 +31,7 @@ module.controller('startupsPplNetCtrl', ['$scope', 'dataAccess',
                         scope.startupsResultsReached = scope.people.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
                         scope.exportURL = dataAccess.getPeopleNetworkCSVURL(
-                            scope.location, scope.creation, scope.market
+                            scope.location, scope.creation, scope.market, scope.quality
                         );
                         $scope.$apply();
                     });

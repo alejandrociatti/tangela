@@ -13,6 +13,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.startupsResultsReached= true;
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
+        var lastReq;
         var dateHolder = $("#creation-date");
         $scope.markOne= false;
 
@@ -22,14 +23,33 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
             $scope.startupsResultsReached= true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
-                dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, -1,  function (persons) {
+                dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, $scope.quality,  function (persons) {
                     console.log(persons);
                     $scope.persons = persons;
-                    $scope.exportStartupPeopleInfoCSVURL = dataAccess.getUsersCSVURL($scope.location, $scope.creation, $scope.market);
+                    $scope.exportStartupPeopleInfoCSVURL = dataAccess.getUsersCSVURL($scope.location, $scope.creation, $scope.market, $scope.quality);
                     $scope.$apply();
                 });
             }
         };
+
+
+        $scope.exportCSV = function () {
+            if(lastReq) {
+                console.log(dataAccess)
+                dataAccess.getUsersCSV(lastReq.loc, lastReq.creation, lastReq.market, lastReq.quality, function (file) {
+                    if (file.error) {
+                        console.log(file.error)
+                    } else {
+                        var pom = document.createElement('a');
+                        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                        pom.setAttribute('download', 'users-' + lastReq.loc + '.csv');
+                        pom.click();
+                    }
+                });
+            }
+        };
+
+
 
         //Pagination control:
         $scope.itemsPerPage = 5;

@@ -12,6 +12,7 @@ var module = angular.module('app.controllers', ['app.services']);
 module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
 
+            var lastReq;
             var dateHolder = $("#creation-date");
             $scope.startupsResultsReached= true;
             $scope.searching= false;
@@ -24,12 +25,13 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
+                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market, quality: $scope.quality};
                     $scope.fundings = sortByKeys(fundings, "name");
                     $scope.searching = false;
                     $scope.startupsResultsReached= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     $scope.exportStartupsFundingCSVURL = dataAccess.getStartupsFundingsCSVURL(
-                        $scope.location, $scope.creation, $scope.market
+                        $scope.location, $scope.creation, $scope.market, $scope.quality
                     );
                     $scope.$apply();
                 });
@@ -44,6 +46,23 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 var x = obj1[key]; var y = obj2[key];
                 return ((x < y) ? -1 : ((x > y) ? 1 : 0));
             }
+
+            $scope.exportCSV = function () {
+                if(lastReq) {
+                    dataAccess.getStartupsFundingsCSV(lastReq.loc, lastReq.creation, lastReq.market, lastReq.quality, function (file) {
+                        if (file.error) {
+                            console.log(file.error)
+                        } else {
+                            var pom = document.createElement('a');
+                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file));
+                            pom.setAttribute('download', 'startups-fundings-' + lastReq.loc + '.csv');
+                            pom.click();
+                        }
+                    });
+                }
+            };
+
+
 
 
             //Pagination control:
