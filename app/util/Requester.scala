@@ -48,8 +48,8 @@ class Requester(id: String) extends Actor{
       if(RequestManager.count % 500 == 0) Logger.info(s"Requester: $id Request = " + RequestManager.count)
       val connection = new URL(url).openConnection(proxy)
       connection.setRequestProperty("User-Agent", "Mozilla/5.0")
-      val stream = connection.getInputStream
       try {
+        val stream = connection.getInputStream
         val source = Source.fromInputStream(stream)
         sender ! source.mkString("")
         source.close()
@@ -58,7 +58,7 @@ class Requester(id: String) extends Actor{
           sender ! "{\"success\": false}"
         case exception: IOException =>
           Logger.warn("ioException = " + exception)
-          stream.close()
+//          stream.close()
           self forward SocketRequest(url)
       }
   }
