@@ -52,7 +52,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h2 class="panel-title">
                     Roles
-                    <button ng-click="exportStartupRoles()" class="btn btn-xs btn-primary pull-right">Export</button>
+                    <a ng-href="{{exportStartupRolesCSVURL}}" class="btn btn-primary btn-xs btn-export pull-right">Export</a>
                 </h2></div>
                 <div class="panel-body">
                     <table class="table table-bordered">
@@ -103,7 +103,7 @@
                 <div class="panel-heading">
                     <h2 class="panel-title">
                         Funding Rounds
-                        <button ng-click="exportStartupFunding()" class="btn btn-xs btn-primary pull-right">Export</button>
+                        <a ng-href="{{exportStartupFundingCSVURL}}" class="btn btn-primary btn-xs btn-export pull-right">Export</a>
                     </h2>
                 </div>
                 <div ng-repeat="round in rounds" class="panel-body">

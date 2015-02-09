@@ -49,14 +49,16 @@ class Requester(id: String) extends Actor{
       val connection = new URL(url).openConnection(proxy)
       connection.setRequestProperty("User-Agent", "Mozilla/5.0")
       try {
-        val stream = Source.fromInputStream(connection.getInputStream)
-        sender ! stream.mkString("")
-        stream.close()
+        val stream = connection.getInputStream
+        val source = Source.fromInputStream(stream)
+        sender ! source.mkString("")
+        source.close()
       } catch {
         case exception: FileNotFoundException =>
           sender ! "{\"success\": false}"
         case exception: IOException =>
           Logger.warn("ioException = " + exception)
+//          stream.close()
           self forward SocketRequest(url)
       }
   }

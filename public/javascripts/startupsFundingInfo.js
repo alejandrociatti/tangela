@@ -25,11 +25,14 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
                 $scope.startupsResultsReached= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
-                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market};
+                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market, quality: $scope.quality};
                     $scope.fundings = sortByKeys(fundings, "name");
                     $scope.searching = false;
                     $scope.startupsResultsReached= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
+                    $scope.exportStartupsFundingCSVURL = dataAccess.getStartupsFundingsCSVURL(
+                        $scope.location, $scope.creation, $scope.market, $scope.quality
+                    );
                     $scope.$apply();
                 });
             };
@@ -46,7 +49,7 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
 
             $scope.exportCSV = function () {
                 if(lastReq) {
-                    dataAccess.getStartupsFundingsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                    dataAccess.getStartupsFundingsCSV(lastReq.loc, lastReq.creation, lastReq.market, lastReq.quality, function (file) {
                         if (file.error) {
                             console.log(file.error)
                         } else {

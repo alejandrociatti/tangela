@@ -68,7 +68,7 @@
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Startups ({{startups.length}})
-                            <button ng-click="exportCSV()"  class="btn btn-xs btn-primary pull-right">Export</button>
+                            <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{exportStartupsURL}}">Export</a>
                         </h2>
                     </div>
                     <div class="panel-body" style="overflow-x: scroll">
@@ -145,7 +145,7 @@
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Tags ({{tags.length}})
-                            <button ng-click="exportTagsCSV()"  class="btn btn-xs btn-primary pull-right">Export</button>
+                            <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{exportStartupsTagsURL}}">Export</a>
                         </h2>
                     </div>
                     <div class="panel-body" style="overflow-x: scroll">

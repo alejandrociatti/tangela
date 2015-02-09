@@ -32,13 +32,19 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
             $scope.searching = true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
-                dataAccess.getStartupsAndTagsByFeatures($scope.location, dateHolder.val(), $scope.market, -1, function (response) {
+                dataAccess.getStartupsAndTagsByFeatures($scope.location, dateHolder.val(), $scope.market, $scope.quality, function (response) {
                     $scope.startups = response.startups;
+                    $scope.exportStartupsURL = dataAccess.getStartupsCSVURL(
+                        scope.location, scope.creation, scope.market, scope.quality
+                    );
                     $scope.tags = response.tags;
+                    $scope.exportStartupsTagsURL = dataAccess.getStartupsTagsCSVURL(
+                        scope.location, scope.creation, scope.market, scope.quality
+                    );
                     $scope.searching = false;
                     $scope.startupsResultsReached = scope.startups.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
-                    lastReq = {loc:$scope.location, creation:dateHolder.val(), market:$scope.market};
+                    lastReq = {loc:$scope.location, creation:dateHolder.val(), market:$scope.market, quality:$scope.quality};
                     $scope.$apply();
                 });
             }
@@ -57,7 +63,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
         };
         $scope.exportCSV = function () {
             if(lastReq) {
-                dataAccess.getStartupsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                dataAccess.getStartupsCSV(lastReq.loc, lastReq.creation, lastReq.market, lastReq.quality, function (file) {
                     if (file.error) {
                         console.log(file.error)
                     } else {
@@ -71,7 +77,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
         };
         $scope.exportTagsCSV = function() {
             if(lastReq) {
-                dataAccess.getStartupsTagsCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                dataAccess.getStartupsTagsCSV(lastReq.loc, lastReq.creation, lastReq.market, quality, function (file) {
                     if (file.error) {
                         console.log(file.error)
                     } else {

@@ -23,10 +23,10 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
             $scope.startupsResultsReached= true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
-                dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, -1,  function (persons) {
+                dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, $scope.quality,  function (persons) {
                     console.log(persons);
                     $scope.persons = persons;
-                    lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market};
+                    $scope.exportStartupPeopleInfoCSVURL = dataAccess.getUsersCSVURL($scope.location, $scope.creation, $scope.market, $scope.quality);
                     $scope.$apply();
                 });
             }
@@ -36,7 +36,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
         $scope.exportCSV = function () {
             if(lastReq) {
                 console.log(dataAccess)
-                dataAccess.getUsersCSV(lastReq.loc, lastReq.creation, lastReq.market, -1, function (file) {
+                dataAccess.getUsersCSV(lastReq.loc, lastReq.creation, lastReq.market, lastReq.quality, function (file) {
                     if (file.error) {
                         console.log(file.error)
                     } else {
