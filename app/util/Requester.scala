@@ -26,10 +26,10 @@ object RequestManager  {
   implicit val timeout = Timeout(7400000)
 
   lazy val roundRobinRouter = {
-    val requesters = (0 to 30).map { index =>
+    val requestors = (0 to 30).map { index =>
       Akka.system.actorOf(Props(new Requester(index.toString)))
     }
-    Akka.system.actorOf(Props.empty.withRouter(SmallestMailboxRouter(requesters)))
+    Akka.system.actorOf(Props.empty.withRouter(SmallestMailboxRouter(requestors)))
   }
   var count = 0
 
@@ -49,8 +49,7 @@ class Requester(id: String) extends Actor{
       val connection = new URL(url).openConnection(proxy)
       connection.setRequestProperty("User-Agent", "Mozilla/5.0")
       try {
-        val stream = connection.getInputStream
-        val source = Source.fromInputStream(stream)
+        val source = Source.fromInputStream(connection.getInputStream)
         sender ! source.mkString("")
         source.close()
       } catch {
@@ -58,7 +57,6 @@ class Requester(id: String) extends Actor{
           sender ! "{\"success\": false}"
         case exception: IOException =>
           Logger.warn("ioException = " + exception)
-//          stream.close()
           self forward SocketRequest(url)
       }
   }
