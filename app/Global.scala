@@ -90,35 +90,32 @@ object Global extends GlobalSettings {
   }
 
   def loadNetworks() = {
-    Future({
-      Logger.info("Loading countries.")
-      Location.getCountries foreach { country =>
-        Await.ready(Networks.getStartupsNetworkToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
-        Await.ready(Startups.getUsersInfoByCriteriaToLoad(country.angelId.toInt, -1, -1, ""), Duration.Inf)
-
-        System.gc()
-        val runtime: Runtime = Runtime.getRuntime
-
-        val format: NumberFormat = NumberFormat.getInstance()
-
-        val sb: StringBuilder = new StringBuilder()
-        val maxMemory = runtime.maxMemory()
-        val allocatedMemory = runtime.totalMemory()
-        val freeMemory = runtime.freeMemory()
-
-        sb.append("free memory: " + format.format(freeMemory / 1024) + "\t")
-        sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\t")
-        sb.append("max memory: " + format.format(maxMemory / 1024) + "\t")
-        sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\t")
-
-        Logger.info(sb.toString())
-
-        System.gc()
-        val name = country.name
-        Logger.info(s"Country $name loaded.")
-      }
-      Logger.info("Network loaded.")
+    def loadLocation(location: Location) = Future({
+//      Logger.info("Loading: "+location.name)
+      Await.ready(Networks.getStartupsNetworkToLoad(location.angelId.toInt, -1, -1, ""), Duration.Inf)
+      Await.ready(Startups.getUsersInfoByCriteriaToLoad(location.angelId.toInt, -1, -1, ""), Duration.Inf)
+//      System.gc()
+//      val runtime: Runtime = Runtime.getRuntime
+//      val format: NumberFormat = NumberFormat.getInstance()
+//      val sb: StringBuilder = new StringBuilder()
+//      val maxMemory = runtime.maxMemory()
+//      val allocatedMemory = runtime.totalMemory()
+//      val freeMemory = runtime.freeMemory()
+//      sb.append("free memory: " + format.format(freeMemory / 1024) + "\t")
+//      sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\t")
+//      sb.append("max memory: " + format.format(maxMemory / 1024) + "\t")
+//      sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\t")
+//      Logger.info(sb.toString())
+//      System.gc()
+      val name = location.name
+      //Logger.info(s"Location $name loaded.")
     })
+
+    //Logger.info("Loading countries.")
+    Location.getCountries foreach {
+      case country@Location("United States", _, _, _) => country.getChildren.map(_.map{loc =>loadLocation(loc)})
+      case country => loadLocation(country)
+    }
   }
 
   def clearCSVs() = {

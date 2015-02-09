@@ -47,10 +47,11 @@ object Networks extends Controller {
   }
 
   def getStartupsNetworkFuture(startups: Seq[JsValue]): Future[JsArray] = {
+
     def differentStartupFilter(user1: JsValue, user2: JsValue) =
       (user1 \ "startupId").as[Int] != (user2 \ "startupId").as[Int]
-    def equalUserFilter(user1: JsValue, user2: JsValue) =
-      (user1 \ "userId").as[Int] == (user2 \ "userId").as[Int]
+
+    def equalUserFilter(user1: JsValue, user2: JsValue) = (user1 \ "userId").as[Int] == (user2 \ "userId").as[Int]
 
     val userRoles = Future.sequence(startups map getStartupRoles).map(_.flatten).flatMap(getExtendedRoles)
 
@@ -96,12 +97,11 @@ object Networks extends Controller {
 
     def equalStartupFilter(user1: JsValue, user2: JsValue) =
       (user1 \ "startupId").as[Int] == (user2 \ "startupId").as[Int]
+
     def differentUserFilter(user1: JsValue, user2: JsValue) =
       (user1 \ "userId").as[Int] != (user2 \ "userId").as[Int]
 
-    val userRoles = Future.sequence(
-      startups map getStartupRoles
-    ).map(_.flatten)
+    val userRoles = Future.sequence(startups map getStartupRoles).map(_.flatten).flatMap(getExtendedRoles)
 
     val peopleConnections = userRoles map { userRoles =>
       def getMatches(userRoles: Seq[JsValue], matches: Seq[JsValue]): Seq[JsValue] =
@@ -143,7 +143,6 @@ object Networks extends Controller {
    * @param roles JsValue that contains the startup id and name
    * @return A Future of Seq of all corresponding roles from all people as JsValues
    */
-
   def getExtendedRoles(roles: Seq[JsValue]): Future[Seq[JsValue]] = {
     val userMap = (roles map { role => ((role \ "userId").as[Int], (role \ "userName").as[String])}).toMap
     val extendedRoles = userMap map { case (id, name) =>

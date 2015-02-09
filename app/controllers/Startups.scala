@@ -321,59 +321,55 @@ object Startups extends Controller with Secured {
   }
 
    /**
-   * This method return all not hidden startups that are associated to a tag
+   * This method returns startups associated to a tag (which are visible)
    * @param tagId id of the Tag
    * @return A Future with a JsArray of the startups
    */
-  def searchByTag(tagId: Long): Future[JsArray] = {
-     searchByTagNonBlocking(tagId).flatMap { result =>
-       Future.sequence(result).map(result => JsArray(result.flatten))
-     }
-  }
+  def searchByTag(tagId: Long): Future[JsArray] = searchByTagNonBlocking(tagId) map JsArray
 
-  def searchByTagNonBlocking(tagId: Long): Future[Seq[Future[Seq[JsValue]]]] = {
-    AngelListServices.getStartupsByTagId(tagId) map { response =>
+  def searchByTagNonBlocking(tagId: Long): Future[Seq[JsValue]] = {
 
-      def responseToStartupSeq(response: JsValue): Seq[JsValue] =
-        (response \ "startups").as[JsArray].value
-          .filter { startup => !(startup \ "hidden").as[Boolean]}
-          .map(relevantStartupInfo)
+    def responseToStartupSeq(response: JsValue): Seq[JsValue] =
+      (response \ "startups").as[JsArray].value
+        .filter { startup => !(startup \ "hidden").as[Boolean]}
+        .map(relevantStartupInfo)
 
-      val pages: Int = (response \ "last_page").as[Int]
-      val futureResponses = (2 to pages).map(AngelListServices.getStartupsByTagIdAndPage(tagId))
-        .map(futureResponse => futureResponse.map(responseToStartupSeq))
-      val firstPageResponses = responseToStartupSeq(response).map(Seq(_)).map(Future(_))
-
-      // Add first page to result\
-      firstPageResponses ++ futureResponses
+    AngelListServices.getStartupsByTagId(tagId) flatMap { response :JsValue =>
+      val pages = (response \ "last_page").as[Int]
+      // Get startups for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)
+      Future.sequence(
+        (2 to pages).map(AngelListServices.getStartupsByTagIdAndPage(tagId))
+      ).map{ results : IndexedSeq[JsValue] =>
+        // Convert the 1st page (response) and the rest of them (results) to StartupsSeq and join all of them
+        responseToStartupSeq(response) ++ (results flatMap responseToStartupSeq)
+      } //The result is a Future[Seq[JsValue]] where each JsValue represents a Startup
     }
   }
-  
+
   def startupsByCriteria(locationId: Int, marketId: Int, quality: Int, creationDate: String): Future[JsArray] = {
     startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) map JsArray
   }
 
-
+  /**
+   *  This method fetchs Startups using locationId or marketId
+   *  and then filters the results with the given parameters
+   */
   def startupsByCriteriaNonBlocking(locationId: Int, marketId: Int, quality: Int,
-                                    creationDate: String): Future[Seq[JsValue]] = {
-//    Filter by location and market
-    val initialStartupsToSend = if (locationId == -1) {
-      searchByTagNonBlocking(marketId).flatMap(Future.sequence(_).map(_.flatten))
-    } else {
-      searchByTagNonBlocking(locationId).flatMap { startupsByLocation =>
-        if (marketId != -1) Future.sequence(startupsByLocation)
-          .map(_.map(_.filter(intFilter("markets", "id", marketId))).flatten)
-        else Future.sequence(startupsByLocation).map(_.flatten)
-      }
+                                     creationDate: String): Future[Seq[JsValue]] = {
+    val seed = (locationId, marketId) match {
+      case (location, -1) => searchByTagNonBlocking(location)
+      case (-1, market) => searchByTagNonBlocking(market)
+      case (location, market) => searchByTagNonBlocking(location).map(_.filter(intFilter("markets", "id", market)))
     }
-
-//    Filter by quality and creationDate
-    initialStartupsToSend map { startups =>
-      val filteredByQuality = if (quality != -1) startups.filter(intFilter("quality", quality)) else startups
-      if (creationDate != "") startups.filter(dateFilter("created_at", DateTime.parse(creationDate)))
-      else filteredByQuality
-    } map(_ filter validResultFilter)
+    val result = (quality, creationDate) match {
+      case (-1, "") => seed
+      case (q, "") => seed.map(_.filter(intFilter("quality", q)))
+      case (-1, d) => seed.map(_.filter(dateFilter("created_at", DateTime.parse(d))))
+      case (q, d) => seed.map(_.filter(intFilter("quality", q)).filter(dateFilter("created_at", DateTime.parse(d))))
+    }
+    result
   }
+
 
   def intFilter(field: String, value: Int)(json: JsValue): Boolean =
     (json \ field).as[Int] == value
