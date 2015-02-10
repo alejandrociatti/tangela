@@ -106,9 +106,7 @@ object Global extends GlobalSettings {
 //      sb.append("max memory: " + format.format(maxMemory / 1024) + "\t")
 //      sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\t")
 //      Logger.info(sb.toString())
-//      System.gc()
-      val name = location.name
-      //Logger.info(s"Location $name loaded.")
+      Logger.info("Location \""+location.name+"\" loaded.")
     })
 
     //Logger.info("Loading countries.")

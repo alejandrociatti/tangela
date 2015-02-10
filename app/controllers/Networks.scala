@@ -38,13 +38,9 @@ object Networks extends Controller {
     }
   }
 
-  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) = {
-    startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
-      Future.sequence(startups map getStartupRoles)
-        .map(_.flatten)
-        .flatMap(getExtendedRoles)
-    }
-  }
+  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
+    startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) map getStartupsNetworkFuture
+
 
   def getStartupsNetworkFuture(startups: Seq[JsValue]): Future[JsArray] = {
 

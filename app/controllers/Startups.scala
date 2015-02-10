@@ -282,43 +282,14 @@ object Startups extends Controller with Secured {
 
 //  Helpers **********************************************************************************
 
-  def getStartupFund(startupId: Long, startupName: String = ""): Future[JsValue] = {
+  def getStartupFund(startupId: Long, startupName: String = ""): Future[JsValue] =
     AngelListServices.getFundingByStartupId(startupId) map { response =>
-      val success = response \\ "success"
-      if (success.size == 0) {
-        val funding: JsArray = (response \ "funding").as[JsArray]
-
-        var seqFunding = Seq.empty[Map[String, String]]
-
-
-        for (aFundraisingRound <- funding.value) {
-          var seqParticipants = Seq.empty[Map[String, String]]
-          val participants: JsArray = (aFundraisingRound \ "participants").as[JsArray]
-
-          val id: Int = (aFundraisingRound \ "id").as[Int]
-          val round_type: String = (aFundraisingRound \ "round_type").asOpt[String].getOrElse("")
-          val amount: Int = (aFundraisingRound \ "amount").as[Int]
-          val closed_at: String = (aFundraisingRound \ "closed_at").as[String]
-          val source_url: String = (aFundraisingRound \ "source_url").asOpt[String].getOrElse("")
-
-          for (participant <- participants.value) {
-            val id: Int = (participant \ "id").as[Int]
-            val name: String = (participant \ "name").as[String]
-            val aType: String = (participant \ "type").as[String]
-            seqParticipants = seqParticipants.+:(Map("id" -> id.toString, "name" -> name, "type" -> aType))
-          }
-
-          seqFunding = seqFunding.+:(Map("startup_id" -> startupId.toString, "id" -> id.toString,
-            "name" -> startupName, "round_type" -> round_type, "amount" -> amount.toString,
-            "closed_at" -> closed_at, "source_url" -> source_url, "participants" -> Json.toJson(seqParticipants).toString()))
-        }
-        Json.toJson(seqFunding.reverse)
-      } else {
-        Json.obj("id" -> "error", "msg" -> s"Startup $startupId does not exist")
+      (response \ "funding").asOpt[JsValue].fold{
+        Json.obj("id" -> "error", "msg" -> s"Startup $startupId does not exist").as[JsValue]
+      }{ funding =>
+        funding
       }
-
     }
-  }
 
    /**
    * This method returns startups associated to a tag (which are visible)

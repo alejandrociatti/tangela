@@ -4,8 +4,6 @@ import java.io.File
 
 import _root_.util.{DiskSaver, RequestManager}
 import models.DatabaseUpdate
-import play.api.Play.current
-import play.api.cache.Cache
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,39 +19,26 @@ object AngelListServices {
   val AngelApi = "https://api.angel.co/1"
   val jsonSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"))
 
-  private def cache(key: String, value: JsValue) =
-    if((value\"error").isInstanceOf[JsUndefined]) Cache.set(key, value, 300)
-
-  private def parseAndCache(key: String, value: String) = {
-      val jsonResponse = Json.parse(value)
-      cache(key, jsonResponse)
-      jsonResponse
-  }
-
   private def sendRequestToAngelList(request: String): Future[JsValue] =
     RequestManager.sendRequest(AngelApi + request) map { response =>
       Future(jsonSaver.put(request, response))
-      parseAndCache(request, response)
+      Json.parse(response)
     }
 
   def sendRequest(request: String): Future[JsValue] =
-    Cache.get(request).fold {
-      jsonSaver.get(request).fold {
-        sendRequestToAngelList(request)
-      }{ value =>
-        Future(parseAndCache(request, value))
-      }
-    }{ result =>
-      Future(result.asInstanceOf[JsValue])
+    jsonSaver.get(request).fold{
+      sendRequestToAngelList(request)
+    }{jsValue =>
+      Future(Json.parse(jsValue))
     }
 
   def getStartupById(id: Long) = sendRequest(s"/startups/$id")
 
   def getUserById(id: Long) = sendRequest(s"/users/$id")
 
-  def getRolesFromStartupId(id: Long) = sendRequest(s"/startup_roles?startup_id=$id")
+  def getRolesFromStartupId(id: Long) = sendRequest(s"/startup_roles?v=1&startup_id=$id")
 
-  def getRolesFromUserId(id: Long) = sendRequest(s"/startup_roles?user_id=$id")
+  def getRolesFromUserId(id: Long) = sendRequest(s"/startup_roles?v=1&user_id=$id")
 
   def getStartupsByTagId(id: Long) = sendRequest(s"/tags/$id/startups")
 
