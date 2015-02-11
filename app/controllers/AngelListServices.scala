@@ -17,26 +17,38 @@ import scala.concurrent.Future
 
 object AngelListServices {
   val AngelApi = "https://api.angel.co/1"
-  val jsonSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"))
+  val jsonSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), "json")
+  val startupsSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), "startups")
+  val usersSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), "users")
+  val tagsSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), "tags")
 
   private def sendRequestToAngelList(request: String): Future[JsValue] =
     RequestManager.sendRequest(AngelApi + request) map { response =>
-      Future(jsonSaver.put(request, response))
+      Future(getSaver(request).put(request, response))
       Json.parse(response)
     }
 
   def sendRequest(request: String): Future[JsValue] =
-    jsonSaver.get(request).fold{
+    getSaver(request).get(request).fold{
       sendRequestToAngelList(request)
     }{jsValue =>
       Future(Json.parse(jsValue))
     }
+
+  def getSaver(request: String) : DiskSaver = request match {
+    case string if string.startsWith("/startup") => startupsSaver
+    case string if string.startsWith("/user") => usersSaver
+    case string if string.startsWith("/tag") => tagsSaver
+    case _ => jsonSaver
+  }
 
   def getStartupById(id: Long) = sendRequest(s"/startups/$id")
 
   def getUserById(id: Long) = sendRequest(s"/users/$id")
 
   def getRolesFromStartupId(id: Long) = sendRequest(s"/startup_roles?v=1&startup_id=$id")
+
+  def getRolesFromStartupIdAndPage(id: Long)(page: Int) = sendRequest(s"/startup_roles?v=1&startup_id=$id&page=$page")
 
   def getRolesFromUserId(id: Long) = sendRequest(s"/startup_roles?v=1&user_id=$id")
 

@@ -18,7 +18,7 @@ object Application extends Controller with Secured{
   }
   
   def startupsByLocation = withAuth(Admin, Researcher) { user => implicit request =>
-    Ok(views.html.startupsByLocation())
+    Ok(views.html.startups())
   }
 
   def searchStartups = withAuth(Admin, Researcher) { user => implicit request =>

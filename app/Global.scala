@@ -36,7 +36,7 @@ object Global extends GlobalSettings {
     populateCountries()
     populateMarket()
     clearCSVs()
-    loadNetworks()
+    //loadNetworks()
     dropTablesCRON()
   }
 
@@ -92,8 +92,8 @@ object Global extends GlobalSettings {
   def loadNetworks() = {
     def loadLocation(location: Location) = Future({
 //      Logger.info("Loading: "+location.name)
-      Await.ready(Networks.getStartupsNetworkToLoad(location.angelId.toInt, -1, -1, ""), Duration.Inf)
-      Await.ready(Startups.getUsersInfoByCriteriaToLoad(location.angelId.toInt, -1, -1, ""), Duration.Inf)
+      Await.ready(Networks.getStartupsNetworkToLoad(location.angelId.toInt, -1, "", ""), Duration.Inf)
+      Await.ready(Startups.getUsersInfoByCriteriaToLoad(location.angelId.toInt, -1, "", ""), Duration.Inf)
 //      System.gc()
 //      val runtime: Runtime = Runtime.getRuntime
 //      val format: NumberFormat = NumberFormat.getInstance()

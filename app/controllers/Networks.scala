@@ -1,6 +1,6 @@
 package controllers
 
-import _root_.util.CSVManager
+import _root_.util.{Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
@@ -23,8 +23,8 @@ object Networks extends Controller {
    * @param creationDate  creation date filter.
    * @return A Future of a JsArray that contains all the connections between startups by roles/people
    */
-  def getStartupsNetwork(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async {
-    startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
+  def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
+    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { startupsToSend =>
         Future(
           CSVManager.put(
@@ -38,8 +38,8 @@ object Networks extends Controller {
     }
   }
 
-  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
-    startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) map getStartupsNetworkFuture
+  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: String, creationDate: String) =
+    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) map getStartupsNetworkFuture
 
 
   def getStartupsNetworkFuture(startups: Seq[JsValue]): Future[JsArray] = {
@@ -74,8 +74,8 @@ object Networks extends Controller {
    * @param creationDate  date filter.
    * @return A Future of a JsArray that contains all the connections between people by startups in common
    */
-  def getPeopleNetwork(locationId: Int, marketId: Int, quality: Int, creationDate: String) = Action.async{
-    startupsByCriteriaNonBlocking(locationId, marketId, quality, creationDate) flatMap { startups =>
+  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
+    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
       getPeopleNetworkFuture(startups) map { startupsToSend =>
         Future(
           CSVManager.put(
@@ -129,7 +129,7 @@ object Networks extends Controller {
       (response \ "startup_roles").asOpt[JsArray].fold {
         Seq[JsValue]()
       }{ roles =>
-        roles.value.filter(notNullUserFilter).map(userRoleFromStartup(_, startup))
+        roles.value.filter(notNullUserFilter) map simplifyRole
       }
     }
   }
@@ -146,8 +146,7 @@ object Networks extends Controller {
         (response \ "startup_roles").asOpt[JsArray].fold {
           Seq[JsValue]()
         } { roles =>
-          roles.value.filter(notNullUserFilter)
-            .map(userRoleFromUser(_, Json.obj("id" -> id, "name" -> name)))
+          roles.value.filter(notNullUserFilter) map simplifyRole
         }
       }
     }
@@ -156,20 +155,12 @@ object Networks extends Controller {
 
   def notNullUserFilter(role: JsValue) = (role \ "user") != JsNull
 
-  def userRoleFromUser(role: JsValue, user: JsValue) = Json.obj(
-    "userId" -> (user \ "id").as[Int],
-    "userName" -> (user \ "name").as[String],
+  def simplifyRole(role: JsValue) = Json.obj(
+    "userId" -> (role \ "tagged" \ "id").as[Int],
+    "userName" -> (role \ "tagged" \ "name").as[String],
     "userRole" -> (role \ "role").as[String],
     "startupId" -> (role \ "startup" \ "id").as[Int],
     "startupName" -> (role \ "startup" \ "name").as[String]
-  )
-
-  def userRoleFromStartup(role: JsValue, startup: JsValue) = Json.obj(
-    "userId" -> (role \ "user" \ "id").as[Int],
-    "userName" -> (role \ "user" \ "name").as[String],
-    "userRole" -> (role \ "role").as[String],
-    "startupId" -> (startup \ "id").as[Int],
-    "startupName" -> (startup \ "name").as[String]
   )
 
   def startupsConnection(user1: JsValue, user2: JsValue) = Json.obj(

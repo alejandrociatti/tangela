@@ -13,7 +13,8 @@ import scala.io.Source
  * Time: 17:15
  */
 object CSVManager {
-  val csvSaver = DiskSaver(new File("storedCSVs"))
+
+  val csvSaver = DiskSaver(new File("storedCSVs"), "csvs")
 
   def put(fileName: String, headers: List[String], values: List[List[String]]) {
     val maybeString: Option[String] = get(fileName)

@@ -10,11 +10,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Date: 05/11/14.
  * Project: tangela.
  */
-case class DiskSaver(directory: File) {
+case class DiskSaver(directory: File, fileName: String) {
   checkDirectory()
   if(!directory.isDirectory) throw new NotDirectoryException(directory.getAbsolutePath)
 
-  val indexFile = new File(directory.getAbsolutePath + File.separator + "index.map")
+  val indexFile = new File(directory.getAbsolutePath + File.separator + fileName +"-index.map")
   val indexMap: mutable.Map[String, Long] = if (indexFile.exists() && indexFile.isFile) {
     retrieveIndex()
   } else {
@@ -22,7 +22,7 @@ case class DiskSaver(directory: File) {
   }
 
   // This file contains the data.
-  val dataFile = new File(directory.getAbsolutePath + File.separator + "data.file")
+  val dataFile = new File(directory.getAbsolutePath + File.separator + fileName + "-data.file")
 
   def put(key: String, value: String):Unit = this.synchronized {
     checkDirectory()

@@ -30,7 +30,7 @@ object CSVs extends Controller{
       "startupId", "startupName"))
   }
 
-  def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
+  def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"people-net-$locationId-$marketId-$quality-$creationDate")
 
   /* Startup Network CSV **********************************************************************************************/
@@ -46,7 +46,7 @@ object CSVs extends Controller{
     makeCsvValues(startups.value, Seq("startupIdOne", "startupNameOne", "roleOne", "startupIdTwo", "startupNameTwo",
       "roleTwo", "userId", "userName"))
 
-  def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
+  def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startup-net-$locationId-$marketId-$quality-$creationDate")
 
   /* Startups CSV *****************************************************************************************************/
@@ -69,7 +69,7 @@ object CSVs extends Controller{
       "video_url"))
   }
 
-  def getStartupsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = 
+  def getStartupsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startups-$locationId-$marketId-$quality-$creationDate")
 
 
@@ -89,7 +89,7 @@ object CSVs extends Controller{
       List((user \ "investor").asOpt[Boolean].getOrElse(false).toString)
   }
 
-  def getUsersCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = 
+  def getUsersCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"users-$locationId-$marketId-$quality-$creationDate")
   
   /* Startups Tags CSV ********************************************************************************************************/
@@ -104,12 +104,12 @@ object CSVs extends Controller{
    * This method returns a List full of Tags in the form of a List of that tags attributes
    *
    * @param values: Seq[JsValue] containing all the tags to return (markets, locations, company_type)
-   * @return List[List[String]] each tag is a List[String], each string is the value of an attribute.
+   * @return List[ List[String] ] each tag is a List[String], each string is the value of an attribute.
    */
   def makeStartupsTagsCSVValues(values: Seq[JsValue]): List[List[String]] =
     makeCsvValues(values, Seq("startup", "id", "tag_type", "name", "display_name", "angellist_url"))
 
-  def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) = 
+  def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startups-tags-$locationId-$marketId-$quality-$creationDate")
 
 
@@ -127,7 +127,7 @@ object CSVs extends Controller{
   def makeStartupRolesCSVValues(startups: JsArray, startupId: Long) = startups.as[List[JsValue]].map{ startup =>
     List(DatabaseUpdate.getLastAsString, startupId.toString) ++
       valueListFromJsValue(startup, Seq("id", "role", "created_at", "started_at", "ended_at", "title", "confirmed")) ++
-      valueListFromJsValue(startup \ "user", Seq("name", "id", "bio", "follower_count", "angellist_url", "image"))
+      valueListFromJsValue(startup \ "tagged", Seq("name", "id", "bio", "follower_count", "angellist_url", "image"))
   }
 
   def getStartupRolesCSV(startupId: Long) = getCsv(s"startup-roles-$startupId")
@@ -156,7 +156,7 @@ object CSVs extends Controller{
 
   def getStartupFundingCSV(startupId: Long) = getCsv(s"startup-funding-$startupId")
 
-  def getStartupsFundingsCSV(locationId: Int, marketId: Int, quality: Int, creationDate: String) =
+  def getStartupsFundingsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startups-funding-$locationId-$marketId-$quality-$creationDate")
 
   /* Helpers ---------------------------------------------------------------------------------------------------- */
@@ -164,14 +164,15 @@ object CSVs extends Controller{
   def getCsv(name: String) = Action.async {
     Future(
       CSVManager.getFile(name).fold {
-        NotFound("<h1>CSV NOT FOUND</h1>")
+        NotFound("CSV NOT FOUND")
       } { result =>
+        val newName = name.replace(",", "")
         SimpleResult(
           header = ResponseHeader(200,
             Map(
               CONTENT_LENGTH -> result._2.toString,
               CONTENT_TYPE -> "text/csv",
-              CONTENT_DISPOSITION -> s"attachment;filename=$name.csv"
+              CONTENT_DISPOSITION -> s"attachment;filename=$newName.csv"
             )
           ),
           body = result._1

@@ -56,17 +56,13 @@ object Locations extends Controller{
     }
   }
 
-  def getChildrenOf(countryId:Long) = Action.async {
-    AngelListServices.getChildrenOfTag(countryId) map{ jsResponse =>
-      Ok(
-        Json.toJson(
-          jsResponse.as[Seq[JsValue]].map{ jsValue =>
-            Json.obj("id" -> jsValue \ "id", "name" -> jsValue \ "name")
+  def getChildrenOf(locationId:Long) = Action.async {
+    AngelListServices.getChildrenOfTag(locationId) map{ jsResponse =>
+      Ok( JsArray(
+          (jsResponse \ "children").as[Seq[JsValue]].map{ location =>
+            Json.obj("id" -> (location \ "id"), "name" -> (location \ "display_name"))
           }
-        )
-      )
+      ))
     }
   }
-
-
 }

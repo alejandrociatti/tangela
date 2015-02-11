@@ -32,7 +32,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
             $scope.searching = true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
-                dataAccess.getStartupsAndTagsByFeatures($scope.location, dateHolder.val(), $scope.market, $scope.quality, function (response) {
+                dataAccess.getStartupsAndTagsByCriteria($scope.location, dateHolder.val(), $scope.market, $scope.quality, function (response) {
                     $scope.startups = response.startups;
                     $scope.exportStartupsURL = dataAccess.getStartupsCSVURL(
                         scope.location, scope.creation, scope.market, scope.quality

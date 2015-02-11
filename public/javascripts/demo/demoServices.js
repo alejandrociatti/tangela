@@ -8,8 +8,8 @@ var serviceModule = angular.module('app.services', []);
 
 serviceModule.factory('dataAccess', ['$http', function($http) {
     return {
-        getChildrenOf: function(countryId, successHandler, errorHandler) {
-            jsRoutes.controllers.Locations.getChildrenOf(countryId).ajax({
+        getChildrenOf: function(locationId, successHandler, errorHandler) {
+            jsRoutes.controllers.Locations.getChildrenOf(locationId).ajax({
                 method:'GET',
                 responseType:"application/json",
                 success: successHandler,
@@ -96,8 +96,8 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
                 error: errorHandler
             });
         },
-        getStartupsAndTagsByFeatures: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.startupCriteriaSearchAndTags(locationId, market, quality, date).ajax({
+        getStartupsAndTagsByCriteria: function(criteriaObj, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.startupCriteriaSearchAndTags(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -120,8 +120,8 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
                 error: errorHandler
             });
         },
-        startupsFundingByCriteria: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Startups.startupsFundingByCriteria(locationId, market, quality, date).ajax({
+        startupsFundingByCriteria: function(criteriaObj, successHandler, errorHandler){
+            jsRoutes.controllers.Startups.startupsFundingByCriteria(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -140,14 +140,14 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
         getStartupsNetworkCSVURL: function(locationId, date, market, quality){
             return jsRoutes.controllers.CSVs.getStartupsNetworkCSV(locationId, market, quality, date).url;
         },
-        getStartupsCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsCSV(locationId, market, quality, date).url;
+        getStartupsCSVURL: function(criteriaObj){
+            return jsRoutes.controllers.CSVs.getStartupsCSV(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).url;
         },
         getUsersCSVURL: function(locationId, date, market, quality){
             return jsRoutes.controllers.CSVs.getUsersCSV(locationId, market, quality, date).url;
         },
-        getStartupsTagsCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsTagsCSV(locationId, market, quality, date).url;
+        getStartupsTagsCSVURL: function(criteriaObj){
+            return jsRoutes.controllers.CSVs.getStartupsTagsCSV(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).url;
         },
         getPeopleNetworkCSVURL: function(locationId, date, market, quality){
             return jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, quality, date).url;
@@ -158,8 +158,8 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
         getStartupFundingCSVURL: function(startupId){
             return jsRoutes.controllers.CSVs.getStartupFundingCSV(startupId).url;
         },
-        getStartupsFundingsCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getStartupsFundingsCSV(locationId, market, quality, date).url;
+        getStartupsFundingsCSVURL: function(criteriaObj){
+            return jsRoutes.controllers.CSVs.getStartupsFundingsCSV(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).url;
         }
     };
 }]);
