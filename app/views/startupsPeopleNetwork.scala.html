@@ -1,60 +1,7 @@
 @main("Informacion sobre Startups")(sidebar()) {
 
-    <div class="row" ng-app="AAC" ng-controller="startupsPplNetCtrl as main">
-        <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-body">
-                    <form role="form">
-                        <div class="form-group">
-                            <label class="control-label" for="location">Location</label>
-                            <select class="form-control" name="location" id="location" ng-model="main.location">
-                                <option value="" disabled selected>Select a country...</option>
-                                <optgroup label="Countries">
-                                @for(country: Location <- Location.getCountries){
-                                    <option value="@country.angelId">@country.name</option>
-                                }
-                                </optgroup>
-                                <optgroup label="Specific Locations">
-                                @for(country: Location <- Location.getOtherThanCountries){
-                                    <option value="@country.angelId">@country.name</option>
-                                }
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label" for="market">Market</label>
-                            <select class="form-control" ng-model="main.market" name="market" id="market">
-                            @for(market: Market <- Market.getMarkets){
-                                <option value="@market.angelId">@market.name</option>
-                            }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label" for="creation-date">Creation date</label>
-                            <input type="date" class="form-control" name="creation-date" id="creation-date" ng-model="main.date"/>
-                            <p class="help-block">Creation date filters startups created ON or AFTER given creation date.</p>
-                        </div>
-                        <div class="form-group">
-                            <label for="quality" class="control-label">Quality</label>
-                            <input type="number" class="form-control" name="quality" id="quality" ng-model="main.quality"/>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary" ng-click="main.submit()">Search</button>
-                        </div>
-                    </form>
-                    <div class="alert alert-warning" ng-if="main.searching" >
-                        <p><strong>Please wait while we search for the result...</strong></p>
-                    </div>
-                    <div class="alert alert-danger" ng-if="main.markOne" >
-                        <p><strong>You must mark either a location or a market to search</strong></p>
-                    </div>
-                    <div class="alert alert-danger" ng-if="!main.startupsResultsReached" >
-                        <p><strong>There are not startups with that features</strong></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+    <div class="row" ng-app="AAC" ng-controller="startupsPplNetCtrl">
+        <div class="col-lg-6">@partial.startupSearchForm()</div>
         <div class="col-lg-6">
             <div class="panel panel-default" ng-controller="tableController">
                 <div class="panel-heading"><h2 class="panel-title text-center">Startups</h2></div>
@@ -67,13 +14,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="startup in main.startupsToShow | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
+                            <tr ng-repeat="startup in $parent.startups | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
                                 <td>{{startup.id}}</td>
                                 <td>{{startup.name}}</td>
                             </tr>
                         </tbody>
                     </table>
-                    <pagination ng-model="currentPage" total-items="main.startupsToShow.length" max-size="5"
+                    <pagination ng-model="currentPage" total-items="$parent.startups.length" max-size="5"
                     boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
                     </pagination>
                 </div>
@@ -84,8 +31,8 @@
             <div class="panel panel-default" ng-controller="tableController">
                 <div class="panel-heading">
                     <h2 class="panel-title">
-                        People ({{main.people.length}})
-                        <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{main.exportURL}}">Export</a>
+                        People ({{$parent.networkRows.length}})
+                        <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{$parent.exportURL}}">Export</a>
                     </h2>
                 </div>
                 <div class="panel-body">
@@ -103,7 +50,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="person in main.people | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
+                            <tr ng-repeat="person in $parent.networkRows | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
                                 <td>{{person.userIdOne}}</td>
                                 <td>{{person.userNameOne}}</td>
                                 <td>{{person.roleOne}}</td>
@@ -115,13 +62,12 @@
                             </tr>
                         </tbody>
                     </table>
-                    <pagination ng-model="currentPage" total-items="main.people.length" max-size="15"
+                    <pagination ng-model="currentPage" total-items="$parent.networkRows.length" max-size="15"
                     boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
                     </pagination>
                 </div>
             </div>
         </div>
-
     </div><!-- /.row -->
 }{
     <script src="@routes.Application.javascriptRoutes"></script>

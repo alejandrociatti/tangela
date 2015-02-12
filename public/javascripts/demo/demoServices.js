@@ -112,8 +112,8 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
                 error: errorHandler
             });
         },
-        getPeopleNetwork: function(locationId, date, market, quality, successHandler, errorHandler){
-            jsRoutes.controllers.Networks.getPeopleNetwork(locationId, market, quality, date).ajax({
+        getPeopleNetwork: function(criteriaObj, successHandler, errorHandler){
+            jsRoutes.controllers.Networks.getPeopleNetwork(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).ajax({
                 method:'GET',
                 responseType: 'application/json',
                 success: successHandler,
@@ -149,8 +149,8 @@ serviceModule.factory('dataAccess', ['$http', function($http) {
         getStartupsTagsCSVURL: function(criteriaObj){
             return jsRoutes.controllers.CSVs.getStartupsTagsCSV(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).url;
         },
-        getPeopleNetworkCSVURL: function(locationId, date, market, quality){
-            return jsRoutes.controllers.CSVs.getPeopleNetworkCSV(locationId, market, quality, date).url;
+        getPeopleNetworkCSVURL: function(criteriaObj){
+            return jsRoutes.controllers.CSVs.getPeopleNetworkCSV(criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date).url;
         },
         getStartupRolesCSVURL: function(startupId){
             return jsRoutes.controllers.CSVs.getStartupRolesCSV(startupId).url;

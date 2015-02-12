@@ -26,13 +26,11 @@ object Networks extends Controller {
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { startupsToSend =>
-        //Future(
-          CSVManager.put(
-            s"startup-net-$locationId-$marketId-$quality-$creationDate",
-            CSVs.makeStartupsNetworkCSVHeaders,
-            CSVs.makeStartupsNetworkCSVValues(startupsToSend)
-          )
-        //)
+        CSVManager.put( //TODO: Verify if we should or should not wrap this in a Future
+          s"startup-net-$locationId-$marketId-$quality-$creationDate",
+          CSVs.makeStartupsNetworkCSVHeaders,
+          CSVs.makeStartupsNetworkCSVValues(startupsToSend)
+        )
         Ok(Json.obj("startups" -> startups, "rows" -> startupsToSend))
       }
     }
@@ -160,7 +158,8 @@ object Networks extends Controller {
     "userName" -> (role \ "tagged" \ "name").as[String],
     "userRole" -> (role \ "role").as[String],
     "startupId" -> (role \ "startup" \ "id").as[Int],
-    "startupName" -> (role \ "startup" \ "name").as[String]
+    "startupName" -> (role \ "startup" \ "name").as[String],
+    "startedAt" -> (role \ "created_at").as[String]
   )
 
   def startupsConnection(user1: JsValue, user2: JsValue) = Json.obj(
@@ -181,8 +180,8 @@ object Networks extends Controller {
     "userIdTwo" -> (user2 \ "userId").as[Int].toString,
     "userNameOne" -> (user1 \ "userName").as[String],
     "userNameTwo" -> (user2 \ "userName").as[String],
-    "createdAtOne" -> (user1 \ "started_at").as[String],
-    "createdAtTwo" -> (user2 \ "started_at").as[String],
+    "createdAtOne" -> (user1 \ "startedAt").as[String],
+    "createdAtTwo" -> (user2 \ "startedAt").as[String],
     "roleOne" -> (user1 \ "userRole").as[String],
     "roleTwo" -> (user2 \ "userRole").as[String],
     "startupId" -> (user1 \ "startupId").as[Int].toString,
