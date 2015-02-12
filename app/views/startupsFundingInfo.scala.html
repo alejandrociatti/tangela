@@ -1,139 +1,46 @@
 @main("Informacion sobre Startups   ")(sidebar()) {
     <div class="row" ng-app="AAC" ng-controller="startupsFundingInfo">
-            <div class="col-lg-12">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <form role="form">
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="control-label" for="location">Location <small>(countries)</small></label>
-                                        <div class="input-group">
-                                            <select class="form-control" name="location" id="location" ng-model="location">
-                                                <option value="" disabled selected>Select a country...</option>
-                                                @for(country: Location <- Location.getCountries){
-                                                    <option value="@country.angelId">@country.name</option>
-                                                }
-                                            </select>
-                                            <div class="input-group-addon">
-                                                <a href="#" >
-                                                    <span class="glyphicon glyphicon-expand" aria-hidden="true" ng-click="getLocations()"></span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="control-label" for="location">Location <small>(If you need to be more specific)</small></label>
-                                        <select class="form-control" name="location" id="location" ng-model="deepLocation">
-                                            <option value="" disabled selected>
-                                                After you select a country, click the arrow for this list to load and select a location.
-                                            </option>
-                                            <option value="{{location.id}}" ng-repeat="location in locations | orderBy:'name'">
-                                                {{location.name}}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="control-label" for="market">Market</label>
-                                        <select class="form-control" ng-model="market" name="market" id="market">
-                                        @for(market: Market <- Market.getMarkets){
-                                            <option value="@market.angelId">@market.name</option>
-                                        }
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="control-label" for="creation-date-from">Creation date <small>(from)</small></label>
-                                        <input type="date" class="form-control" name="creation-date-from" id="creation-date-from" ng-model="creationDateFrom"/>
-                                        <p class="help-block">Startups created ON or AFTER given creation date.</p>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="control-label" for="creation-date-to">Creation date <small>(up to)</small></label>
-                                        <input type="date" class="form-control" name="creation-date-to" id="creation-date-to" ng-model="creationDateTo"/>
-                                        <p class="help-block">Startups created ON or BEFORE given creation date.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label for="quality-from" class="control-label">Quality <small>from</small></label>
-                                        <input type="number" class="form-control" name="quality-from" id="quality-from" ng-model="qualityFrom" placeholder="Lowest quality"/>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label for="quality-to" class="control-label">Quality <small>to</small></label>
-                                        <input type="number" class="form-control" name="quality-to" id="quality-to" ng-model="qualityTo" placeholder="Highest quality"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary" ng-click="submit()">Search</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                        <div class="alert alert-danger" ng-if="!startupsResultsReached" >
-                            <p><strong>There are not startups with that features</strong></p>
-                        </div>
-                    </div>
+        <div class="col-lg-12">@partial.startupSearchForm()</div>
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        Funding
+                        <a ng-href="{{exportStartupsFundingCSVURL}}" class="btn btn-primary btn-xs btn-export pull-right">Export</a>
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                                <th>Round Type</th>
+                                <th>Amount</th>
+                                <th>Closed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="fund in fundings | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <td>{{fund.id}}</td>
+                                <td>{{fund.name}}</td>
+                                <td>{{fund.round_type}}</td>
+                                <td>{{fund.amount}}</td>
+                                <td>{{fund.closed_at}}</td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                    <ul class="pagination">
+                        <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
+                        <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+                            <a href>{{n+1}}</a>
+                        </li>
+                        <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
+                    </ul>
                 </div>
             </div>
-
-            <div class="col-lg-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h2 class="panel-title">
-                            Funding
-                            <a ng-href="{{exportStartupsFundingCSVURL}}" class="btn btn-primary btn-xs btn-export pull-right">Export</a>
-                        </h2>
-                    </div>
-                    <div class="panel-body">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Name</th>
-                                    <th>Round Type</th>
-                                    <th>Amount</th>
-                                    <th>Closed At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="fund in fundings | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-                                    <td>{{fund.id}}</td>
-                                    <td>{{fund.name}}</td>
-                                    <td>{{fund.round_type}}</td>
-                                    <td>{{fund.amount}}</td>
-                                    <td>{{fund.closed_at}}</td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                        <ul class="pagination">
-                            <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
-                            <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
-                                <a href>{{n+1}}</a>
-                            </li>
-                            <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+        </div>
 </div><!-- /.row -->
 }{
     <script src="@routes.Application.javascriptRoutes"></script>

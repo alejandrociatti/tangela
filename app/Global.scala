@@ -35,7 +35,7 @@ object Global extends GlobalSettings {
     createAdmin()
     populateCountries()
     populateMarket()
-    clearCSVs()
+    //clearCSVs()
     //loadNetworks()
     dropTablesCRON()
   }

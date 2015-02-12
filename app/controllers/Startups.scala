@@ -1,6 +1,6 @@
 package controllers
 
-import util.{Tupler, CSVManager}
+import _root_.util.{Tupler, CSVManager}
 import models.Startup
 import org.joda.time.DateTime
 import play.api.data.Form
@@ -289,8 +289,8 @@ object Startups extends Controller with Secured {
     AngelListServices.getFundingByStartupId(startupId) map { response =>
       (response \ "funding").asOpt[Seq[JsValue]].fold{
         Seq[JsValue]()
-      }{ funding =>
-        funding
+      }{ fundings =>
+        fundings.map(funding => funding.as[JsObject] ++ Json.obj("name" -> startupName, "startup_id" -> startupId))
       }
     }
 
@@ -426,5 +426,9 @@ object Startups extends Controller with Secured {
     "what_ive_built" -> (user \ "what_ive_built").asOpt[String].getOrElse[String](""),
     "what_i_do" -> (user \ "what_i_do").asOpt[String].getOrElse[String](""),
     "investor" -> (user \ "investor").as[Boolean]
+  )
+
+  def fundingWithStartup(funding: JsValue, startup: JsValue) = Json.obj(
+
   )
 }

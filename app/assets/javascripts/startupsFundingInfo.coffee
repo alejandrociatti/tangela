@@ -25,6 +25,7 @@ module.controller 'startupsFundingInfo', ['$scope', 'dataAccess', ($scope, dataA
     $scope.optionSelectMsg = 'Loading results...'
     $scope.startupsResultsReached = true
     $scope.searching = true
+    criteriaObject = {}
     criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
     criteriaObject.market = $scope.market
     dateFrom = dateFromHolder.val()
@@ -37,7 +38,7 @@ module.controller 'startupsFundingInfo', ['$scope', 'dataAccess', ($scope, dataA
         $scope.fundings = sortByKeys(fundings, "name")
         $scope.searching = false
         $scope.optionSelectMsg = 'Select a startup.'
-        $scope.exportStartupFundingCSVURL = dataAccess.getStartupsFundingsCSVURL(criteriaObject)
+        $scope.exportStartupsFundingCSVURL = dataAccess.getStartupsFundingsCSVURL(criteriaObject)
 
   # Pagination control
   $scope.itemsPerPage = 5
@@ -45,14 +46,14 @@ module.controller 'startupsFundingInfo', ['$scope', 'dataAccess', ($scope, dataA
 
   $scope.range = ->
     rangeSize = 5
-    ret = []
-    start = $scope.currentPage
-    pageCount = $scope.pageCount()
-    start = if start > pageCount-rangeSize then pageCount-rangeSize+1 else $scope.currentPage
-    ret.push(i) for i in [start..start+rangeSize-1] when i>=0
+    range = []
+    start = if $scope.currentPage > 0 then $scope.currentPage-1 else $scope.currentPage
+    finish = if $scope.pageCount() < start+rangeSize-1 then $scope.pageCount() else start+rangeSize-1
+    range.push(i) for i in [start..finish] when i>=0
+    range
 
   $scope.prevPage = -> $scope.currentPage-- if $scope.currentPage>0
-  $scope.nextPage = -> $scope.currentPage++ if $scope.currentPage>$scope.pageCount()
+  $scope.nextPage = -> $scope.currentPage++ if $scope.currentPage<$scope.pageCount()
   $scope.setPage = (n) -> $scope.currentPage = n
 
   $scope.nextPageDisabled = -> if $scope.currentPage >= $scope.pageCount() then "disabled" else ""

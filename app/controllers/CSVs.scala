@@ -1,7 +1,7 @@
 package controllers
 
 import models.DatabaseUpdate
-import play.api.libs.json.{JsUndefined, Json, JsValue, JsArray}
+import play.api.libs.json.{JsValue, JsArray}
 import play.api.mvc.{ResponseHeader, SimpleResult, Action, Controller}
 import util.CSVManager
 import scala.concurrent.ExecutionContext
@@ -140,7 +140,7 @@ object CSVs extends Controller{
   )
 
   def makeStartupFundingCSVValues(fundings: JsValue): List[List[String]] = fundings.as[List[JsValue]].map{ funding =>
-    Json.parse((funding \ "participants").as[String]).as[List[JsValue]] match {
+    (funding \ "participants").as[List[JsValue]] match {
       case Nil => List(emptyParticipant(funding))
       case nonEmpty => nonEmpty map (nonEmptyParticipant(_, funding))
     }
@@ -149,7 +149,7 @@ object CSVs extends Controller{
   def nonEmptyParticipant(participant: JsValue, funding: JsValue): List[String] = startupFundingList(funding) ++
     valueListFromJsValue(participant, Seq("name", "type", "id"))
 
-  def emptyParticipant(funding: JsValue) = startupFundingList(funding) ++ List("", "", "")
+  def emptyParticipant(funding: JsValue):List[String] = startupFundingList(funding) ++ List("", "", "")
 
   def startupFundingList(funding: JsValue):List[String] = List(DatabaseUpdate.getLastAsString) ++
     valueListFromJsValue(funding, Seq("startup_id", "name", "round_type", "amount", "closed_at", "id", "source_url"))
@@ -181,14 +181,13 @@ object CSVs extends Controller{
     )
   }
 
-  def valueToString(value: JsValue)(name: String): String = {
-    val result = if ((value \ name).isInstanceOf[JsUndefined]) "" else {
-      (value \ name).asOpt[String].getOrElse(value \ name).toString
+  def valueToString(value: JsValue)(name: String): String =  (value \ name).asOpt[String].fold{
+      ""
+    }{
+      value => if(value != null) value.toString else ""
     }
-    if(result == "null") "" else result
-  }
 
-  def valueListFromJsValue(value: JsValue, names: Seq[String]) = (names map valueToString(value)).toList
+  def valueListFromJsValue(value: JsValue, names: Seq[String]):List[String] = (names map valueToString(value)).toList
 
   def makeCsvValues(values: Seq[JsValue], names: Seq[String]): List[List[String]] = (values map { value: JsValue =>
     List(DatabaseUpdate.getLastAsString) ++ valueListFromJsValue(value, names)
