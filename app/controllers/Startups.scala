@@ -155,13 +155,13 @@ object Startups extends Controller with Secured {
   def getStartupFunding(startupId: Long) = Action.async {
     getStartupFund(startupId).map { fund =>
       val fundJs = JsArray(fund)
-      Future(
+      //Future(
         CSVManager.put(
           s"startup-funding-$startupId",
           CSVs.makeStartupFundingCSVHeaders,
           CSVs.makeStartupFundingCSVValues(fundJs)
         )
-      )
+      //)
 
       Ok(fundJs)
     }

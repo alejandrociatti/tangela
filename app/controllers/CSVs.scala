@@ -1,7 +1,7 @@
 package controllers
 
 import models.DatabaseUpdate
-import play.api.libs.json.{JsValue, JsArray}
+import play.api.libs.json.{JsObject, JsValue, JsArray}
 import play.api.mvc.{ResponseHeader, SimpleResult, Action, Controller}
 import util.CSVManager
 import scala.concurrent.ExecutionContext
@@ -20,15 +20,16 @@ object CSVs extends Controller{
   /* People Network CSV ***********************************************************************************************/
 
   def makePeopleNetworkCSVHeaders() = List(
-    "user ID one", "user name one", "user role one",
-    "user id two", "user name two", "user role two",
+    "tangela request date",
+    "user ID one", "user name one", "user role one", "created at one",
+    "user id two", "user name two", "user role two", "created at two",
     "startup in common ID", "startup in common name"
   )
 
-  def makePeopleNetworkCSVValues(connections: JsArray) = connections.as[List[JsValue]].map{ row =>
-    valueListFromJsValue(row, Seq("userIdOne", "userNameOne", "roleOne", "userIdTwo", "userNameTwo", "roleTwo",
+  def makePeopleNetworkCSVValues(connections: JsArray) = makeCsvValues(connections.value,
+    Seq("userIdOne", "userNameOne", "roleOne", "createdAtOne", "userIdTwo", "userNameTwo", "roleTwo", "createdAtTwo",
       "startupId", "startupName"))
-  }
+
 
   def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"people-net-$locationId-$marketId-$quality-$creationDate")
@@ -42,9 +43,9 @@ object CSVs extends Controller{
     "user in common ID", "user in common name"
   )
 
-  def makeStartupsNetworkCSVValues(startups: JsArray) =
-    makeCsvValues(startups.value, Seq("startupIdOne", "startupNameOne", "roleOne", "startupIdTwo", "startupNameTwo",
-      "roleTwo", "userId", "userName"))
+  def makeStartupsNetworkCSVValues(startups: JsArray) = makeCsvValues(startups.value,
+    Seq("startupIdOne", "startupNameOne", "roleOne", "createdAtOne", "startupIdTwo", "startupNameTwo", "roleTwo", "createdAtTwo",
+      "userId", "userName"))
 
   def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startup-net-$locationId-$marketId-$quality-$creationDate")
@@ -181,11 +182,9 @@ object CSVs extends Controller{
     )
   }
 
-  def valueToString(value: JsValue)(name: String): String =  (value \ name).asOpt[String].fold{
-      ""
-    }{
-      value => if(value != null) value.toString else ""
-    }
+  def valueToString(value: JsValue)(name: String): String =
+    if(value.as[JsObject].keys.contains(name)) (value \ name).as[String]
+    else ""
 
   def valueListFromJsValue(value: JsValue, names: Seq[String]):List[String] = (names map valueToString(value)).toList
 
