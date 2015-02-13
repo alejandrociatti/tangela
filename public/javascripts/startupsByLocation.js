@@ -18,7 +18,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
         var scope = $scope;
         var lastReq;
         var dateHolder = $("#creation-date");
-        $scope.startupsResultsReached= true;
+        $scope.responseStatus= true;
         $scope.searching= false;
         $scope.optionSelectMsg = 'Search first.';
         $scope.startups = [];
@@ -28,7 +28,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
 
         $scope.submit = function () {
             $scope.optionSelectMsg = 'Loading results...';
-            $scope.startupsResultsReached = true;
+            $scope.responseStatus = true;
             $scope.searching = true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
@@ -42,7 +42,7 @@ module.controller('startupsCtrl', ['$scope', 'dataAccess', 'graphUtil',
                         scope.location, scope.creation, scope.market, scope.quality
                     );
                     $scope.searching = false;
-                    $scope.startupsResultsReached = scope.startups.length != 0;
+                    $scope.responseStatus = scope.startups.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     lastReq = {loc:$scope.location, creation:dateHolder.val(), market:$scope.market, quality:$scope.quality};
                     $scope.$apply();

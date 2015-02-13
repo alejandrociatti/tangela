@@ -5,9 +5,11 @@ module = angular.module 'app.controllers', ['app.services']
 module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) ->
   dateFromHolder = $('#creation-date-from')
   dateToHolder = $('#creation-date-to')
+  progressBar = $('#progress-bar')
   criteriaObject = {}
-  $scope.startupsResultsReached = true
+  $scope.responseStatus = true
   $scope.searching = false
+  interval = undefined
   $scope.optionSelectMsg = 'Search first.'
   $scope.startups = []
   $scope.startupsToShow = []
@@ -24,8 +26,9 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
   # Form submit function
   $scope.submit = ->
     $scope.optionSelectMsg = 'Loading results...'
-    $scope.startupsResultsReached = true
+    $scope.responseStatus = true
     $scope.searching = true
+    interval = startBar()
     criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
     criteriaObject.market = $scope.market
     dateFrom = dateFromHolder.val()
@@ -33,39 +36,35 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
 
-    dataAccess.getStartupsAndTagsByCriteria criteriaObject, (response) ->
+    dataAccess.getStartupsAndTagsByCriteria criteriaObject, ((response) ->
       $scope.$apply ->
         $scope.startups = response.startups
         $scope.exportStartupsURL = dataAccess.getStartupsCSVURL(criteriaObject)
         $scope.tags = response.tags
         $scope.exportStartupsTagsURL = dataAccess.getStartupsTagsCSVURL(criteriaObject)
         $scope.searching = false
-        $scope.startupsResultsReached = scope.startups.length != 0
+        $scope.responseStatus = response.startups.length != 0
         $scope.optionSelectMsg = 'Select a startup.'
+      stopBar()),
+    -> $scope.$apply -> $scope.responseStatus = false           # Error handler
 
-  # Pagination control
-  $scope.itemsPerPage = 5
-  $scope.currentPage = 0
+  # Progress bar functions
+  intervalFn = -> progressBar.css 'width', (index, value) ->
+    value = parseInt(value.substring(0, value.length-1), 10)+1
+    progressBar.css('width', "#{value}%") if value <= 100
 
-  $scope.range = ->
-    rangeSize = 5
-    range = []
-    start = if $scope.currentPage > 0 then $scope.currentPage-1 else $scope.currentPage
-    finish = if $scope.pageCount() < start+rangeSize-1 then $scope.pageCount() else start+rangeSize-1
-    range.push(i) for i in [start..finish] when i>=0
-    range
+  startBar = -> setInterval intervalFn, 4000
 
-  $scope.prevPage = -> $scope.currentPage-- if $scope.currentPage>0
-  $scope.nextPage = -> $scope.currentPage++ if $scope.currentPage<$scope.pageCount()
-  $scope.setPage = (n) -> $scope.currentPage = n
-
-  $scope.nextPageDisabled = -> if $scope.currentPage >= $scope.pageCount() then "disabled" else ""
-  $scope.prevPageDisabled = -> if $scope.currentPage == 0 then "disabled" else ""
-
-  $scope.pageCount =  -> Math.ceil($scope.startups.length/$scope.itemsPerPage)-1
+  stopBar = -> clearInterval(interval); progressBar.css('width', '1%')
 ]
 
+# Pagination controller
+module.controller 'tableController', ['$scope', ($scope) ->
+  $scope.itemsPerPage = 6
+  $scope.currentPage = 1
+  $scope.setPage = (pageNo) -> $scope.currentPage = pageNo
+]
+
+# Offset filter
 module.filter 'offset', ->
-  (input, start) ->
-    start = parseInt(start, 10)
-    (input || []).slice(start)
+  (input, start) -> (input || []).slice(parseInt(start, 10))

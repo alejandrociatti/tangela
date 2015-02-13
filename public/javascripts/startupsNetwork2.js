@@ -11,7 +11,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
         function ($scope, dataAccess) {
             var scope = this;
             var dateHolder = $("#creation-date");
-            this.startupsResultsReached= true;
+            this.responseStatus= true;
             this.searching= false;
             this.optionSelectMsg = 'Search first.';
             this.startups = [];
@@ -20,7 +20,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
 
             this.submit = function () {
                 this.optionSelectMsg = 'Loading results...';
-                this.startupsResultsReached = true;
+                this.responseStatus = true;
                 this.searching = true;
                 this.markOne = !(this.location || this.market);
                 if(!this.markOne) {
@@ -28,7 +28,7 @@ module.controller('startupsNetworkCtrl', ['$scope', 'dataAccess',
                         scope.startupsToShow= response.startups;
                         scope.startups = response.rows;
                         scope.searching = false;
-                        scope.startupsResultsReached = scope.startups.length != 0;
+                        scope.responseStatus = scope.startups.length != 0;
                         scope.optionSelectMsg = 'Select a startup.';
                         scope.exportURL = dataAccess.getStartupsNetworkCSVURL(
                             scope.location, scope.creation, scope.market, scope.quality

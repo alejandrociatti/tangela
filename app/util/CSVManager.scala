@@ -2,10 +2,7 @@ package util
 
 import java.io._
 
-import com.github.tototoshi.csv.CSVWriter
 import play.api.libs.iteratee.Enumerator
-
-import scala.io.Source
 
 /**
  * User: Martin Gutierrez
@@ -16,24 +13,14 @@ object CSVManager {
 
   val csvSaver = DiskSaver(new File("storedCSVs"), "csvs")
 
-  def put(fileName: String, headers: List[String], values: List[List[String]]) {
-    val maybeString: Option[String] = get(fileName)
-    maybeString.getOrElse {
+  def put(fileName: String, headers: Seq[String], values: Seq[Seq[String]]) {
+    csvSaver.get(fileName).getOrElse {
       csvSaver.put(fileName, makeCSVString(headers, values))
     }
   }
 
-  private def makeCSVString(headers: List[String], values: List[List[String]]): String = {
-    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
-    writer.writeRow(headers)
-    writer.writeAll(values)
-    writer.close()
-    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
-      byteArrayOutputStream.toByteArray
-    ))
-    Source.fromInputStream(streamReader).mkString("")
-  }
+  private def makeCSVString(headers: Seq[String], values: Seq[Seq[String]]): String =
+    CSVCreator.createRow(headers) ++ CSVCreator.createAll(values)
 
   def get(fileName: String): Option[String] = csvSaver.get(fileName)
 

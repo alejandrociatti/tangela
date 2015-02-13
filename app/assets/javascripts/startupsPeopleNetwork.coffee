@@ -5,9 +5,11 @@ module = angular.module 'app.controllers', ['app.services', 'ui.bootstrap']
 module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAccess)->
   dateFromHolder = $('#creation-date-from')
   dateToHolder = $('#creation-date-to')
+  progressBar = $('#progress-bar')
   criteriaObject = {}
-  $scope.startupsResultsReached = true
+  $scope.responseStatus = true
   $scope.searching = false
+  interval = undefined
   $scope.optionSelectMsg = 'Search first.'
   $scope.startups = []
   $scope.networkRows = []
@@ -23,8 +25,9 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
   # Form submit function
   $scope.submit = ->
     $scope.optionSelectMsg = 'Loading results...'
-    $scope.startupsResultsReached = true
+    $scope.responseStatus = true
     $scope.searching = true
+    interval = startBar()
     criteriaObject = {}
     criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
     criteriaObject.market = $scope.market
@@ -32,14 +35,25 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.getPeopleNetwork criteriaObject, (response) ->
+    dataAccess.getPeopleNetwork criteriaObject, ((response) ->
       $scope.$apply ->
         $scope.startups = response.startups
         $scope.networkRows = response.rows
         $scope.exportURL = dataAccess.getPeopleNetworkCSVURL(criteriaObject)
         $scope.searching = false
-        $scope.startupsResultsReached = response.startups.length != 0
+        $scope.responseStatus = response.startups.length != 0
         $scope.optionSelectMsg = 'Select a startup.'
+      stopBar()),                                                 # End successHandler
+      -> $scope.$apply -> $scope.responseStatus = false           # Error handler
+
+  # Progress bar functions
+  intervalFn = -> progressBar.css 'width', (index, value) ->
+    value = parseInt(value.substring(0, value.length-1), 10)+1
+    progressBar.css('width', "#{value}%") if value <= 100
+
+  startBar = -> setInterval intervalFn, 4000
+
+  stopBar = -> clearInterval(interval); progressBar.css('width', '1%')
 ]
 
 # Pagination controller

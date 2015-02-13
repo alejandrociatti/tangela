@@ -140,8 +140,8 @@ object CSVs extends Controller{
     "round id", "round source url", "participant name", "participant type", "participant id"
   )
 
-  def makeStartupFundingCSVValues(fundings: JsValue): List[List[String]] = fundings.as[List[JsValue]].map{ funding =>
-    (funding \ "participants").as[List[JsValue]] match {
+  def makeStartupFundingCSVValues(fundings: JsValue): Seq[Seq[String]] = fundings.as[Seq[JsValue]].map{ funding =>
+    (funding \ "participants").as[Seq[JsValue]] match {
       case Nil => List(emptyParticipant(funding))
       case nonEmpty => nonEmpty map (nonEmptyParticipant(_, funding))
     }
@@ -153,7 +153,7 @@ object CSVs extends Controller{
   def emptyParticipant(funding: JsValue):List[String] = startupFundingList(funding) ++ List("", "", "")
 
   def startupFundingList(funding: JsValue):List[String] = List(DatabaseUpdate.getLastAsString) ++
-    valueListFromJsValue(funding, Seq("startup_id", "name", "round_type", "amount", "closed_at", "id", "source_url"))
+    valueListFromJsValue(funding, Seq("startupId", "name", "round_type", "amount", "closed_at", "id", "source_url"))
 
   def getStartupFundingCSV(startupId: Long) = getCsv(s"startup-funding-$startupId")
 
@@ -182,8 +182,17 @@ object CSVs extends Controller{
     )
   }
 
-  def valueToString(value: JsValue)(name: String): String =
-    if(value.as[JsObject].keys.contains(name)) (value \ name).as[String]
+  /**
+   *  This method finds given key from a JsValue
+   *  If JsValue has the key, try to get its value as a string,
+   *  Or else (it may be number or boolean) get its value.toString
+   *  This is done because json string values come in double quotes while the others are naked
+   * @param value the json to search
+   * @param key   the key to find in the json
+   * @return      the value of the key in the json as a string, or an empty string
+   */
+  def valueToString(value: JsValue)(key: String): String =
+    if(value.as[JsObject].keys.contains(key)) (value \ key).asOpt[String].getOrElse((value \ key).toString())
     else ""
 
   def valueListFromJsValue(value: JsValue, names: Seq[String]):List[String] = (names map valueToString(value)).toList

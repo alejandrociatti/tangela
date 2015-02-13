@@ -57,12 +57,19 @@ object Locations extends Controller{
   }
 
   def getChildrenOf(locationId:Long) = Action.async {
-    AngelListServices.getChildrenOfTag(locationId) map{ jsResponse =>
-      Ok( JsArray(
-          (jsResponse \ "children").as[Seq[JsValue]].map{ location =>
-            Json.obj("id" -> (location \ "id"), "name" -> (location \ "display_name"))
+
+    val childrenFuture = AngelListServices.getChildrenOfTag(locationId).flatMap { response =>
+      val firstPage = (response \ "children").as[Seq[JsValue]]
+
+      Future.sequence(
+        (2 to (response \ "last_page").as[Int]).map{page =>
+          AngelListServices.getChildrenOfTagAndPage(locationId)(page).map { response =>
+            (response \ "children").as[Seq[JsValue]]
           }
-      ))
+        }
+      ).map(_.flatten).map(firstPage ++ _)
     }
+
+    childrenFuture.map{children :Seq[JsValue]=> Ok(JsArray(children))}
   }
 }

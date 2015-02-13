@@ -9,7 +9,7 @@
                         <a ng-href="{{exportStartupsFundingCSVURL}}" class="btn btn-primary btn-xs btn-export pull-right">Export</a>
                     </h2>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" ng-controller="tableController">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -21,7 +21,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="fund in fundings | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                            <tr ng-repeat="fund in $parent.fundings | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
                                 <td>{{fund.id}}</td>
                                 <td>{{fund.name}}</td>
                                 <td>{{fund.round_type}}</td>
@@ -31,13 +31,9 @@
                             </tr>
                         </tbody>
                     </table>
-                    <ul class="pagination">
-                        <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
-                        <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
-                            <a href>{{n+1}}</a>
-                        </li>
-                        <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
-                    </ul>
+                    <pagination ng-model="currentPage" total-items="$parent.fundings.length" max-size="6"
+                    boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
+                    </pagination>
                 </div>
             </div>
         </div>
@@ -45,6 +41,7 @@
 }{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/angular/ui-bootstrap-tpls-0.11.2.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/demo/demoServices.js")"></script>
     <script src="@routes.Assets.at("javascripts/startupsFundingInfo.js")"></script>
 }

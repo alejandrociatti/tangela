@@ -14,7 +14,7 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
 
             var lastReq;
             var dateHolder = $("#creation-date");
-            $scope.startupsResultsReached= true;
+            $scope.responseStatus= true;
             $scope.searching= false;
             $scope.optionSelectMsg = 'Search first.';
             $scope.persons= [] ;
@@ -22,13 +22,13 @@ module.controller('startupsFundingInfo', ['$scope', 'dataAccess',
 
             $scope.submit = function () {
                 $scope.optionSelectMsg = 'Loading results...';
-                $scope.startupsResultsReached= true;
+                $scope.responseStatus= true;
                 $scope.searching= true;
                 dataAccess.startupsFundingByCriteria($scope.location, $('#creation-date').val(), $scope.market, $scope.quality, function(fundings){
                     lastReq = {loc: $scope.location, creation: dateHolder.val(), market: $scope.market, quality: $scope.quality};
                     $scope.fundings = sortByKeys(fundings, "name");
                     $scope.searching = false;
-                    $scope.startupsResultsReached= fundings.length != 0;
+                    $scope.responseStatus= fundings.length != 0;
                     $scope.optionSelectMsg = 'Select a startup.';
                     $scope.exportStartupsFundingCSVURL = dataAccess.getStartupsFundingsCSVURL(
                         $scope.location, $scope.creation, $scope.market, $scope.quality

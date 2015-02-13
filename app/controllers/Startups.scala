@@ -3,6 +3,7 @@ package controllers
 import _root_.util.{Tupler, CSVManager}
 import models.Startup
 import org.joda.time.DateTime
+import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json._
@@ -155,13 +156,13 @@ object Startups extends Controller with Secured {
   def getStartupFunding(startupId: Long) = Action.async {
     getStartupFund(startupId).map { fund =>
       val fundJs = JsArray(fund)
-      //Future(
+      Future(
         CSVManager.put(
           s"startup-funding-$startupId",
           CSVs.makeStartupFundingCSVHeaders,
           CSVs.makeStartupFundingCSVValues(fundJs)
         )
-      //)
+      )
 
       Ok(fundJs)
     }
@@ -234,13 +235,15 @@ object Startups extends Controller with Secured {
     //Once we have a future findings, we map the future to save the CSV and return the results.
     fundingsFuture.map{fundings =>
       val fundingsJs = JsArray(fundings)
-      Future(
+      Future{
+        Logger.info(s"starting to load $locationId fundings")
         CSVManager.put(
           s"startups-funding-$locationId-$marketId-$quality-$creationDate",
           CSVs.makeStartupFundingCSVHeaders,
           CSVs.makeStartupFundingCSVValues(fundingsJs)
         )
-      )
+        Logger.info(s"finished loading $locationId fundings")
+      }
       Ok(fundingsJs)
     }
   }
@@ -266,7 +269,7 @@ object Startups extends Controller with Secured {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).map { startups =>
       val tags = startups flatMap { startup =>
           val allTags  = (startup \ "markets").as[Seq[JsValue]] ++ (startup \ "locations").as[Seq[JsValue]] ++ (startup \ "company_type").as[Seq[JsValue]]
-          allTags map { tag => tag.as[JsObject] +("startup" -> (startup \ "id"))}
+          allTags map { tag => tag.as[JsObject] + ("startup" -> (startup \ "id"))}
       }
       Future {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
@@ -290,7 +293,7 @@ object Startups extends Controller with Secured {
       (response \ "funding").asOpt[Seq[JsValue]].fold{
         Seq[JsValue]()
       }{ fundings =>
-        fundings.map(funding => funding.as[JsObject] ++ Json.obj("name" -> startupName, "startup_id" -> startupId))
+        fundings.map(funding => funding.as[JsObject] ++ Json.obj("name" -> startupName, "startupId" -> startupId))
       }
     }
 

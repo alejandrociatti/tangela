@@ -10,7 +10,7 @@ var module = angular.module('app.controllers', ['app.services']);
 module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
     function ($scope, dataAccess) {
 
-        $scope.startupsResultsReached= true;
+        $scope.responseStatus= true;
         $scope.optionSelectMsg = 'Search first.';
         $scope.persons= [] ;
         var lastReq;
@@ -20,7 +20,7 @@ module.controller('startupPeopleInfoCtrl', ['$scope', 'dataAccess',
 
         $scope.submit = function(){
             $scope.optionSelectMsg = 'Loading results...';
-            $scope.startupsResultsReached= true;
+            $scope.responseStatus= true;
             $scope.markOne = !($scope.location || $scope.market);
             if(!$scope.markOne) {
                 dataAccess.getStartupPeopleInfo($scope.location, dateHolder.val(), $scope.market, $scope.quality,  function (persons) {

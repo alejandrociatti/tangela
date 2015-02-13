@@ -3,8 +3,8 @@
     <div ng-app="AAC" ng-controller="startupsCtrl">
         @partial.startupSearchForm()
         <div class="row">
-            <div class="col-lg-12 ">
-                <div class="panel panel-default" ng-show="startups.length">
+            <div class="col-lg-12 " ng-show="startups.length">
+                <div class="panel panel-default" ng-controller="tableController">
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Startups ({{startups.length}})
@@ -38,7 +38,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="startup in startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <tr ng-repeat="startup in $parent.startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
 
                                     <td>{{startup.id}}</td>
                                     <td>{{startup.hidden}}</td>
@@ -65,29 +65,25 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <ul class="pagination">
-                            <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
-                            <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
-                                <a href>{{n+1}}</a>
-                            </li>
-                            <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
-                        </ul>
+                        <pagination ng-model="currentPage" total-items="$parent.startups.length" max-size="15"
+                        boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
+                        </pagination>
                     </div>
                 </div>
             </div>
         </div><!-- /.row -->
 
         <div class="row">
-            <div class="col-lg-12 ">
-                <div class="panel panel-default" ng-show="tags.length">
+            <div class="col-lg-12" ng-show="tags.length">
+                <div class="panel panel-default" ng-controller="tableController">
                     <div class="panel-heading">
                         <h2 class="panel-title">
-                            Tags ({{tags.length}})
+                            Tags ({{$parent.tags.length}})
                             <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{exportStartupsTagsURL}}">Export</a>
                         </h2>
                     </div>
                     <div class="panel-body" style="overflow-x: scroll">
-                        <div class="alert alert-info" ng-show="startupsMsg">{{startupsMsg}}</div>
+                        <div class="alert alert-info" ng-show="startupsMsg">{{$parent.startupsMsg}}</div>
 
                         <table class="table table-bordered" ng-show="tags.length">
                             <thead>
@@ -101,7 +97,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="tag in tags | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
+                                <tr ng-repeat="tag in $parent.tags | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
 
                                     <td>{{tag.startup}}</td>
                                     <td>{{tag.id}}</td>
@@ -112,13 +108,9 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <ul class="pagination">
-                            <li ng-class="prevPageDisabled()"><a href ng-click="prevPage()">&laquo;</a></li>
-                            <li ng-repeat="n in range()" ng-class="{active: n == currentPage}" ng-click="setPage(n)">
-                                <a href>{{n+1}}</a>
-                            </li>
-                            <li ng-class="nextPageDisabled()"><a href ng-click="nextPage()">&raquo;</a></li>
-                        </ul>
+                        <pagination ng-model="currentPage" total-items="$parent.tags.length" max-size="15"
+                        boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
+                        </pagination>
                     </div>
                 </div>
             </div>
