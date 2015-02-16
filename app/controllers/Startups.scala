@@ -312,7 +312,11 @@ object Startups extends Controller with Secured {
         .map(relevantStartupInfo)
 
     AngelListServices.getStartupsByTagId(tagId) flatMap { response :JsValue =>
-      (response \ "last_page").as[Int] match {
+      (response \ "last_page").asOpt[Int].getOrElse(-1) match {
+        case -1 =>                                      // If 'last_page' doesn't exist, something is wrong
+          Logger.warn(s"unexpected response on search by tag for $tagId")
+          Logger.info(response.toString)
+          Future(Seq[JsValue]())
         case 1 => Future(responseToStartupSeq(response)) //In case this is the only page
         case pages =>
           // Get startups for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)

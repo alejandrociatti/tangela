@@ -45,7 +45,9 @@ GET         /startups/startups-tags-csv                 controllers.CSVs.getStar
 GET         /startups/startup-network                   controllers.Networks.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 GET         /startups/startup-network-csv               controllers.CSVs.getStartupsNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 GET         /startups/startup-people-network            controllers.Networks.getPeopleNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-people-network2           controllers.Networks.getPeopleNetwork2ndOrder(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 GET         /startups/startup-people-network-csv        controllers.CSVs.getPeopleNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-people-network2-csv       controllers.CSVs.getPeopleNetwork2ndOrderCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 
 # Users
 GET         /user/list                                  controllers.Users.listUsers
@@ -55,9 +57,6 @@ GET         /user/save                                  controllers.Users.saveUs
 
 #Markets
 GET         /markets/market-list                        controllers.Markets.getMarkets
-
-#CSV in general
-POST        /csv                                        controllers.Application.tableToCSV()
 
 # Javascript routes for AJAX
 GET         /assets/javascripts/routes                  controllers.Application.javascriptRoutes

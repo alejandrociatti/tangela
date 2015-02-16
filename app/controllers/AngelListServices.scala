@@ -4,6 +4,7 @@ import java.io.File
 
 import _root_.util.{DiskSaver, RequestManager}
 import models.DatabaseUpdate
+import play.api.Logger
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,8 +25,13 @@ object AngelListServices {
 
   private def sendRequestToAngelList(request: String): Future[JsValue] =
     RequestManager.sendRequest(AngelApi + request) map { response =>
-      Future(getSaver(request).put(request, response))
-      Json.parse(response)
+      val jsResponse = Json.parse(response)
+      // Save only if response is successful.
+      (jsResponse \ "success").asOpt[Boolean].getOrElse(true) match{
+        case true => Future(getSaver(request).put(request, response))
+        case false => Logger.warn(s"Request $AngelApi$request failed.")
+      }
+      jsResponse
     }
 
   def sendRequest(request: String): Future[JsValue] =

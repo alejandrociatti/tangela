@@ -34,6 +34,9 @@ object CSVs extends Controller{
   def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"people-net-$locationId-$marketId-$quality-$creationDate")
 
+  def getPeopleNetwork2ndOrderCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
+    getCsv(s"people-net-2-$locationId-$marketId-$quality-$creationDate")
+
   /* Startup Network CSV **********************************************************************************************/
 
   def makeStartupsNetworkCSVHeaders = List(

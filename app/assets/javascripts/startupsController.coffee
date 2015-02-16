@@ -20,8 +20,8 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.getChildrenOf $scope.location, (children) ->
-      $scope.$apply -> $scope.locations = children
+    dataAccess.location.getChildren $scope.location, (children) ->
+      $scope.locations = children
 
   # Form submit function
   $scope.submit = ->
@@ -36,17 +36,16 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
 
-    dataAccess.getStartupsAndTagsByCriteria criteriaObject, ((response) ->
-      $scope.$apply ->
-        $scope.startups = response.startups
-        $scope.exportStartupsURL = dataAccess.getStartupsCSVURL(criteriaObject)
-        $scope.tags = response.tags
-        $scope.exportStartupsTagsURL = dataAccess.getStartupsTagsCSVURL(criteriaObject)
-        $scope.searching = false
-        $scope.responseStatus = response.startups.length != 0
-        $scope.optionSelectMsg = 'Select a startup.'
+    dataAccess.startup.getWithTags criteriaObject, ((response) ->
+      $scope.startups = response.startups
+      $scope.exportStartupsURL = dataAccess.csv.url.startups(criteriaObject)
+      $scope.tags = response.tags
+      $scope.exportStartupsTagsURL = dataAccess.csv.url.tags(criteriaObject)
+      $scope.searching = false
+      $scope.responseStatus = response.startups.length != 0
+      $scope.optionSelectMsg = 'Select a startup.'
       stopBar()),
-    -> $scope.$apply -> $scope.responseStatus = false           # Error handler
+    -> $scope.responseStatus = false           # Error handler
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->

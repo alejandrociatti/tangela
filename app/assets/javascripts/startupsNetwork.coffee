@@ -19,8 +19,8 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.getChildrenOf $scope.location, (children) ->
-      $scope.$apply -> $scope.locations = children
+    dataAccess.location.getChildren $scope.location, (children) ->
+      $scope.locations = children
 
   # Form submit function
   $scope.submit = ->
@@ -35,16 +35,15 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.getStartupsNetwork criteriaObject, ((response) ->  # Pass criteriaObject & successHandler
-      $scope.$apply ->
-        $scope.startups = response.startups
-        $scope.networkRows = response.rows
-        $scope.exportURL = dataAccess.getStartupsNetworkCSVURL(criteriaObject)
-        $scope.searching = false
-        $scope.responseStatus = response.startups.length != 0
-        $scope.optionSelectMsg = 'Select a startup.'
+    dataAccess.startup.getNetwork criteriaObject, ((response) ->  # Pass criteriaObject & successHandler
+      $scope.startups = response.startups
+      $scope.networkRows = response.rows
+      $scope.exportURL = dataAccess.csv.url.startupsNetwork(criteriaObject)
+      $scope.searching = false
+      $scope.responseStatus = response.startups.length != 0
+      $scope.optionSelectMsg = 'Select a startup.'
       stopBar()),                                                 # End successHandler
-      -> $scope.$apply -> $scope.responseStatus = false           # Error handler
+      -> $scope.responseStatus = false           # Error handler
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->

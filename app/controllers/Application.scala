@@ -44,14 +44,15 @@ object Application extends Controller with Secured{
         routes.javascript.Startups.startupCriteriaSearchAndTags,
         routes.javascript.Networks.getStartupsNetwork,
         routes.javascript.Networks.getPeopleNetwork,
+        routes.javascript.Networks.getPeopleNetwork2ndOrder,
         routes.javascript.CSVs.getStartupsNetworkCSV,
         routes.javascript.CSVs.getPeopleNetworkCSV,
+        routes.javascript.CSVs.getPeopleNetwork2ndOrderCSV,
         routes.javascript.CSVs.getStartupRolesCSV,
         routes.javascript.CSVs.getStartupFundingCSV,
         routes.javascript.CSVs.getStartupsFundingsCSV,
         routes.javascript.Startups.getUsersInfoByCriteria,
-        routes.javascript.Startups.startupsFundingByCriteria,
-        routes.javascript.Application.tableToCSV
+        routes.javascript.Startups.startupsFundingByCriteria
       )
     ).as("text/javascript")
   }
@@ -75,27 +76,4 @@ object Application extends Controller with Secured{
   def startupsPeopleNetwork = withAuth(Admin, Researcher) { username => implicit request =>
     Ok(views.html.startupsPeopleNetwork())
   }
-
-  def tableToCSV = Action { request =>
-    request.body.asJson.fold(Ok("No Data Available")) { json =>
-      val headers: List[String] = (json \ "headers").as[JsArray].value.map(value => value.as[String]).toList
-      val values: List[List[String]] = (json \ "values").as[JsArray].value.map(array => array.as[JsArray].value.map(value => value.as[String]).toList).toList
-
-      writeCSVWithHeaders(headers, values)
-    }
-  }
-
-  def writeCSVWithHeaders(headers: List[String], values: List[List[String]]): SimpleResult = {
-    val byteArrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val writer = CSVWriter.open(new OutputStreamWriter(byteArrayOutputStream))
-    writer.writeRow(headers)
-    writer.writeAll(values)
-    writer.close()
-    val streamReader: InputStream = new BufferedInputStream(new ByteArrayInputStream(
-      byteArrayOutputStream.toByteArray
-    ))
-    Ok.chunked(Enumerator.fromStream(streamReader)).as("text/csv")
-  }
-
-
 }

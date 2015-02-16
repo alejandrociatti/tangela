@@ -36,7 +36,7 @@ object Locations extends Controller{
         try {
           Location.save(Location((jsResponse \ "name").as[String], (jsResponse \ "id").as[Long], Kind.Country.toString))
         } catch {
-          case e: Exception => Logger.warn(s"Country $name was not found in Angel List.")
+          case e: Exception =>
         }
       }
     }

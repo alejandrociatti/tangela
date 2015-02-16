@@ -7,6 +7,7 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
   dateToHolder = $('#creation-date-to')
   progressBar = $('#progress-bar')
   criteriaObject = {}
+  $scope.extendedSearch = true
   $scope.responseStatus = true
   $scope.searching = false
   interval = undefined
@@ -19,8 +20,8 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.getChildrenOf $scope.location, (children) ->
-      $scope.$apply -> $scope.locations = children
+    dataAccess.location.getChildren $scope.location, (children) ->
+      $scope.locations = children
 
   # Form submit function
   $scope.submit = ->
@@ -35,16 +36,38 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.getPeopleNetwork criteriaObject, ((response) ->
-      $scope.$apply ->
+    dataAccess.user.getNetwork criteriaObject, ((response) ->
+      $scope.startups = response.startups
+      $scope.networkRows = response.rows
+      $scope.exportURL = dataAccess.csv.url.peopleNetwork(criteriaObject)
+      $scope.searching = false
+      $scope.responseStatus = response.startups.length != 0
+      $scope.optionSelectMsg = 'Select a startup.'
+      stopBar()),                                                 # End successHandler
+      -> $scope.responseStatus = false                            # Error handler
+
+  # Form submit function (for extended people network)
+  $scope.submit2 = ->
+    $scope.optionSelectMsg = 'Loading results...'
+    $scope.responseStatus = true
+    $scope.searching = true
+    interval = startBar()
+    criteriaObject = {}
+    criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
+    criteriaObject.market = $scope.market
+    dateFrom = dateFromHolder.val()
+    dateTo = dateToHolder.val()
+    criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
+    criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
+    dataAccess.user.getNetwork2 criteriaObject, ((response) ->
         $scope.startups = response.startups
         $scope.networkRows = response.rows
-        $scope.exportURL = dataAccess.getPeopleNetworkCSVURL(criteriaObject)
+        $scope.exportURL = dataAccess.csv.url.peopleNetwork2(criteriaObject)
         $scope.searching = false
         $scope.responseStatus = response.startups.length != 0
         $scope.optionSelectMsg = 'Select a startup.'
-      stopBar()),                                                 # End successHandler
-      -> $scope.$apply -> $scope.responseStatus = false           # Error handler
+        stopBar()),                                                 # End successHandler
+      -> $scope.responseStatus = false             # Error handler
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->
