@@ -31,7 +31,6 @@ object Application extends Controller with Secured{
         routes.javascript.Locations.getCountriesByString,
         routes.javascript.Locations.getCountries,
         routes.javascript.Locations.getChildrenOf,
-        routes.javascript.Startups.getStartupsByLocationId,
         routes.javascript.Startups.getNumberOfFoundersByStartupId,
         routes.javascript.Startups.getRolesOfStartup,
         routes.javascript.Startups.getStartupNetInfo,

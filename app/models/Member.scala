@@ -6,7 +6,7 @@ package models
  * Project: Tangela.
  */
 
-class Member(person: Person, role: Role)
+class Member(person: Person, role: AngelRole)
 
 class Person(firstName: String, lastName: String)
 

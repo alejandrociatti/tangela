@@ -4,7 +4,7 @@ import java.util.UUID
 
 import controllers.{Locations, Markets, Networks, Startups}
 import models.authentication.{Role, User, Users}
-import models.{DatabaseUpdate, Location, Market}
+import models._
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTimeConstants.SUNDAY
 import org.joda.time.{DateTime, LocalDate, LocalTime}

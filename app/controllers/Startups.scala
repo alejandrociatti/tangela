@@ -1,11 +1,10 @@
 package controllers
 
 import _root_.util.{Tupler, CSVManager}
-import models.Startup
+import _root_.util.JsArrayer.toJsArray
+import models.{AngelUser, Startup}
 import org.joda.time.DateTime
 import play.api.Logger
-import play.api.data.Form
-import play.api.data.Forms._
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
@@ -20,16 +19,6 @@ import scala.concurrent._
 
 object Startups extends Controller with Secured {
 
-  val startupForm = Form(
-    mapping(
-      "name" -> nonEmptyText,
-      "angelId" -> ignored(0:Long),
-      "quality" -> ignored(0:Int),
-      "creationDate" -> ignored(DateTime.now():DateTime),
-      "id" -> optional(longNumber)
-    )(Startup.apply)(Startup.unapply)
-  )
-
 //  Actions ************************************************************************
 
   /**
@@ -41,34 +30,6 @@ object Startups extends Controller with Secured {
       val followers: Int = (jsResponse \ "follower_count").as[Int]
       val name: String = (jsResponse \ "name").as[String]
       Ok(Json.toJson(Map("id"->startupId.toString, "follower_count"->followers.toString, "name"->name)))
-    }
-  }
-
-  /**
-   * This method searches for every startup tagged with a given LocationTag
-   * @param locationId id of the LocationTag
-   * @return JSON response containing an array of {id, name} of each startup
-   */
-  def getStartupsByLocationId(locationId: Long) = Action.async {
-    AngelListServices.getStartupsByTagId(locationId) flatMap { response =>
-
-      // TODO: Replace the logic by searchByTag method
-      def getFutureStartupsByPage(locationId: Long)(page: Int): Future[Seq[JsValue]] = {
-        AngelListServices.getStartupsByTagIdAndPage(locationId)(page) map { response =>
-          val startups: JsArray = (response \ "startups").as[JsArray]
-          startups.value.filter { startup => !(startup \ "hidden").as[Boolean]}.map(minimalStartUp)
-        }
-      }
-
-      val pages: Int = (response \ "last_page").as[Int]
-      val firstPageStartups = (response \ "startups").as[JsArray].value
-        .filter( startup => !(startup \ "hidden").as[Boolean] )
-        .map(minimalStartUp)
-
-      val futureStartups =
-        Future.sequence( (2 to pages) map getFutureStartupsByPage(locationId)).map(_.flatten)
-
-      futureStartups.map { startups => Ok(JsArray(firstPageStartups ++ startups)) }
     }
   }
 
@@ -173,55 +134,40 @@ object Startups extends Controller with Secured {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).flatMap { startups =>
       Future.sequence(                //Wrapped in Future.sequence to change Seq[Future] to Future[Seq]
         startups.map { startup =>     //get info of people involved in each startup
-          (startup \ "id").asOpt[Int].fold{Future(Seq[JsValue]())}{id => getAllInfoOfPeopleInStartups(id)}
+          getAllInfoOfPeopleInStartup(startup.id)
         }               //We end up with Future[Seq[Seq[JsValue]]] so we flatten both Seq and then map the resulting Seq
       ).map(_.flatten).map{ users =>
         Future(
           CSVManager.put(s"users-$locationId-$marketId-$quality-$creationDate",
             CSVs.makeUsersCSVHeaders(),
-            CSVs.makeUsersCSVValues(users))
+            CSVs.makeUsersCSVValues(Json.toJson(users).as[Seq[JsValue]]))
         )
-        Ok(JsArray(users))
+        Ok( toJsArray(users.map(_.toTinyJson)) )
       }
     }
   }
 
   def getUsersInfoByCriteriaToLoad(locationId: Int, marketId: Int, quality: String, creationDate: String): Future[Unit] = {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).map { startups =>
-      startups.map { startup =>
-        val id = (startup \ "id").asOpt[Int].getOrElse(0)
-        getAllInfoOfPeopleInStartups(id)
-      }
+      startups.map(startup => getAllInfoOfPeopleInStartup(startup.id) )
     }
   }
 
-  def getAllInfoOfPeopleInStartups(startupId: Long) :Future[Seq[JsValue]] = {
+  def getAllInfoOfPeopleInStartup(startupId: Long) :Future[Seq[AngelUser]] = {
 
-    def getFutureUserInfoById(userId: Int, userRole: String): Future[JsValue] = {
+    def getFutureUserInfoById(userId: Long): Future[Option[AngelUser]] =
       AngelListServices.getUserById(userId) map { userResponse =>
-        // TODO: Check if success check is necessary
-        val user = userResponse
-        val userSuccess = user \\ "success"
-        if (userSuccess.size == 0) {
-          fullUserInfo(user)
-        } else {
-          Json.obj()
-        }
+         userResponse.validate[AngelUser] match{
+           case user:JsSuccess[AngelUser] => Some(user.get)
+           case _ => 
+             Logger.warn("Failed to read user json "+userResponse)
+             None
+         }
       }
-    }
 
-    //    var usersInfo : Seq[JsValue]= Seq()
-
-    AngelListServices.getRolesFromStartupId(startupId) flatMap { response =>
-
-      val userInfoFutures = (response \ "startup_roles").as[JsArray].value map { role =>
-        val userRole: String = (role \ "role").as[String]
-        val userId: Int = (role \ "user" \ "id").as[Int]
-        getFutureUserInfoById(userId, userRole)
-      }
-      val usersInfo2 = Future.sequence(userInfoFutures)
-      usersInfo2
-    }
+    Roles.getFromStartupID(startupId).flatMap{roles =>
+      Future.sequence(roles.map(role => getFutureUserInfoById(role.user.id)))
+    }.map(_.flatten) //By flattening the Seq[Option] we remove the 'None's
   }
 
   def startupsFundingByCriteria(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
@@ -229,7 +175,7 @@ object Startups extends Controller with Secured {
     val fundingsFuture = startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
       Future.sequence(  //With this we get a Future[Seq[Seq[JsValue]]] instead of a Seq[Future[Seq[JsValue]]]
         //For each startup, get its funding info
-        startups.map( startup => getStartupFund( (startup \ "id").as[Long], (startup \ "name").as[String]) )
+        startups.map( startup => getStartupFund( startup.id,  startup.name) )
       ).map(_.flatten) //With this we flatten the inner Seq[Seq[JsValue]] and we end up wit Future[Seq[JsValue]]
     }
     //Once we have a future findings, we map the future to save the CSV and return the results.
@@ -250,31 +196,34 @@ object Startups extends Controller with Secured {
 
   def startupCriteriaSearch(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).map { startups =>
+      val startupsJson = Json.toJson(startups).as[Seq[JsValue]]
       Future {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
         val headers: List[String] = CSVs.makeStartupsCSVHeaders()
-        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups)
+        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startupsJson)
         CSVManager.put(key, headers, values)
 
         val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
         val tagsHeaders: List[String] = CSVs.makeStartupsTagsCSVHeaders()
-        val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(startups)
+        val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(startupsJson)
         CSVManager.put(tagsKey, tagsHeaders, tagsValues)
       }
-      Ok(JsArray(startups))
+      Ok(JsArray(startupsJson))
     }
   }
 
   def startupCriteriaSearchAndTags(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).map { startups =>
       val tags = startups flatMap { startup =>
-          val allTags  = (startup \ "markets").as[Seq[JsValue]] ++ (startup \ "locations").as[Seq[JsValue]] ++ (startup \ "company_type").as[Seq[JsValue]]
-          allTags map { tag => tag.as[JsObject] + ("startup" -> (startup \ "id"))}
+          val allTags  = Json.toJson(startup.markets).as[Seq[JsValue]] ++
+            Json.toJson(startup.locations).as[Seq[JsValue]]
+          allTags map { tag => tag.as[JsObject] ++ Json.obj("startup" -> startup.id)}
       }
+      val startupsJson = Json.toJson(startups).as[Seq[JsValue]]
       Future {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
         val headers: List[String] = CSVs.makeStartupsCSVHeaders()
-        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startups)
+        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startupsJson)
         CSVManager.put(key, headers, values)
 
         val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
@@ -282,11 +231,27 @@ object Startups extends Controller with Secured {
         val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(tags)
         CSVManager.put(tagsKey, tagsHeaders, tagsValues)
       }
-      Ok(Json.obj("startups" -> startups, "tags" -> tags))
+      Ok(Json.obj("startups" -> startupsJson, "tags" -> tags))
     }
   }
 
-//  Helpers **********************************************************************************
+  def getStartupIDsFromUserID(id : Long): Future[Seq[Long]] = {
+    AngelListServices.getRolesFromUserId(id) map {response =>
+      (response \ "startup_roles").asOpt[JsArray].fold{
+        Seq[Long]()
+      }{ roles =>
+        roles.value.filter(role => (role \ "user") != JsNull).map(role =>
+          (role \ "startup" \ "id").as[Long]
+        )
+      }
+    }
+  }
+
+  def getStartupIDsFromUserIDs(users: Seq[Long]):Future[Seq[Long]] =
+    Future.sequence(users map getStartupIDsFromUserID).map(_.flatten.distinct)
+
+
+  //  Helpers **********************************************************************************
 
   def getStartupFund(startupId: Long, startupName: String = ""): Future[Seq[JsValue]] =
     AngelListServices.getFundingByStartupId(startupId) map { response =>
@@ -300,23 +265,19 @@ object Startups extends Controller with Secured {
    /**
    * This method returns startups associated to a tag (which are visible)
    * @param tagId id of the Tag
-   * @return A Future with a JsArray of the startups
+   * @return A Future with a Seq[Startup]
    */
-  def searchByTag(tagId: Long): Future[JsArray] = searchByTagNonBlocking(tagId) map JsArray
+  def searchByTagNonBlocking(tagId: Long): Future[Seq[Startup]] = {
 
-  def searchByTagNonBlocking(tagId: Long): Future[Seq[JsValue]] = {
-
-    def responseToStartupSeq(response: JsValue): Seq[JsValue] =
-      (response \ "startups").as[JsArray].value
-        .filter { startup => !(startup \ "hidden").as[Boolean]}
-        .map(relevantStartupInfo)
+    def responseToStartupSeq(response: JsValue): Seq[Startup] =
+      (response \ "startups").as[Seq[JsValue]].filter(isStartupFilter).map(_.validate[Startup].get)
 
     AngelListServices.getStartupsByTagId(tagId) flatMap { response :JsValue =>
       (response \ "last_page").asOpt[Int].getOrElse(-1) match {
         case -1 =>                                      // If 'last_page' doesn't exist, something is wrong
           Logger.warn(s"unexpected response on search by tag for $tagId")
-          Logger.info(response.toString)
-          Future(Seq[JsValue]())
+          Logger.info(response.toString())
+          Future(Seq[Startup]())
         case 1 => Future(responseToStartupSeq(response)) //In case this is the only page
         case pages =>
           // Get startups for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)
@@ -335,107 +296,48 @@ object Startups extends Controller with Secured {
    *  and then filters the results with the given parameters
    */
   def startupsByCriteriaNonBlocking(locationId: Int, marketId: Int, qualityRange: (Int,Int),
-                                     creationRange: (String,String)): Future[Seq[JsValue]] = {
+                                     creationRange: (String,String)): Future[Seq[Startup]] = {
     val seed = (locationId, marketId) match {
       case (location, -1) => searchByTagNonBlocking(location)
       case (-1, market) => searchByTagNonBlocking(market)
-      case (location, market) => searchByTagNonBlocking(location).map(_.filter(intFilter("markets", "id", market)))
+      case (location, market) => searchByTagNonBlocking(location).map(_.filter(marketFilter(market)))
     }
     val qualityFiltered = qualityRange match {
       case (-1, -1) => seed
-      case (start, -1) => seed.map(_.filter(biggerThanFilter("quality", start)))
-      case (-1, end) => seed.map(_.filter(smallerThanFilter("quality", end)))
+      case (start, -1) => seed.map(_.filter(qualityBottomFilter(start)))
+      case (-1, end) => seed.map(_.filter(qualityTopFilter(end)))
       case (start, end) => seed.map(
-        _.filter(biggerThanFilter("quality", start)).filter(smallerThanFilter("quality", end))
+        _.filter(qualityBottomFilter(start)).filter(qualityTopFilter(end))
       )
     }
     val creationFiltered = creationRange match {
       case ("", "") => qualityFiltered
-      case (start, "") => qualityFiltered.map(_.filter(olderThan("created_at", DateTime.parse(start))))
-      case ("", end) => qualityFiltered.map(_.filter(youngerThan("created_at", DateTime.parse(end))))
+      case (start, "") => qualityFiltered.map(_.filter(creationBottomFilter(DateTime.parse(start))))
+      case ("", end) => qualityFiltered.map(_.filter(creationTopFilter(DateTime.parse(end))))
       case (start, end) => qualityFiltered.map(
-          _.filter(olderThan("created_at", DateTime.parse(start)))
-            .filter(youngerThan("created_at", DateTime.parse(end)))
+          _.filter(creationBottomFilter(DateTime.parse(start)))
+            .filter(creationTopFilter(DateTime.parse(end)))
         )
     }
     creationFiltered
   }
 
-  def biggerThanFilter(field: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[Int] >= value
+  def marketFilter(marketID: Long)(startup:Startup):Boolean =
+    startup.markets.fold{false}{markets=> markets.exists(market => market.id == marketID)}
 
-  def biggerThanFilter(field: String, subField: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[JsArray].value.exists(biggerThanFilter(subField, value))
+  def qualityBottomFilter(quality: Int)(startup:Startup):Boolean = startup.quality >= quality
 
-  def smallerThanFilter(field: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[Int] <= value
+  def qualityTopFilter(quality: Int)(startup:Startup):Boolean = startup.quality <= quality
 
-  def smallerThanFilter(field: String, subField: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[JsArray].value.exists(smallerThanFilter(subField, value))
+  def creationBottomFilter(date:DateTime)(startup:Startup):Boolean = startup.created isAfter date
 
-  def intFilter(field: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[Int] == value
-
-  def intFilter(field: String, subField: String, value: Int)(json: JsValue): Boolean =
-    (json \ field).as[JsArray].value.exists(intFilter(subField, value))
-
-  def youngerThan(field: String, value: DateTime)(json: JsValue): Boolean =
-    DateTime.parse((json \ field).as[String]) isBefore value
-
-  def olderThan(field: String, value: DateTime)(json: JsValue): Boolean =
-    DateTime.parse((json \ field).as[String]) isAfter value
+  def creationTopFilter(date:DateTime)(startup:Startup):Boolean = startup.created isBefore date
 
   def validResultFilter(json: JsValue): Boolean = (json \\ "success").isEmpty
-  
-//  Json Constructors *********************************************************************
 
-  def minimalStartUp(startup: JsValue) = Json.obj(
-    "id" -> (startup \ "id").as[Int],
-    "name" -> (startup \ "name").as[String]
-  )
-
-  def relevantStartupInfo(startup: JsValue) = Json.obj(
-    "id" -> (startup \ "id").asOpt[Long].getOrElse[Long](0),
-    "hidden" -> (startup \ "hidden").asOpt[Boolean].getOrElse[Boolean](false),
-    "community_profile" -> (startup \ "community_profile").asOpt[String].getOrElse[String](""),
-    "name" -> (startup \ "name").asOpt[String].getOrElse[String](""),
-    "angellist_url" -> (startup \ "angellist_url").asOpt[String].getOrElse[String](""),
-    "logo_url" -> (startup \ "logo_url").asOpt[String].getOrElse[String](""),
-    "thumb_url" -> (startup \ "thumb_url").asOpt[String].getOrElse[String](""),
-    "quality" -> (startup \ "quality").asOpt[Int].getOrElse[Int](-1),
-    "product_desc" -> (startup \ "product_desc").asOpt[String].getOrElse[String](""),
-    "high_concept" -> (startup \ "high_concept").asOpt[String].getOrElse[String](""),
-    "follower_count" -> (startup \ "follower_count").asOpt[Int].getOrElse[Int](0),
-    "company_url" -> (startup \ "company_url").asOpt[String].getOrElse[String](""),
-    "created_at" -> (startup \ "created_at").asOpt[String].getOrElse[String](""),
-    "updated_at" -> (startup \ "updated_at").asOpt[String].getOrElse[String](""),
-    "twitter_url" -> (startup \ "twitter_url").asOpt[String].getOrElse[String](""),
-    "blog_url" -> (startup \ "blog_url").asOpt[String].getOrElse[String](""),
-    "video_url" -> (startup \ "video_url").asOpt[String].getOrElse[String](""),
-    "markets" -> (startup \ "markets").asOpt[JsArray].getOrElse[JsArray](JsArray.apply()),
-    "locations" -> (startup \ "locations").asOpt[JsArray].getOrElse[JsArray](JsArray.apply()),
-    "company_type" -> (startup \ "company_type").asOpt[JsArray].getOrElse[JsArray](JsArray.apply())
-  )
-
-  def fullUserInfo(user: JsValue) = Json.obj(
-    "id" -> (user \ "id").as[Long],
-    "name" -> (user \ "name").asOpt[String].getOrElse[String](""),
-    "bio" -> (user \ "bio").asOpt[String].getOrElse[String](""),
-    "role" -> (user \ "role").asOpt[String].getOrElse[String](""),
-    "follower_count" -> (user \ "follower_count").as[Int].toString,
-    "angellist_url" -> (user \ "angellist_url").asOpt[String].getOrElse[String](""),
-    "image" -> (user \ "image").asOpt[String].getOrElse[String](""),
-    "blog_url" -> (user \ "blog_url").asOpt[String].getOrElse[String](""),
-    "online_bio_url" -> (user \ "online_bio_url").asOpt[String].getOrElse[String](""),
-    "twitter_url" -> (user \ "twitter_url").asOpt[String].getOrElse[String](""),
-    "facebook_url" -> (user \ "facebook_url").asOpt[String].getOrElse[String](""),
-    "linkedin_url" -> (user \ "linkedin_url").asOpt[String].getOrElse[String](""),
-    "what_ive_built" -> (user \ "what_ive_built").asOpt[String].getOrElse[String](""),
-    "what_i_do" -> (user \ "what_i_do").asOpt[String].getOrElse[String](""),
-    "investor" -> (user \ "investor").as[Boolean]
-  )
-
-  def fundingWithStartup(funding: JsValue, startup: JsValue) = Json.obj(
-
-  )
+  def isStartupFilter(startup: JsValue): Boolean = startup.validate[Startup] match {
+    case role:JsSuccess[Startup] => true
+    case err:JsError => Logger.warn("Failed to read startup json: "+ JsError.toFlatJson(err).toString()); false
+    case _ => Logger.warn("Failed to read startup json: "+startup.toString()); false
+  }
 }

@@ -4,7 +4,7 @@ import controllers.AngelListServices
 import play.api.db.slick.DB
 import play.api.db.slick.Config.driver.simple._
 import play.api.Play.current
-import play.api.libs.json.JsValue
+import play.api.libs.json._
 import scala.concurrent.Future
 import scala.slick.session.Session
 import scala.concurrent.ExecutionContext.Implicits.global

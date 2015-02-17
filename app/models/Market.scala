@@ -21,7 +21,6 @@ object Markets extends Table[Market]("MARKET") {
 }
 
 object Market {
-  //  def getMarkets = Database.query[Market].fetch().toList
 
   def getMarkets = DB.withSession { implicit  session: Session =>
     Query(Markets).sortBy(_.name).list
@@ -31,29 +30,15 @@ object Market {
     Query(Markets).delete
   }
 
-//  def getById(id: Long): Option[Market] = Database.query[Market].whereEqual("id", id).fetchOne()
-
   def getById(id: Long): Option[Market] = DB.withSession { implicit  session: Session =>
     Query(Markets).filter( _.id === id ).firstOption
   }
-
-//  def save(market: Market) =
-//    if (Database.query[Market].whereEqual("angelId", market.angelId).count() == 0) {
-//      Database.save(market)
-//    }
 
   def save(market: Market) = DB.withSession { implicit session: Session =>
     Query(Markets).filter( _.angelId === market.angelId ).firstOption.getOrElse {
       Markets.insert(market)
     }
   }
-
-//  def saveRelation(marketId: Long, startupId: Long) =
-//    getById(marketId) map { market =>
-//      Startup.getById(startupId) map { startup =>
-//        Database.save(StartupMarket(market, startup))
-//      }
-//    }
 
   def saveRelation(marketId: Long, startupId: Long) = DB.withSession { implicit session: Session =>
     StartupMarkets.insert(StartupMarket(marketId, startupId))
@@ -69,5 +54,4 @@ object StartupMarkets extends Table[StartupMarket]("STARTUP_MARKET") {
   def * = market ~ startup ~ id.? <> (StartupMarket.apply _, StartupMarket.unapply _)
 }
 
-object StartupMarket {
-}
+object StartupMarket {}

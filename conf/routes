@@ -23,7 +23,6 @@ GET         /locations/country-list                     controllers.Locations.ge
 GET         /locations/children/:countryId              controllers.Locations.getChildrenOf(countryId :Long)
 
 #Startups
-GET         /startups/location/id/:countryId            controllers.Startups.getStartupsByLocationId(countryId: Int)
 GET         /startups/id/:id                            controllers.Startups.getStartupById(id: Long)
 GET         /startups/founders/:startupId               controllers.Startups.getNumberOfFoundersByStartupId(startupId: Long)
 GET         /startups/roles/:startupId                  controllers.Startups.getRolesOfStartup(startupId: Long)
