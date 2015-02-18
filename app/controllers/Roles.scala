@@ -36,20 +36,48 @@ object Roles extends Controller {
    * @param roles JsValue that contains the startup id and name
    * @return A Future of Seq of all corresponding roles from all people as JsValues
    */
-  def getExtendedRoles(roles: Seq[AngelRole]): Future[Seq[AngelRole]] = getRolesFromUserIDs(roles.map(_.id))
+  def getExtendedRoles(roles: Seq[AngelRole]): Future[Seq[AngelRole]] = getRolesFromUserIDs(roles.map(_.user.id))
 
-  def getRolesFromUserIDs(users: Seq[Long]): Future[Seq[AngelRole]] =
-    Future.sequence(
+  def getRolesFromUserIDs(users: Seq[Long]): Future[Seq[AngelRole]] = Future.sequence(
       users.map{id =>
-        AngelListServices.getRolesFromUserId( id ) map { response =>
-          (response \ "startup_roles").asOpt[Seq[JsValue]].fold {
-            Seq[AngelRole]()
-          } { roles =>
-            roles.filter(isRoleFilter).map(_.validate[AngelRole].get)
+        AngelListServices.getRolesFromUserId( id ) flatMap { response =>
+          (response \ "last_page").asOpt[Int].getOrElse(-1) match {
+            case -1 => Future(Seq[AngelRole]())             // Unexpected response
+            case 1 => Future(responseToAngelRole(response)) // One page response
+            case pages =>                                   // More tha one page
+              // Get roles for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)
+              Future.sequence(
+                (2 to pages).map(AngelListServices.getRolesFromUserIdAndPage( id ))
+              ).map{ results : IndexedSeq[JsValue] =>
+                // Convert the 1st page (response) and the rest of them (results) to Seq[AngelRole] and join all of them
+                responseToAngelRole(response) ++ (results flatMap responseToAngelRole)
+              } //The result is a Future[Seq[AngelRole]] where each JsValue represents a Startup
           }
         }
       }
     ).map(_.flatten.distinct)
+
+  def getRolesFromStartupIDs(startups: Seq[Long]): Future[Seq[AngelRole]] = Future.sequence(
+    startups.map{id =>
+      AngelListServices.getRolesFromStartupId( id ) flatMap { response =>
+        (response \ "last_page").asOpt[Int].getOrElse(-1) match {
+          case -1 => Future(Seq[AngelRole]())             // Unexpected response
+          case 1 => Future(responseToAngelRole(response)) // One page response
+          case pages =>                                   // More than one page
+            // Get roles for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)
+            Future.sequence(
+              (2 to pages).map(AngelListServices.getRolesFromStartupIdAndPage( id ))
+            ).map{ results : IndexedSeq[JsValue] =>
+              // Convert the 1st page (response) and the rest of them (results) to Seq[AngelRole] and join all of them
+              responseToAngelRole(response) ++ (results flatMap responseToAngelRole)
+            } //The result is a Future[Seq[JsValue]] where each JsValue represents a Startup
+        }
+      }
+    }
+  ).map(_.flatten.distinct)
+
+  private def responseToAngelRole(response: JsValue):Seq[AngelRole] = (response \ "startup_roles").asOpt[Seq[JsValue]]
+    .fold( Seq[AngelRole]() ) ( roles => roles.filter(isRoleFilter).map(_.validate[AngelRole].get) )
 
   def isRoleFilter(role: JsValue) =
     role.validate[AngelRole] match {

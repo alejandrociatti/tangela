@@ -55,8 +55,8 @@ object Networks extends Controller {
           case Nil => matches
           case userRole :: userRolesTail =>
             val startupConnections = userRolesTail
-              .filter(differentStartupFilter(_, userRole))
               .filter(equalUserFilter(_, userRole))
+              .filter(differentStartupFilter(_, userRole))
               .map( StartupsConnection(_, userRole))
             getMatches(userRolesTail, matches ++ startupConnections)
         }
@@ -121,17 +121,23 @@ object Networks extends Controller {
     }
   }
 
+  /**
+   * This method makes a people network, going from S1->R1->U1->R2->S2->R3 to N1
+   * @param startups seed Seq[Startup] (representing S1)
+   * @return a Future[Seq] of the obtained UserConnections
+   */
   private def getPeopleNetworkFuture2ndOrder(startups: Seq[Startup]) : Future[Seq[UsersConnection]] = {
     // All the users involved in startups
-    val userIDs = Members.userIDsFromStartups(startups)
+    val userIDs = Members.userIDsFromStartups(startups) // Represents U1
     // All the startups in which the above users are involved
-    val startupIDs = userIDs.flatMap(users => Startups.getStartupIDsFromUserIDs(users))
-    // The extended list of users, which belong to this second startup list
-    val userIDs2 = startupIDs flatMap Members.userIDsFromStartupIDs
-    // The roles of those users
-    val extendedRoles:Future[Seq[AngelRole]] = userIDs2 flatMap getRolesFromUserIDs
-    // Using the 2nd order & extended userRoles
-    extendedRoles map ( userRoles => getPeopleNetMatches(userRoles, Seq()) )
+    val startupIDs = userIDs flatMap Startups.getStartupIDsFromUserIDs // Represents S2
+    // The roles of those startups
+    val extendedRoles:Future[Seq[AngelRole]] = startupIDs flatMap getRolesFromStartupIDs // Represents R3
+    // Using R3 roles, match them to represent the network
+    extendedRoles map { userRoles =>
+      println("FINISHED GETTING R3: \nR3 length: "+userRoles.length)
+      getPeopleNetMatches(userRoles, Seq())
+    } // Represents N1
   }
 
   // Helpers *************************************************************
@@ -149,15 +155,15 @@ object Networks extends Controller {
    * and filtering them so that the only pairs that remain consist of different users in the same startup.
    * @param userRoles the list of roles
    * @param matches   the up-to-now found matches (for tail recursion's magic)
-   * @return          a Seq[UsersConnection] that consists of two roles which are connected by a startup.
+   * @return          a Seq[UsersConnection] that consists of two roles that share a startup.
    */
   private def getPeopleNetMatches(userRoles: Seq[AngelRole], matches: Seq[UsersConnection]): Seq[UsersConnection] =
-    userRoles.toList match {
+    userRoles match {
       case Nil => matches
       case userRole :: userRolesTail =>
         val peopleConnections = userRolesTail
-          .filter(differentUserFilter(_, userRole))
           .filter(equalStartupFilter(_, userRole))
+          .filter(differentUserFilter(_, userRole))
           .map( UsersConnection(_, userRole))
         getPeopleNetMatches(userRolesTail, matches ++ peopleConnections)
     }

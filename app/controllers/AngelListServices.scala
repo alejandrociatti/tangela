@@ -58,6 +58,8 @@ object AngelListServices {
 
   def getRolesFromUserId(id: Long) = sendRequest(s"/startup_roles?v=1&user_id=$id")
 
+  def getRolesFromUserIdAndPage(id: Long)(page: Int) = sendRequest(s"/startup_roles?v=1&user_id=$id&page=$page")
+
   def getStartupsByTagId(id: Long) = sendRequest(s"/tags/$id/startups")
 
   def getStartupsByTagIdAndPage(id: Long)(page: Int) = sendRequest(s"/tags/$id/startups?page=$page")
