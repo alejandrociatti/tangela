@@ -36,7 +36,7 @@ object Global extends GlobalSettings {
     populateCountries()
     populateMarket()
     clearCSVs()
-    loadNetworks()
+    //loadNetworks()
     dropTablesCRON()
   }
 

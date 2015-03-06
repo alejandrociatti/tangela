@@ -36,7 +36,7 @@ module.controller 'startupsFundingInfo', ['$scope', 'dataAccess', ($scope, dataA
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
 
-    dataAccess.startups.getFundingsByCriteria criteriaObject, ((fundings) ->
+    dataAccess.startup.getFundingsByCriteria criteriaObject, ((fundings) ->
       $scope.fundings = sortByKeys(fundings, "name")
       $scope.searching = false
       $scope.optionSelectMsg = 'Select a startup.'
