@@ -11,14 +11,32 @@ import play.api.libs.functional.syntax._
  * Project: Tangela.
  */
 
-case class Startup(id: Long, name: String, quality: Int, created: DateTime,
-                   angelURL:Option[String], logoURL:Option[String], thumbURL:Option[String],
-                   companyURL:Option[String], twitterURL:Option[String], blogURL:Option[String],
-                   videoURL:Option[String],
-                   description:Option[String], concept:Option[String], followerCount:Option[Int],
-                   updated:Option[DateTime], markets:Option[Seq[AngelTag]], locations:Option[Seq[AngelTag]]){
+case class Startup(id: Long, name: String, quality: Int,
+                   created: DateTime, angelURL:Option[String], logoURL:Option[String],
+                   thumbURL:Option[String], companyURL:Option[String], twitterURL:Option[String],
+                   blogURL:Option[String], videoURL:Option[String], description:Option[String],
+                   concept:Option[String], followerCount:Option[Int], updated:Option[DateTime],
+                   markets:Option[Seq[AngelTag]], locations:Option[Seq[AngelTag]],
+                   funding:Option[Seq[Funding]]){
 
   def toTinyJson = Json.obj("id" -> id, "name" -> name)
+
+  def toCSVRow :Seq[String] = Seq(
+    id.toString(), name,
+    angelURL.getOrElse(""), logoURL.getOrElse(""), thumbURL.getOrElse(""),
+    quality.toString(), description.getOrElse(""), concept.getOrElse(""),
+    followerCount.fold("")(_.toString()), companyURL.getOrElse(""),
+    created.toString(), updated.toString(), twitterURL.getOrElse(""),
+    blogURL.getOrElse(""), videoURL.getOrElse("")
+  )
+
+  def getTagsCSVRows : Seq[String] =
+    markets.fold(Seq[String]())(_.flatMap(Seq(id.toString())++_.toCSVRow)) ++
+    locations.fold(Seq[String]())(_.flatMap(Seq(id.toString())++_.toCSVRow))
+
+  def getTagsJsons : Seq[JsValue] =
+    markets.fold(Seq[JsValue]())(_.map(Json.obj("id" -> id.toString()) ++ Json.toJson(_).as[JsObject])) ++
+    locations.fold(Seq[JsValue]())(_.map(Json.obj("id" -> id.toString()) ++ Json.toJson(_).as[JsObject]))
 }
 
 object Startup{
@@ -51,7 +69,8 @@ object Startup{
       (__ \ "follower_count").readNullable[Int] and
       (__ \ "updated_at").readNullable[DateTime] and
       (__ \ "markets").readNullable[Seq[AngelTag]] and
-      (__ \ "locations").readNullable[Seq[AngelTag]]
+      (__ \ "locations").readNullable[Seq[AngelTag]] and
+      (__ \ "funding").readNullable[Seq[Funding]]
     )(Startup.apply _)
 
   implicit val startupWrites :Writes[Startup] = (
@@ -71,6 +90,14 @@ object Startup{
       (__ \ "follower_count").writeNullable[Int] and
       (__ \ "updated_at").writeNullable[DateTime] and
       (__ \ "markets").writeNullable[Seq[AngelTag]] and
-      (__ \ "locations").writeNullable[Seq[AngelTag]]
+      (__ \ "locations").writeNullable[Seq[AngelTag]] and
+      (__ \ "funding").writeNullable[Seq[Funding]]
     )(unlift(Startup.unapply))
+
+  def getCSVHeader :Seq[String] = Seq(
+    "Tangela Request Date",
+    "id","name","angellist_url","logo_url","thumb_url","quality",
+    "product_desc","high_concept","follower_count","company_url","created_at","updated_at",
+    "twitter_url","blog_url","video_url"
+  )
 }

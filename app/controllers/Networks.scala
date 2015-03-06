@@ -3,7 +3,7 @@ package controllers
 import _root_.util.{Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
 import controllers.Roles._
-import models.{Startup, UsersConnection, StartupsConnection, AngelRole}
+import models._
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
@@ -28,15 +28,14 @@ object Networks extends Controller {
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { connections =>
-        val connectionsJson = Json.toJson(connections).as[JsArray]
         Future(
           CSVManager.put(
             s"startup-net-$locationId-$marketId-$quality-$creationDate",
-            CSVs.makeStartupsNetworkCSVHeaders,
-            CSVs.makeStartupsNetworkCSVValues(connectionsJson)
+            StartupsConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
         )
-        Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> connectionsJson))
+        Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
       }
     }
   }
@@ -81,8 +80,8 @@ object Networks extends Controller {
         Future(
           CSVManager.put(
             s"people-net-$locationId-$marketId-$quality-$creationDate",
-            CSVs.makePeopleNetworkCSVHeaders(),
-            CSVs.makePeopleNetworkCSVValues(connectionsJson)
+            UsersConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
         )
         Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> connectionsJson))
@@ -107,13 +106,13 @@ object Networks extends Controller {
     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
     val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
     startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
-      getPeopleNetworkFuture2ndOrder(startups) map { startupsToSend =>
-        val startupsToSendJson = Json.toJson(startupsToSend)
+      getPeopleNetworkFuture2ndOrder(startups) map { connections =>
+        val startupsToSendJson = Json.toJson(connections)
         Future(
           CSVManager.put(
             s"people-net-2-$locationId-$marketId-$quality-$creationDate",
-            CSVs.makePeopleNetworkCSVHeaders(),
-            CSVs.makePeopleNetworkCSVValues(startupsToSendJson.as[JsArray])
+            UsersConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
         )
         Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> startupsToSendJson))

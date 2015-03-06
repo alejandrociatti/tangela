@@ -10,7 +10,24 @@ import play.api.libs.functional.syntax._
  * Date: 16/02/15
  * Time: 20:55
  */
-case class AngelRole(id: Long, role: String, user: AngelUser, startup:Startup, created:DateTime)
+case class AngelRole(id: Long, role: String, user: AngelUser, startup:Startup,
+                     created:DateTime, started:Option[DateTime], ended:Option[DateTime],
+                      confirmed:Boolean){
+
+  def toCSVRow : Seq[String] = Seq(
+    startup.id.toString(), id.toString(), role,
+    created.toString(), started.fold("")(_.toString()), ended.fold("")(_.toString()),
+    confirmed.toString(), user.name, user.id.toString(), user.bio.getOrElse(""),
+    user.followerCount.fold("")(_.toString()), user.angelURL.getOrElse(""), user.image.getOrElse("")
+  )
+
+  def toTinyJson = Json.obj(
+    "id" -> id,
+    "name" -> user.name,
+    "follower_count" -> user.followerCount,
+    "role" -> role
+  )
+}
 
 object AngelRole{
   implicit val jodaTimeReads:Reads[DateTime] = new Reads[DateTime] {
@@ -26,7 +43,10 @@ object AngelRole{
       (__ \ "role").read[String] and
       (__ \ "tagged").lazyRead[AngelUser](AngelUser.userReads) and
       (__ \ "startup").lazyRead[Startup](Startup.startupReads) and
-      (__ \ "created_at").lazyRead[DateTime](Startup.jodaTimeReads)
+      (__ \ "created_at").lazyRead[DateTime](Startup.jodaTimeReads) and
+      (__ \ "started_at").lazyReadNullable[DateTime](Startup.jodaTimeReads) and
+      (__ \ "ended_at").lazyReadNullable[DateTime](Startup.jodaTimeReads) and
+      (__ \ "confirmed").read[Boolean]
     )(AngelRole.apply _)
 
   implicit val roleWrites: Writes[AngelRole] = new Writes[AngelRole] {
@@ -35,7 +55,18 @@ object AngelRole{
       "role" -> o.role,
       "tagged" -> o.user,
       "startup" -> o.startup,
-      "created_at" -> o.created
+      "created_at" -> o.created.toString(),
+      "started_at" -> o.started.fold("")(_.toString()),
+      "ended_at" -> o.ended.fold("")(_.toString()),
+      "confirmed" -> o.confirmed.toString()
     )
   }
+
+  def getCSVHeaders :Seq[String] = Seq(
+    "tangela request date",
+    "startup ID", "id", "role",
+    "created at", "started at", "ended at",
+    "confirmed", "user name", "user id", "user bio",
+    "user follower count", "user angel list url", "user image url"
+  )
 }

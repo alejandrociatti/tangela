@@ -2,7 +2,7 @@ package controllers
 
 import _root_.util.{Tupler, CSVManager}
 import _root_.util.JsArrayer.toJsArray
-import models.{AngelUser, Startup}
+import models._
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json._
@@ -80,54 +80,59 @@ object Startups extends Controller with Secured {
   }
 
   def getRolesOfStartup(startupId: Long) = Action.async {
-    // Helper to grab 'startup_roles' from response
-    def responseToRoleArray(response: JsValue):JsArray = (response \ "startup_roles").as[JsArray]
-    // Helper to reduce a role's info to {id, name, follower_count, role}
-    def reduceRole(role:JsValue) = Json.obj(
-      "id" -> (role \ "tagged" \ "id").as[Int],
-      "name" -> (role \ "tagged" \ "name").as[String],
-      "follower_count" -> (role \ "tagged" \ "follower_count").as[Int].toString,
-      "role" -> (role \ "role").as[String]
-    )
-    // Get all roles from the startup
-    val futureRoles:Future[JsArray] = AngelListServices.getRolesFromStartupId(startupId) flatMap { response :JsValue =>
-      (response \ "last_page").as[Int] match {                      // Check if there's more than one page
-        case 1 => Future(responseToRoleArray(response))             // If there's only one, return this response's roles
-        case pages => Future.sequence(                              // If there are at least 2, get the others
-            (2 to pages).map(AngelListServices.getRolesFromStartupIdAndPage(startupId))
-          ).map{results : IndexedSeq[JsValue] =>                    // Concatenate results
-            responseToRoleArray(response).value ++ (results flatMap{response=>responseToRoleArray(response).value})
-          }.map(rolesSeq => JsArray(rolesSeq))                      // Convert concatenated Seq[JsValue] to JsArray
-      }
-    }
+    val futureRoles = Roles.getRolesFromStartupID(startupId)
     // Map the future, save the CSV and send the response of this Action
-    futureRoles.map{roles : JsArray =>
+    futureRoles.map{roles =>
       Future(
         CSVManager.put(
           s"startup-roles-$startupId",
-          CSVs.makeStartupRolesCSVHeaders,
-          CSVs.makeStartupRolesCSVValues(roles, startupId)
+          AngelRole.getCSVHeaders,
+          roles.map(_.toCSVRow)
         )
       )
       // Reduce the roles for the response, and convert the Seq[JsObject] to JsArray
-      Ok(JsArray(roles.value map reduceRole))
+      Ok(JsArray(roles.map(_.toTinyJson)))
     }
   }
 
-  def getStartupFunding(startupId: Long) = Action.async {
-    getStartupFund(startupId).map { fund =>
-      val fundJs = JsArray(fund)
-      Future(
-        CSVManager.put(
-          s"startup-funding-$startupId",
-          CSVs.makeStartupFundingCSVHeaders,
-          CSVs.makeStartupFundingCSVValues(fundJs)
-        )
-      )
-
-      Ok(fundJs)
+  def getStartupFunding(id:Long) = Action.async {
+    AngelListServices.getStartupById(id).flatMap{ jsStartup =>
+      jsStartup.validate[Startup] match {
+        case role:JsSuccess[Startup] =>
+          val startup = jsStartup.validate[Startup].get
+          Fundings.getFromStartupID(id).map{ funds =>
+            Future(
+              CSVManager.put(
+                s"startup-funding-$id",
+                Funding.getCSVHeader,
+                funds.flatMap(_.toCSVRows(startup))
+              )
+            )
+            Ok(Json.toJson(funds))
+          }
+        case err:JsError =>
+          Logger.warn("Failed to read startup json: "+ JsError.toFlatJson(err).toString())
+          Future(Ok("{\"success\":false}"))
+        case _ =>
+          Logger.warn("Failed to read startup json: "+jsStartup.toString())
+          Future(Ok("{\"success\":false}"))
+      }
     }
   }
+
+//  def getStartupFunding(startup: Startup):Action[AnyContent] = Action.async {
+//    val startupID = startup.id
+//    Fundings.getFromStartupID(startupID).map{fundings =>
+//      Future(
+//        CSVManager.put(
+//          s"startup-funding-$startupID",
+//          Funding.getCSVHeader,
+//          fundings.flatMap(_.toCSVRows(startup))
+//        )
+//      )
+//      Ok(Json.toJson(fundings))
+//    }
+//  }
 
   def getUsersInfoByCriteria(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     //Get all startups with criteria
@@ -139,8 +144,9 @@ object Startups extends Controller with Secured {
       ).map(_.flatten).map{ users =>
         Future(
           CSVManager.put(s"users-$locationId-$marketId-$quality-$creationDate",
-            CSVs.makeUsersCSVHeaders(),
-            CSVs.makeUsersCSVValues(Json.toJson(users).as[Seq[JsValue]]))
+            AngelUser.getCSVHeader,
+            users.map(_.toCSVRow)
+          )
         )
         Ok( toJsArray(users.map(_.toTinyJson)) )
       }
@@ -165,32 +171,30 @@ object Startups extends Controller with Secured {
          }
       }
 
-    Roles.getFromStartupID(startupId).flatMap{roles =>
+    Roles.getRolesFromStartupID(startupId).flatMap{roles =>
       Future.sequence(roles.map(role => getFutureUserInfoById(role.user.id)))
     }.map(_.flatten) //By flattening the Seq[Option] we remove the 'None's
   }
 
   def startupsFundingByCriteria(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
-    //Find all startups with criteria
-    val fundingsFuture = startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
-      Future.sequence(  //With this we get a Future[Seq[Seq[JsValue]]] instead of a Seq[Future[Seq[JsValue]]]
-        //For each startup, get its funding info
-        startups.map( startup => getStartupFund( startup.id,  startup.name) )
-      ).map(_.flatten) //With this we flatten the inner Seq[Seq[JsValue]] and we end up wit Future[Seq[JsValue]]
-    }
-    //Once we have a future findings, we map the future to save the CSV and return the results.
-    fundingsFuture.map{fundings =>
-      val fundingsJs = JsArray(fundings)
-      Future{
-        Logger.info(s"starting to load $locationId fundings")
+    // Find all startups with criteria
+    val fundingStartupFuture =
+      startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
+        // Map those startups to find their fundings, creating tuples of (startup, fund)
+        Future.sequence(
+          startups.map(startup => Fundings.getFromStartup(startup).map(_.map(fund => (startup, fund))) )
+        ).map(_.flatten)
+      }
+    //Once we have a future of (startup, fund), we map the future to save the CSV and return the results.
+    fundingStartupFuture.map{startupFund =>
+      Future(
         CSVManager.put(
           s"startups-funding-$locationId-$marketId-$quality-$creationDate",
-          CSVs.makeStartupFundingCSVHeaders,
-          CSVs.makeStartupFundingCSVValues(fundingsJs)
+          Funding.getCSVHeader,
+          startupFund.flatMap(tuple => tuple._2.toCSVRows(tuple._1))
         )
-        Logger.info(s"finished loading $locationId fundings")
-      }
-      Ok(fundingsJs)
+      )
+      Ok( Json.toJson(startupFund.map(_._2)) ) // this does Json.toJson( Seq[Funding] )
     }
   }
 
@@ -199,14 +203,7 @@ object Startups extends Controller with Secured {
       val startupsJson = Json.toJson(startups).as[Seq[JsValue]]
       Future {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
-        val headers: List[String] = CSVs.makeStartupsCSVHeaders()
-        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startupsJson)
-        CSVManager.put(key, headers, values)
-
-        val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
-        val tagsHeaders: List[String] = CSVs.makeStartupsTagsCSVHeaders()
-        val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(startupsJson)
-        CSVManager.put(tagsKey, tagsHeaders, tagsValues)
+        CSVManager.put(key, Startup.getCSVHeader, startups.map(_.toCSVRow))
       }
       Ok(JsArray(startupsJson))
     }
@@ -214,24 +211,14 @@ object Startups extends Controller with Secured {
 
   def startupCriteriaSearchAndTags(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).map { startups =>
-      val tags = startups flatMap { startup =>
-          val allTags  = Json.toJson(startup.markets).as[Seq[JsValue]] ++
-            Json.toJson(startup.locations).as[Seq[JsValue]]
-          allTags map { tag => tag.as[JsObject] ++ Json.obj("startup" -> startup.id)}
-      }
       val startupsJson = Json.toJson(startups).as[Seq[JsValue]]
       Future {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
-        val headers: List[String] = CSVs.makeStartupsCSVHeaders()
-        val values: List[List[String]] = CSVs.makeStartupsCSVValues(startupsJson)
-        CSVManager.put(key, headers, values)
-
+        CSVManager.put(key, Startup.getCSVHeader, startups.map(_.toCSVRow))
         val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
-        val tagsHeaders: List[String] = CSVs.makeStartupsTagsCSVHeaders()
-        val tagsValues: List[List[String]] = CSVs.makeStartupsTagsCSVValues(tags)
-        CSVManager.put(tagsKey, tagsHeaders, tagsValues)
+        CSVManager.put(tagsKey, AngelTag.getCSVHeader, startups.map(_.getTagsCSVRows))
       }
-      Ok(Json.obj("startups" -> startupsJson, "tags" -> tags))
+      Ok(Json.obj("startups" -> startupsJson, "tags" -> startups.map(_.getTagsJsons)))
     }
   }
 
@@ -252,15 +239,6 @@ object Startups extends Controller with Secured {
 
 
   //  Helpers **********************************************************************************
-
-  def getStartupFund(startupId: Long, startupName: String = ""): Future[Seq[JsValue]] =
-    AngelListServices.getFundingByStartupId(startupId) map { response =>
-      (response \ "funding").asOpt[Seq[JsValue]].fold{
-        Seq[JsValue]()
-      }{ fundings =>
-        fundings.map(funding => funding.as[JsObject] ++ Json.obj("name" -> startupName, "startupId" -> startupId))
-      }
-    }
 
    /**
    * This method returns startups associated to a tag (which are visible)

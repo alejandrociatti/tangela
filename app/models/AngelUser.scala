@@ -10,9 +10,17 @@ import play.api.libs.functional.syntax._
  */
 case class AngelUser(id: Long, name:String, bio:Option[String], roles:Option[Seq[AngelRole]], followerCount:Option[Int],
                       angelURL:Option[String], blogURL:Option[String], bioURL:Option[String], twitterURL:Option[String],
-                      facebookURL:Option[String], linkedInURL:Option[String], investor:Option[Boolean]){
+                      facebookURL:Option[String], linkedInURL:Option[String], image:Option[String],
+                      investor:Option[Boolean]){
 
   def toTinyJson = Json.obj("id" -> id, "name" -> name)
+
+  def toCSVRow : Seq[String] = Seq(
+    id.toString(), name, bio.getOrElse(""), followerCount.fold("")(_.toString()), angelURL.getOrElse(""),
+    image.getOrElse(""), blogURL.getOrElse(""), bioURL.getOrElse(""),
+    twitterURL.getOrElse(""), facebookURL.getOrElse("1"), linkedInURL.getOrElse("")
+  )
+
 }
 
 object AngelUser{
@@ -29,6 +37,7 @@ object AngelUser{
       (__ \ "twitter_url").readNullable[String] and
       (__ \ "facebook_url").readNullable[String] and
       (__ \ "linkedin_url").readNullable[String] and
+      (__ \ "image").readNullable[String] and
       (__ \ "investor").readNullable[Boolean]
     )(AngelUser.apply _)
 
@@ -44,7 +53,15 @@ object AngelUser{
       (__ \ "twitter_url").writeNullable[String] and
       (__ \ "facebook_url").writeNullable[String] and
       (__ \ "linkedin_url").writeNullable[String] and
+      (__ \ "image").writeNullable[String] and
       (__ \ "investor").writeNullable[Boolean]
     )(unlift(AngelUser.unapply))
+
+  def getCSVHeader: Seq[String] = Seq(
+    "id", "name", "bio",
+    "follower_count", "angellist_url", "image",
+    "blog_url", "online_bio_url", "twitter_url",
+    "facebook_url", "linkedin_url", "investor"
+  )
 
 }

@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
   "com.github.tototoshi" %% "scala-csv" % "1.0.0",
   "com.typesafe.slick" % "slick_2.10" % "1.0.1",
   "org.slf4j" % "slf4j-nop" % "1.6.4",
-  "commons-io" % "commons-io" % "2.4"
+  "commons-io" % "commons-io" % "2.4",
+  "com.jsuereth" %% "scala-arm" % "1.3"
 )
 
 play.Project.playScalaSettings

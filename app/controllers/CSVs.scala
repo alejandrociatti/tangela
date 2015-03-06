@@ -1,7 +1,5 @@
 package controllers
 
-import models.DatabaseUpdate
-import play.api.libs.json.{JsObject, JsValue, JsArray}
 import play.api.mvc.{ResponseHeader, SimpleResult, Action, Controller}
 import util.CSVManager
 import scala.concurrent.ExecutionContext
@@ -19,18 +17,6 @@ object CSVs extends Controller{
 
   /* People Network CSV ***********************************************************************************************/
 
-  def makePeopleNetworkCSVHeaders() = List(
-    "tangela request date",
-    "user ID one", "user name one", "user role one", "created at one",
-    "user id two", "user name two", "user role two", "created at two",
-    "startup in common ID", "startup in common name"
-  )
-
-  def makePeopleNetworkCSVValues(connections: JsArray) = makeCsvValues(connections.value,
-    Seq("userIdOne", "userNameOne", "roleOne", "createdAtOne", "userIdTwo", "userNameTwo", "roleTwo", "createdAtTwo",
-      "startupId", "startupName"))
-
-
   def getPeopleNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"people-net-$locationId-$marketId-$quality-$creationDate")
 
@@ -39,39 +25,10 @@ object CSVs extends Controller{
 
   /* Startup Network CSV **********************************************************************************************/
 
-  def makeStartupsNetworkCSVHeaders = List(
-    "tangela request date",
-    "startup ID one", "startup name one", "user role in startup one",
-    "startup id two", "startup name two", "user role in startup two",
-    "user in common ID", "user in common name"
-  )
-
-  def makeStartupsNetworkCSVValues(startups: JsArray) = makeCsvValues(startups.value,
-    Seq("startupIdOne", "startupNameOne", "roleOne", "createdAtOne", "startupIdTwo", "startupNameTwo", "roleTwo", "createdAtTwo",
-      "userId", "userName"))
-
   def getStartupsNetworkCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startup-net-$locationId-$marketId-$quality-$creationDate")
 
   /* Startups CSV *****************************************************************************************************/
-
-
-  def makeStartupsCSVHeaders() = List(
-    "Tangela Request Date",
-    "id","hidden","community_profile","name","angellist_url","logo_url","thumb_url","quality",
-    "product_desc","high_concept","follower_count","company_url","created_at","updated_at",
-    "twitter_url","blog_url","video_url"
-  )
-
-  def makeStartupsCSVValues(values: Seq[JsValue]):List[List[String]]= values.toList.map { startup =>
-    List(DatabaseUpdate.getLastAsString,
-      (startup \ "id").asOpt[Int].getOrElse(0).toString,
-      (startup \ "hidden").asOpt[Boolean].getOrElse(false).toString,
-      (startup \ "community_profile").asOpt[Boolean].getOrElse(false).toString) ++
-    valueListFromJsValue(startup, Seq("name", "angellist_url", "logo_url", "thumb_url", "quality", "product_desc",
-      "high_concept", "follower_count", "company_url", "created_at", "updated_at", "twitter_url", "blog_url",
-      "video_url"))
-  }
 
   def getStartupsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startups-$locationId-$marketId-$quality-$creationDate")
@@ -79,84 +36,20 @@ object CSVs extends Controller{
 
   /* Users CSV ********************************************************************************************************/
 
-
-
-  def makeUsersCSVHeaders(): List[String] = List(
-    "id", "name", "bio", "role", "follower_count", "angellist_url", "image", "blog_url",
-    "online_bio_url", "twitter_url", "facebook_url", "linkedin_url", "what_ive_built",
-    "what_i_do", "investor"
-  )
-
-  def makeUsersCSVValues(users: Seq[JsValue]): List[List[String]] = users.toList.map { user =>
-    valueListFromJsValue(user, Seq("id", "name", "bio", "role", "follower_count", "angellist_url", "image",
-      "blog_url", "online_bio_url", "twitter_url", "facebook_url", "linkedin_url", "what_ive_built", "what_i_do")) ++
-      List((user \ "investor").asOpt[Boolean].getOrElse(false).toString)
-  }
-
   def getUsersCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"users-$locationId-$marketId-$quality-$creationDate")
   
   /* Startups Tags CSV ********************************************************************************************************/
 
-  def makeStartupsTagsCSVHeaders(): List[String] = List(
-    "Tangela Request Date",
-    "startup ID", "Tag Id", "Tag Type",
-    "Name", "Display Name", "AngelList Url"
-  )
-
-  /**
-   * This method returns a List full of Tags in the form of a List of that tags attributes
-   *
-   * @param values: Seq[JsValue] containing all the tags to return (markets, locations, company_type)
-   * @return List[ List[String] ] each tag is a List[String], each string is the value of an attribute.
-   */
-  def makeStartupsTagsCSVValues(values: Seq[JsValue]): List[List[String]] =
-    makeCsvValues(values, Seq("startup", "id", "tag_type", "name", "display_name", "angellist_url"))
-
   def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startups-tags-$locationId-$marketId-$quality-$creationDate")
 
 
-
   /* Roles CSV ********************************************************************************************************/
-
-  def makeStartupRolesCSVHeaders = List(
-    "tangela request date",
-    "startup ID", "id", "role",
-    "created at", "started at", "ended at",
-    "title", "confirmed", "user name", "user id", "user bio",
-    "user follower count", "user angel list url", "user image url"
-  )
-
-  def makeStartupRolesCSVValues(startups: JsArray, startupId: Long) = startups.as[List[JsValue]].map{ startup =>
-    List(DatabaseUpdate.getLastAsString, startupId.toString) ++
-      valueListFromJsValue(startup, Seq("id", "role", "created_at", "started_at", "ended_at", "title", "confirmed")) ++
-      valueListFromJsValue(startup \ "tagged", Seq("name", "id", "bio", "follower_count", "angellist_url", "image"))
-  }
 
   def getStartupRolesCSV(startupId: Long) = getCsv(s"startup-roles-$startupId")
 
   /* Funding CSV for one or more startups *****************************************************************************/
-
-  def makeStartupFundingCSVHeaders = List(
-    "tangela request date", "startup ID", "startup name", "round type", "round raised", "round closed at",
-    "round id", "round source url", "participant name", "participant type", "participant id"
-  )
-
-  def makeStartupFundingCSVValues(fundings: JsValue): Seq[Seq[String]] = fundings.as[Seq[JsValue]].map{ funding =>
-    (funding \ "participants").as[Seq[JsValue]] match {
-      case Nil => List(emptyParticipant(funding))
-      case nonEmpty => nonEmpty map (nonEmptyParticipant(_, funding))
-    }
-  }.flatten
-
-  def nonEmptyParticipant(participant: JsValue, funding: JsValue): List[String] = startupFundingList(funding) ++
-    valueListFromJsValue(participant, Seq("name", "type", "id"))
-
-  def emptyParticipant(funding: JsValue):List[String] = startupFundingList(funding) ++ List("", "", "")
-
-  def startupFundingList(funding: JsValue):List[String] = List(DatabaseUpdate.getLastAsString) ++
-    valueListFromJsValue(funding, Seq("startupId", "name", "round_type", "amount", "closed_at", "id", "source_url"))
 
   def getStartupFundingCSV(startupId: Long) = getCsv(s"startup-funding-$startupId")
 
@@ -184,23 +77,4 @@ object CSVs extends Controller{
       }
     )
   }
-
-  /**
-   *  This method finds given key from a JsValue
-   *  If JsValue has the key, try to get its value as a string,
-   *  Or else (it may be number or boolean) get its value.toString
-   *  This is done because json string values come in double quotes while the others are naked
-   * @param value the json to search
-   * @param key   the key to find in the json
-   * @return      the value of the key in the json as a string, or an empty string
-   */
-  def valueToString(value: JsValue)(key: String): String =
-    if(value.as[JsObject].keys.contains(key)) (value \ key).asOpt[String].getOrElse((value \ key).toString())
-    else ""
-
-  def valueListFromJsValue(value: JsValue, names: Seq[String]):List[String] = (names map valueToString(value)).toList
-
-  def makeCsvValues(values: Seq[JsValue], names: Seq[String]): List[List[String]] = (values map { value: JsValue =>
-    List(DatabaseUpdate.getLastAsString) ++ valueListFromJsValue(value, names)
-  }).toList
 }

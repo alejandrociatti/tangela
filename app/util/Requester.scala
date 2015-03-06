@@ -1,6 +1,5 @@
 package util
 
-import java.io.{FileNotFoundException, IOException}
 import java.net.{InetSocketAddress, Proxy, URL}
 
 import akka.pattern.ask
@@ -15,6 +14,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 import scala.concurrent.Future
 import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by Javier Isoldi.
@@ -46,18 +46,35 @@ class Requester(id: String) extends Actor{
     case SocketRequest(url) =>
       RequestManager.count = RequestManager.count + 1
       if(RequestManager.count % 500 == 0) Logger.info(s"Requester: $id Request = " + RequestManager.count)
-      val connection = new URL(url).openConnection(proxy)
-      connection.setRequestProperty("User-Agent", "Mozilla/5.0")
-      try {
-        val source = Source.fromInputStream(connection.getInputStream)
-        sender ! source.mkString("")
-        source.close()
-      } catch {
-        case exception: FileNotFoundException =>
-          sender ! "{\"success\": false}"
-        case exception: IOException =>
-          Logger.warn("ioException = " + exception)
-          self forward SocketRequest(url)
+      // Try to create an URLConnection with given URL and our TOR proxy
+      Try(new URL(url).openConnection(proxy)) match {
+        case Success(connection) =>                                       // if URLConnection is created:
+          connection.setRequestProperty("User-Agent", "Mozilla/5.0")      // set user agent to connection
+          Try(connection.getInputStream) match {                          // Try to open get InputStream from the connection
+            case Success(stream) =>                                       // if InputStream is created:
+              Try(Source.fromInputStream(stream)) match {                 // Try to create iterable Source from it
+                case Success(source) =>                                   // if Source is created
+                  Try(source.mkString) match {                            // Try to make a string from it
+                    case Success(string) =>                               // if string is created from Source
+                      source.close()                                      // close the Source (closes the Stream too)
+                      sender ! string                                     // send the string
+                    case Failure(e) =>                                    // if string failed to be created
+                      source.close()                                          // close the Source (closes Stream)
+                      Logger.warn(s"Source.mkString error: ${e.getMessage}")  // log the error,
+                      sender ! "{\"success\":false}"                          // send an error string
+                  }
+                case Failure(e) =>                                        // if Source fails to be created
+                  stream.close()                                                // close the Stream
+                  Logger.warn(s"Source.fromInputStream error: ${e.getMessage}") // log the error,
+                  sender ! "{\"success\":false}"                                // send an error string
+              }
+            case Failure(e) =>                                            // if InputStream fails to be created
+              Logger.warn(s"connection.getInputStream error: ${e.getMessage}")     // log the error,
+              sender ! "{\"success\":false}"                                       // send an error string
+          }
+        case Failure(e) =>                                                // if Connection fails to open
+          Logger.warn(s"URL.openConnection error: ${e.getMessage}")       // log the error,
+          sender ! "{\"success\":false}"                                  // send an error string
       }
   }
 }
