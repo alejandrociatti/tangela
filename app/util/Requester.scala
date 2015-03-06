@@ -69,7 +69,9 @@ class Requester(id: String) extends Actor{
                   sender ! "{\"success\":false}"                                // send an error string
               }
             case Failure(e) =>                                            // if InputStream fails to be created
-              Logger.warn(s"connection.getInputStream error: ${e.getMessage}")     // log the error,
+              val message = e.getMessage
+              if(message.contains("403")) self forward SocketRequest(url)          // if 403, forward the error
+              Logger.warn(s"connection.getInputStream error: $message")            // log the error,
               sender ! "{\"success\":false}"                                       // send an error string
           }
         case Failure(e) =>                                                // if Connection fails to open
