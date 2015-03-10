@@ -4,6 +4,7 @@ import _root_.util.{Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
 import controllers.Roles._
 import models._
+import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
@@ -45,23 +46,11 @@ object Networks extends Controller {
 
 
   def getStartupsNetworkFuture(startups: Seq[Startup]): Future[Seq[StartupsConnection]] = {
-
-    val userRoles = Future.sequence(startups map getFromStartup).map(_.flatten).flatMap(getExtendedRoles)
-
-    val startupConnections = userRoles map { userRoles =>
-      def getMatches(userRoles: Seq[AngelRole], matches: Seq[StartupsConnection]): Seq[StartupsConnection] =
-        userRoles.toList match {
-          case Nil => matches
-          case userRole :: userRolesTail =>
-            val startupConnections = userRolesTail
-              .filter(equalUserFilter(_, userRole))
-              .filter(differentStartupFilter(_, userRole))
-              .map( StartupsConnection(_, userRole))
-            getMatches(userRolesTail, matches ++ startupConnections)
-        }
-      getMatches(userRoles, Seq())
-    }
-    startupConnections
+    // userIDsFuture represents U1
+    val userIDsFuture:Future[Seq[Long]] = Members.userIDsFromStartupsFlat(startups)
+    // rolesFuture uses U1, we end up with Future[Seq[Seq[AngelRole]] with different Seq for different users
+    val rolesFuture = userIDsFuture.flatMap(userIDs => Future.sequence(userIDs map getRolesFromUserID))
+    rolesFuture map getStartupNetMatches // We map those roles to get the network connections
   }
 
   /**
@@ -87,11 +76,6 @@ object Networks extends Controller {
         Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> connectionsJson))
       }
     }
-  }
-
-  def getPeopleNetworkFuture(startups: Seq[Startup]) : Future[Seq[UsersConnection]] = {
-    val userRoles = Future.sequence(startups map getFromStartup).map(_.flatten).flatMap(getExtendedRoles)
-    userRoles map ( userRoles => getPeopleNetMatches(userRoles, Seq()) )
   }
 
   /**
@@ -121,21 +105,34 @@ object Networks extends Controller {
   }
 
   /**
+   * This method makes a people's network, going from S1->R1->U1->R2->
+   * @param startups seed Seq[Startup] (representing S1)
+   * @return a Future[Seq] of the obtained UserConnections
+   */
+  def getPeopleNetworkFuture(startups: Seq[Startup]) : Future[Seq[UsersConnection]] = {
+    // userIDsFuture represents U1, with different Seq for different Startups
+    val userIDsFuture:Future[Seq[Seq[Long]]] = Members.userIDsFromStartups(startups)
+    // rolesFuture uses U1, we end up with Future[Seq[Seq[AngelRole]] again with different Seq for different Startups
+    val rolesFuture = userIDsFuture.flatMap(userIDs => Future.sequence(userIDs map getRolesFromUserIDsFlat))
+    rolesFuture map getPeopleNetMatches // We map those roles to get the network connections
+  }
+
+  /**
    * This method makes a people network, going from S1->R1->U1->R2->S2->R3 to N1
    * @param startups seed Seq[Startup] (representing S1)
    * @return a Future[Seq] of the obtained UserConnections
    */
   private def getPeopleNetworkFuture2ndOrder(startups: Seq[Startup]) : Future[Seq[UsersConnection]] = {
     // All the users involved in startups
-    val userIDs = Members.userIDsFromStartups(startups) // Represents U1
+    val userIDs = Members.userIDsFromStartupsFlat(startups) // Represents U1
     // All the startups in which the above users are involved
     val startupIDs = userIDs flatMap Startups.getStartupIDsFromUserIDs // Represents S2
     // The roles of those startups
-    val extendedRoles:Future[Seq[AngelRole]] = startupIDs flatMap getRolesFromStartupIDs // Represents R3
+    val extendedRoles:Future[Seq[Seq[AngelRole]]] = startupIDs flatMap getRolesFromStartupIDs // Represents R3
     // Using R3 roles, match them to represent the network
     extendedRoles map { userRoles =>
-      println("FINISHED GETTING R3: \nR3 length: "+userRoles.length)
-      getPeopleNetMatches(userRoles, Seq())
+      println(s"FINISHED GETTING R3: \nR3 has: ${userRoles.length} startups")
+      getPeopleNetMatches(userRoles)
     } // Represents N1
   }
 
@@ -152,18 +149,43 @@ object Networks extends Controller {
   /**
    * This method creates matches for ppl networks by combining all userRoles,
    * and filtering them so that the only pairs that remain consist of different users in the same startup.
-   * @param userRoles the list of roles
-   * @param matches   the up-to-now found matches (for tail recursion's magic)
+   * @param userRoles a Seq that has a Seq of AngelRoles for each different startup
    * @return          a Seq[UsersConnection] that consists of two roles that share a startup.
    */
-  private def getPeopleNetMatches(userRoles: Seq[AngelRole], matches: Seq[UsersConnection]): Seq[UsersConnection] =
-    userRoles match {
-      case Nil => matches
-      case userRole :: userRolesTail =>
-        val peopleConnections = userRolesTail
-          .filter(equalStartupFilter(_, userRole))
-          .filter(differentUserFilter(_, userRole))
-          .map( UsersConnection(_, userRole))
-        getPeopleNetMatches(userRolesTail, matches ++ peopleConnections)
-    }
+  private def getPeopleNetMatches(userRoles: Seq[Seq[AngelRole]]): Seq[UsersConnection] = {
+
+    def getMatches(roles: Seq[AngelRole], matches: Seq[UsersConnection]):Seq[UsersConnection] =
+      roles match {
+        case Nil => matches
+        case userRole :: userRolesTail =>
+          val peopleConnections = userRolesTail
+            .filter(differentUserFilter(_, userRole))
+            .map( UsersConnection(_, userRole))
+          getMatches(userRolesTail, matches ++ peopleConnections)
+        case other =>
+          Logger.warn("This did not match: "+ other.toString)
+          Logger.warn("Length: "+ other.length)
+          matches
+      }
+
+    userRoles.flatMap(roles => getMatches(roles, Seq()))
+  }
+
+
+
+  private def getStartupNetMatches(startupRoles: Seq[Seq[AngelRole]]): Seq[StartupsConnection] = {
+
+    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]):Seq[StartupsConnection] =
+      roles match {
+        case Nil => matches
+        case startupRole :: startupRolesTail =>
+          val startupConnections = startupRolesTail
+            .filter(differentStartupFilter(_, startupRole))
+            .map( StartupsConnection(_, startupRole) )
+          getMatches(startupRolesTail, matches ++ startupConnections)
+      }
+
+    startupRoles.flatMap(roles => getMatches(roles, Seq()))
+  }
+
 }

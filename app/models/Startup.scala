@@ -1,9 +1,13 @@
 package models
 
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import play.api.Logger
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by Javier Isoldi.
@@ -43,7 +47,15 @@ object Startup{
   implicit val jodaTimeReads:Reads[DateTime] = new Reads[DateTime] {
     override def reads(json: JsValue): JsResult[DateTime] = json match{
       case JsNumber(n) => JsSuccess(new DateTime(n.toLong))
-      case JsString(s) => JsSuccess(DateTime.parse(s))
+      case JsString(s) =>
+        JsSuccess(
+          Try(DateTime.parse(s)) match {
+            case Success(dateTime) => dateTime
+            case Failure(e) =>
+              Logger.warn(s"DateTime.parse error: ${e.getMessage}")
+              DateTimeFormat.forPattern("yyyy-MM-dd").withZoneUTC().parseDateTime(s)
+          }
+        )
       case _ => JsError(Seq(JsPath() -> Seq(ValidationError("validate.error.expected.date"))))
     }
   }

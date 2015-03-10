@@ -45,7 +45,10 @@ object Members {
     }
   }
 
-  def userIDsFromStartups(startups: Seq[Startup]): Future[Seq[Long]] =
+  def userIDsFromStartups(startups: Seq[Startup]): Future[Seq[Seq[Long]]] =
+    Future.sequence(startups map userIDsFromStartup).map(_.distinct)
+
+  def userIDsFromStartupsFlat(startups: Seq[Startup]): Future[Seq[Long]] =
     Future.sequence(startups map userIDsFromStartup).map(_.flatten.distinct)
 
   def userIDsFromStartupID(startupId: Long): Future[Seq[Long]] = {

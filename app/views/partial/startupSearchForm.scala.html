@@ -27,7 +27,7 @@
                             <div class="form-group">
                                 <label class="control-label" for="location">Location <small>(If you need to be more specific)</small></label>
                                 <select class="form-control" name="location" id="location" ng-model="deepLocation">
-                                    <option value="" disabled selected>
+                                    <option value="" selected>
                                                 After you select a country, click the arrow for this list to load and select a location.
                                     </option>
                                     <option value="{{location.id}}" ng-repeat="location in locations | orderBy:'name'">
