@@ -41,8 +41,11 @@ object Networks extends Controller {
     }
   }
 
-  def getStartupsNetworkToLoad(locationId: Int, marketId: Int, quality: String, creationDate: String) =
-    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) map getStartupsNetworkFuture
+  def getNetworksToLoad(location:Location) =
+    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map{ startups =>
+      getStartupsNetworkFuture(startups)
+      getPeopleNetworkFuture(startups)
+    }
 
 
   def getStartupsNetworkFuture(startups: Seq[Startup]): Future[Seq[StartupsConnection]] = {

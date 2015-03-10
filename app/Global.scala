@@ -36,8 +36,8 @@ object Global extends GlobalSettings {
     populateCountries()
     populateMarket()
     clearCSVs()
-    //loadNetworks()
-    dropTablesCRON()
+    loadNetworks()
+    //dropTablesCRON()
   }
 
   def createAdmin() = {
@@ -91,21 +91,7 @@ object Global extends GlobalSettings {
 
   def loadNetworks() = {
     def loadLocation(location: Location) = Future({
-//      Logger.info("Loading: "+location.name)
-      Await.ready(Networks.getStartupsNetworkToLoad(location.angelId.toInt, -1, "", ""), Duration.Inf)
-      Await.ready(Startups.getUsersInfoByCriteriaToLoad(location.angelId.toInt, -1, "", ""), Duration.Inf)
-//      System.gc()
-//      val runtime: Runtime = Runtime.getRuntime
-//      val format: NumberFormat = NumberFormat.getInstance()
-//      val sb: StringBuilder = new StringBuilder()
-//      val maxMemory = runtime.maxMemory()
-//      val allocatedMemory = runtime.totalMemory()
-//      val freeMemory = runtime.freeMemory()
-//      sb.append("free memory: " + format.format(freeMemory / 1024) + "\t")
-//      sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\t")
-//      sb.append("max memory: " + format.format(maxMemory / 1024) + "\t")
-//      sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\t")
-//      Logger.info(sb.toString())
+      Await.ready(Networks.getNetworksToLoad(location), Duration.Inf)
       Logger.info("Location \""+location.name+"\" loaded.")
     })
 
