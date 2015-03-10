@@ -15,8 +15,8 @@ import scala.util.{Failure, Success, Try}
  * Project: Tangela.
  */
 
-case class Startup(id: Long, name: String, quality: Int,
-                   created: DateTime, angelURL:Option[String], logoURL:Option[String],
+case class Startup(id: Long, name: String, quality: Option[Int],
+                   created: Option[DateTime], angelURL:Option[String], logoURL:Option[String],
                    thumbURL:Option[String], companyURL:Option[String], twitterURL:Option[String],
                    blogURL:Option[String], videoURL:Option[String], description:Option[String],
                    concept:Option[String], followerCount:Option[Int], updated:Option[DateTime],
@@ -28,9 +28,9 @@ case class Startup(id: Long, name: String, quality: Int,
   def toCSVRow :Seq[String] = Seq(
     id.toString(), name,
     angelURL.getOrElse(""), logoURL.getOrElse(""), thumbURL.getOrElse(""),
-    quality.toString(), description.getOrElse(""), concept.getOrElse(""),
+    quality.fold("")(_.toString()), description.getOrElse(""), concept.getOrElse(""),
     followerCount.fold("")(_.toString()), companyURL.getOrElse(""),
-    created.toString(), updated.toString(), twitterURL.getOrElse(""),
+    created.fold("")(_.toString()), updated.toString(), twitterURL.getOrElse(""),
     blogURL.getOrElse(""), videoURL.getOrElse("")
   )
 
@@ -67,8 +67,8 @@ object Startup{
   implicit val startupReads: Reads[Startup] = (
       (__ \ "id").read[Long] and
       (__ \ "name").read[String] and
-      (__ \ "quality").read[Int] and
-      (__ \ "created_at").read[DateTime] and
+      (__ \ "quality").readNullable[Int] and
+      (__ \ "created_at").readNullable[DateTime] and
       (__ \ "angellist_url").readNullable[String] and
       (__ \ "logo_url").readNullable[String] and
       (__ \ "thumb_url").readNullable[String] and
@@ -88,8 +88,8 @@ object Startup{
   implicit val startupWrites :Writes[Startup] = (
       (__ \ "id").write[Long] and
       (__ \ "name").write[String] and
-      (__ \ "quality").write[Int] and
-      (__ \ "created_at").write[DateTime] and
+      (__ \ "quality").writeNullable[Int] and
+      (__ \ "created_at").writeNullable[DateTime] and
       (__ \ "angellist_url").writeNullable[String] and
       (__ \ "logo_url").writeNullable[String] and
       (__ \ "thumb_url").writeNullable[String] and

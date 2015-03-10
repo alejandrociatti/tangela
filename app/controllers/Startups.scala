@@ -303,13 +303,13 @@ object Startups extends Controller with Secured {
   def marketFilter(marketID: Long)(startup:Startup):Boolean =
     startup.markets.fold{false}{markets=> markets.exists(market => market.id == marketID)}
 
-  def qualityBottomFilter(quality: Int)(startup:Startup):Boolean = startup.quality >= quality
+  def qualityBottomFilter(quality: Int)(startup:Startup):Boolean = startup.quality.fold(true)(_ >= quality)
 
-  def qualityTopFilter(quality: Int)(startup:Startup):Boolean = startup.quality <= quality
+  def qualityTopFilter(quality: Int)(startup:Startup):Boolean = startup.quality.fold(true)(_ <= quality)
 
-  def creationBottomFilter(date:DateTime)(startup:Startup):Boolean = startup.created isAfter date
+  def creationBottomFilter(date:DateTime)(startup:Startup):Boolean = startup.created.fold(true)(_ isAfter date)
 
-  def creationTopFilter(date:DateTime)(startup:Startup):Boolean = startup.created isBefore date
+  def creationTopFilter(date:DateTime)(startup:Startup):Boolean = startup.created.fold(true)(_ isBefore date)
 
   def validResultFilter(json: JsValue): Boolean = (json \\ "success").isEmpty
 

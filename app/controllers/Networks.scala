@@ -43,18 +43,26 @@ object Networks extends Controller {
 
   def getNetworksToLoad(location:Location) =
     startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map{ startups =>
-      getStartupsNetworkFuture(startups)
-      getPeopleNetworkFuture(startups)
+      prepareStartupsNetworkFuture(startups)
+      preparePeopleNetworkFuture(startups)
     }
 
-
-  def getStartupsNetworkFuture(startups: Seq[Startup]): Future[Seq[StartupsConnection]] = {
+  /**
+   * With a startups seed (S1), this finds its associated users (U1), and their roles (R2)
+   * This method is used to pre-load the S1,R1,U1,R2, and to create startups network
+   * @param startups the startups seed (S1)
+   * @return R2, split in a different Seq for each different user
+   */
+  private def prepareStartupsNetworkFuture(startups: Seq[Startup]): Future[Seq[Seq[AngelRole]]] = {
     // userIDsFuture represents U1
     val userIDsFuture:Future[Seq[Long]] = Members.userIDsFromStartupsFlat(startups)
-    // rolesFuture uses U1, we end up with Future[Seq[Seq[AngelRole]] with different Seq for different users
-    val rolesFuture = userIDsFuture.flatMap(userIDs => Future.sequence(userIDs map getRolesFromUserID))
-    rolesFuture map getStartupNetMatches // We map those roles to get the network connections
+    // using U1, we get a Future[Seq[Seq[AngelRole]] with different Seq for different users
+    userIDsFuture.flatMap(userIDs => Future.sequence(userIDs map getRolesFromUserID))
   }
+
+  def getStartupsNetworkFuture(startups: Seq[Startup]): Future[Seq[StartupsConnection]] =
+    // We map those roles to get the network connections
+    prepareStartupsNetworkFuture(startups) map getStartupNetMatches
 
   /**
    * @param locationId    location tag filter.
@@ -108,15 +116,40 @@ object Networks extends Controller {
   }
 
   /**
+   * With a startups seed (S1), this finds its associated users (U1), and their roles (R2)
+   * This method is used to pre-load the S1,R1,U1,R2 only
+   * @param startups the startups seed (S1)
+   * @return we don't use the result: its a Future Seq Future Seq Seq AngelRole (or something like that)
+   */
+  private def preparePeopleNetworkFuture(startups: Seq[Startup]) = {
+    // userIDsFuture represents U1, with different Seq for different Startups
+    val userIDsFuture:Future[Seq[Seq[Long]]] = Members.userIDsFromStartups(startups)
+    // rolesFuture uses U1,
+    userIDsFuture.map(_ map getRolesFromUserIDs)
+  }
+
+  /**
    * This method makes a people's network, going from S1->R1->U1->R2->
    * @param startups seed Seq[Startup] (representing S1)
    * @return a Future[Seq] of the obtained UserConnections
    */
   def getPeopleNetworkFuture(startups: Seq[Startup]) : Future[Seq[UsersConnection]] = {
+    val startupIDs:Seq[Long] = startups.map(startup => startup.id)
     // userIDsFuture represents U1, with different Seq for different Startups
-    val userIDsFuture:Future[Seq[Seq[Long]]] = Members.userIDsFromStartups(startups)
-    // rolesFuture uses U1, we end up with Future[Seq[Seq[AngelRole]] again with different Seq for different Startups
-    val rolesFuture = userIDsFuture.flatMap(userIDs => Future.sequence(userIDs map getRolesFromUserIDsFlat))
+    val userIDsFuture:Future[Seq[Long]] = Members.userIDsFromStartupIDsFlat(startupIDs)
+    // we find the startups not included in the seed, in which these people are involved
+    val extraStartups = userIDsFuture.flatMap( Startups.getStartupIDsFromUserIDs(_).map(_.filter{ id =>
+      // We filter the IDs already in the seed
+      !startupIDs.contains(id)
+    }) )
+
+    // with the extra startups + the seed startups, we find the user roles
+    val rolesFuture = extraStartups.flatMap(extraIDs => Future.sequence(
+      (extraIDs ++ startupIDs).map( startupID =>
+        // we ONLY search for those user roles of users in U1, as we don't want to expand our search from there
+        userIDsFuture.map( Roles.getRolesFromStartupIDFiltered(startupID, _) )
+      )
+    )).flatMap(Future.sequence(_))      // We end up with a Future[Seq[Seq[AngelRole]]] with diff Seq for diff Startups
     rolesFuture map getPeopleNetMatches // We map those roles to get the network connections
   }
 

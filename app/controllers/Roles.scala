@@ -70,6 +70,17 @@ object Roles extends Controller {
       }
   }
 
+  /**
+   * This filters the obtained roles, leaving only those who belong to a user represented in userIDs
+   * @param id from the startup
+   * @param userIDs the IDs we use to filter the roles
+   * @return the filtered Seq of Roles
+   */
+  def getRolesFromStartupIDFiltered(id: Long, userIDs:Seq[Long]): Future[Seq[AngelRole]] =
+    getRolesFromStartupID(id).map(_.filter{ role =>
+      userIDs.contains(role.user.id)
+    })
+
   private def responseToAngelRole(response: JsValue):Seq[AngelRole] = (response \ "startup_roles").asOpt[Seq[JsValue]]
     .fold( Seq[AngelRole]() ) ( roles => roles.filter(isRoleFilter).map(_.validate[AngelRole].get) )
 

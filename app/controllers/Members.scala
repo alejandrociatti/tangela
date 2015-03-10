@@ -63,8 +63,11 @@ object Members {
     }
   }
 
-  def userIDsFromStartupIDs(startups: Seq[Long]): Future[Seq[Long]] =
+  def userIDsFromStartupIDsFlat(startups: Seq[Long]): Future[Seq[Long]] =
     Future.sequence(startups map userIDsFromStartupID).map(_.flatten.distinct)
+
+  def userIDsFromStartupIDs(startups: Seq[Long]): Future[Seq[Seq[Long]]] =
+    Future.sequence(startups map userIDsFromStartupID).map(_.distinct)
 
 
   def isUserFilter(user: JsValue) =
