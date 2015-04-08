@@ -99,7 +99,7 @@ serviceModule.factory 'dataAccess', ['$http', ($http) ->
         funding: (startupId) -> jsRoutes.controllers.CSVs.getStartupFundingCSV(startupId).url
 
         fundings: (criteriaObj) ->
-          jsRoutes.controllers.CSVs.getStartupFundingsCSV(
+          jsRoutes.controllers.CSVs.getStartupsFundingsCSV(
             criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
           ).url
 

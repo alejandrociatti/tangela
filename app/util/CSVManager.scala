@@ -2,6 +2,7 @@ package util
 
 import java.io._
 
+import models.DatabaseUpdate
 import play.api.libs.iteratee.Enumerator
 
 /**
@@ -20,7 +21,9 @@ object CSVManager {
   }
 
   private def makeCSVString(headers: Seq[String], values: Seq[Seq[String]]): String =
-    CSVCreator.createRow(headers) ++ CSVCreator.createAll(values)
+    CSVCreator.createRow(headers) ++ CSVCreator.createAll(
+      values.map(row => DatabaseUpdate.getLastAsString +: row) // we add tangela request date to each row
+    )
 
   def get(fileName: String): Option[String] = csvSaver.get(fileName)
 
