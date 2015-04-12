@@ -37,8 +37,8 @@ object AngelListServices {
   def sendRequest(request: String): Future[JsValue] =
     getSaver(request).get(request).fold{
       sendRequestToAngelList(request)
-    }{jsValue =>
-      Future(Json.parse(jsValue))
+    }{ futureJsValue =>
+      futureJsValue.map(Json.parse)
     }
 
   def getSaver(request: String) : DiskSaver = request match {

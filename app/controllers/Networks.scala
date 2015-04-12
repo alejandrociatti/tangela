@@ -1,6 +1,7 @@
 package controllers
 
-import _root_.util.{Tupler, CSVManager}
+import _root_.util.Tupler.toTuple
+import _root_.util.{DiskSaver, Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
 import controllers.Roles._
 import models._
@@ -27,7 +28,7 @@ object Networks extends Controller {
    * @return A Future of a JsArray that contains all the connections between startups by roles/people
    */
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
-    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
+    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), toTuple(creationDate)) flatMap { startups =>
       getStartupsNetworkFuture(startups) map { connections =>
         Future(
           CSVManager.put(
@@ -42,7 +43,7 @@ object Networks extends Controller {
   }
 
   def getNetworksToLoad(location:Location) =
-    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map{ startups =>
+    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map { startups =>
       prepareStartupsNetworkFuture(startups)
       preparePeopleNetworkFuture(startups)
     }
@@ -71,14 +72,14 @@ object Networks extends Controller {
    * @param creationDate  date filter.
    * @return A Future of a JsArray that contains all the connections between people by startups in common
    */
-  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
+  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
-    val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
+    val dateT = toTuple(creationDate)      // Same as above for creation date.
     startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
       getPeopleNetworkFuture(startups) map { connections =>
         val connectionsJson = Json.toJson(connections).as[JsArray]
         Future(
-          CSVManager.put(
+           CSVManager.put(
             s"people-net-$locationId-$marketId-$quality-$creationDate",
             UsersConnection.getCSVHeader,
             connections.map(_.toCSVRow)
@@ -99,7 +100,7 @@ object Networks extends Controller {
    */
   def getPeopleNetwork2ndOrder(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
-    val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
+    val dateT = toTuple(creationDate)      // Same as above for creation date.
     startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
       getPeopleNetworkFuture2ndOrder(startups) map { connections =>
         val startupsToSendJson = Json.toJson(connections)
@@ -199,8 +200,8 @@ object Networks extends Controller {
             .map( UsersConnection(_, userRole))
           getMatches(userRolesTail, matches ++ peopleConnections)
         case other =>
-          Logger.warn("This did not match: "+ other.toString)
-          Logger.warn("Length: "+ other.length)
+          Logger.warn("This did not match: " + other.toString)
+          Logger.warn("Length: " + other.length)
           matches
       }
 
@@ -211,13 +212,13 @@ object Networks extends Controller {
 
   private def getStartupNetMatches(startupRoles: Seq[Seq[AngelRole]]): Seq[StartupsConnection] = {
 
-    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]):Seq[StartupsConnection] =
+    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]): Seq[StartupsConnection] =
       roles match {
         case Nil => matches
         case startupRole :: startupRolesTail =>
           val startupConnections = startupRolesTail
             .filter(differentStartupFilter(_, startupRole))
-            .map( StartupsConnection(_, startupRole) )
+            .map(StartupsConnection(_, startupRole))
           getMatches(startupRolesTail, matches ++ startupConnections)
       }
 

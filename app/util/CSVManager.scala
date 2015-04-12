@@ -5,6 +5,9 @@ import java.io._
 import models.DatabaseUpdate
 import play.api.libs.iteratee.Enumerator
 
+import scala.concurrent.duration.Duration.Inf
+import scala.concurrent.Await
+
 /**
  * User: Martin Gutierrez
  * Date: 20/11/14
@@ -25,7 +28,7 @@ object CSVManager {
       values.map(row => DatabaseUpdate.getLastAsString +: row) // we add tangela request date to each row
     )
 
-  def get(fileName: String): Option[String] = csvSaver.get(fileName)
+  def get(fileName: String): Option[String] = csvSaver.get(fileName).map(Await.result(_, Inf))
 
   def getFile(fileName: String): Option[(Enumerator[Array[Byte]], Int)] = csvSaver.getFile(fileName)
 }
