@@ -1,15 +1,10 @@
 package controllers
 
-import java.io._
 
 import models.authentication.Role._
-import com.github.tototoshi.csv.CSVWriter
 import play.api._
-import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.JsArray
 import play.api.mvc._
 import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
 
 object Application extends Controller with Secured{
 

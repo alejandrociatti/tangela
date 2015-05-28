@@ -34,6 +34,10 @@ object Market {
     Query(Markets).filter( _.id === id ).firstOption
   }
 
+  def getByAngelId(id: Long): Option[Market] = DB.withSession { implicit  session: Session =>
+    Query(Markets).filter( _.angelId === id ).firstOption
+  }
+
   def save(market: Market) = DB.withSession { implicit session: Session =>
     Query(Markets).filter( _.angelId === market.angelId ).firstOption.getOrElse {
       Markets.insert(market)

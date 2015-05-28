@@ -1,0 +1,42 @@
+@(requests: Seq[util.Request])
+
+@main("Listado de ")(sidebar()) {
+    <div class="row">
+        <div class="col-lg-12">
+            @if(requests.nonEmpty){
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Started at</th>
+                            <th>Finished at</th>
+                            <th>CSV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @for(request <- requests){
+                        <tr class="@request.ended.fold("danger")(_ => "success")">
+                            <th>@request.description</th>
+                            <th>@request.started.toString()</th>
+                            @request.ended.fold{
+                                <th></th><th></th>
+                            }{ ended =>
+                                <th>@ended.toString()</th>
+                                <th>
+                                    <a href="@routes.CSVs.getCsv(request.key)">
+                                        <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                                    </a>
+                                </th>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }else{
+                <div class="alert alert-info" role="alert">It appears that there are no pending requests</div>
+            }
+        </div>
+    </div><!-- /.row -->
+}{
+
+}
