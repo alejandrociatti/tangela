@@ -3,9 +3,8 @@ package controllers
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import util.RequestSerializer
-import util.Request._
+import util.DummyRequest._
 import models.authentication.Role._
-
 
 /**
  * Created with IntelliJ IDEA by: alejandro

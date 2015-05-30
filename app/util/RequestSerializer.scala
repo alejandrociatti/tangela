@@ -1,11 +1,15 @@
 package util
 
+import java.io.File
+
+import models.DatabaseUpdate
 import org.joda.time.DateTime
 import play.api.libs.json._
 import play.api.mvc.SimpleResult
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import play.api.libs.functional.syntax._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -14,51 +18,58 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Time: 13:58
  */
 object RequestSerializer{
-  implicit val requestWrites = Request.RequestWrites
-  private val queue = new mutable.Queue[Request]()
-  private val done = new mutable.Queue[Request]()
+  val requestSaver = DiskSaver(new File(DatabaseUpdate.getLastFolder + "_jsons"), "request")
+  implicit val requestFormat = DummyRequest.requestFormat
+  private val queue = new mutable.Queue[RealRequest]()
+  private val done = new mutable.Queue[DummyRequest]()
   private var ready = true
 
+  // Load previous jobs.
+  requestSaver.indexMap.keys.foreach( key =>
+    Json.parse(requestSaver.get(key).get).validate[DummyRequest] match {
+      case r: JsSuccess[DummyRequest] => done enqueue r.get
+    }
+  )
+
   def serialize(key: String, description:String, action: () => Future[SimpleResult]) = {
-    queue enqueue new Request(key, description, action, DateTime.now())
+    queue enqueue new RealRequest(new DummyRequest(key, description, DateTime.now()), action)
     nextJob()
   }
 
-  private def nextJob():Option[Request] = if(ready) queue.headOption map work else None
+  private def nextJob() : Unit = if(ready && queue.nonEmpty) work(queue.headOption.get)
 
-  private def work(request : Request) = {
+  private def work(request : RealRequest) = {
     ready = false
     val action = request.action.apply()
     action.onSuccess{ case _ =>
-      done enqueue request.copy(ended = Some(DateTime.now()))
+      val successfulRequest = request.request.copy(ended = Some(DateTime.now()))
+      done enqueue successfulRequest
+      Future(requestSaver.put(successfulRequest.key, Json.toJson(successfulRequest).toString()))
     }
     action.onComplete{ case _ =>
+      queue.dequeue()
       ready = true
       nextJob()
     }
-    queue.dequeue()
   }
 
-  def getRequests = (queue ++ done).toSeq
+  def getRequests : Seq[DummyRequest] = (queue.map(_.request) ++ done).toSeq
 
   def isWorking = !ready
 }
 
 
-case class Request(
-                    key: String,
-                    description: String,
-                    action: () => Future[SimpleResult],
-                    started: DateTime,
-                    ended: Option[DateTime] = None
-                  )
+trait Request
 
-object Request {
-  implicit val RequestWrites = new Writes[Request] {
-    override def writes(o: Request): JsValue = Json.obj(
-      "key" -> o.key,
-      "started" -> o.started.toString(),
-      "ended" -> o.ended.fold("")(_.toString())
-    )
-  }
+case class RealRequest(request: DummyRequest, action: () => Future[SimpleResult]) extends Request
+
+case class DummyRequest(key: String, description: String, started: DateTime, ended: Option[DateTime] = None) extends Request
+
+object DummyRequest {
+  implicit val requestFormat : Format[DummyRequest] = (
+      (__ \ "key").format[String] and
+      (__ \ "description").format[String] and
+      (__ \ "started").format[DateTime] and
+      (__ \ "ended").formatNullable[DateTime]
+    )(DummyRequest.apply, unlift(DummyRequest.unapply))
 }
