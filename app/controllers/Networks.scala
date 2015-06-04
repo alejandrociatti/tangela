@@ -33,12 +33,10 @@ object Networks extends Controller {
     val description = generateDescription("Startup Network", locationId, marketId, qualityT, creationDateT)
     RequestSerializer.serialize(key, description, () => startupsByCriteriaNonBlocking(locationId, marketId, qualityT, creationDateT) flatMap { startups =>
         getStartupsNetworkFuture(startups) map { connections =>
-          Future(
-            CSVManager.put(
-              key,
-              StartupsConnection.getCSVHeader,
-              connections.map(_.toCSVRow)
-            )
+          CSVManager.put(
+            key,
+            StartupsConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
           Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
         }
@@ -85,12 +83,10 @@ object Networks extends Controller {
       startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
         getPeopleNetworkFuture(startups) map { connections =>
           val connectionsJson = Json.toJson(connections).as[JsArray]
-          Future(
-            CSVManager.put(
-              key,
-              UsersConnection.getCSVHeader,
-              connections.map(_.toCSVRow)
-            )
+          CSVManager.put(
+            key,
+            UsersConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
           Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> connectionsJson))
         }
@@ -115,12 +111,10 @@ object Networks extends Controller {
       startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
         getPeopleNetworkFuture2ndOrder(startups) map { connections =>
           val startupsToSendJson = Json.toJson(connections)
-          Future(
-            CSVManager.put(
-              key,
-              UsersConnection.getCSVHeader,
-              connections.map(_.toCSVRow)
-            )
+          CSVManager.put(
+            key,
+            UsersConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
           Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> startupsToSendJson))
         }
