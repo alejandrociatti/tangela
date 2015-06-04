@@ -7,10 +7,8 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
   dateToHolder = $('#creation-date-to')
   progressBar = $('#progress-bar')
   criteriaObject = {}
-  $scope.responseStatus = true
   $scope.searching = false
   interval = undefined
-  $scope.optionSelectMsg = 'Search first.'
   $scope.startups = []
   $scope.networkRows = []
   $scope.locations = []
@@ -24,10 +22,7 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
 
   # Form submit function
   $scope.submit = ->
-    $scope.optionSelectMsg = 'Loading results...'
-    $scope.responseStatus = true
-    $scope.searching = true
-    interval = startBar()
+    startBar()
     criteriaObject = {}
     criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
     criteriaObject.market = $scope.market
@@ -35,31 +30,35 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.startup.getNetwork criteriaObject, ((response) ->  # Pass criteriaObject & successHandler
-      $scope.startups = response.startups
-      $scope.networkRows = response.rows
-      $scope.exportURL = dataAccess.csv.url.startupsNetwork(criteriaObject)
-      $scope.searching = false
-      $scope.responseStatus = response.startups.length != 0
-      $scope.optionSelectMsg = 'Select a startup.'
-      stopBar()),                                                 # End successHandler
-      -> $scope.responseStatus = false           # Error handler
+    successHandler = (response) ->
+      # check if the response has the actual data, if not the request must have been queued.
+      containsData = response.startups and response.startups.length > 0 or response.rows and response.rows.length > 0
+      if containsData
+        $scope.startups = response.startups
+        $scope.networkRows = response.rows
+        $scope.exportURL = dataAccess.csv.url.startupsNetwork(criteriaObject)
+        $scope.searching = false
+        $scope.responseStatus = 'empty' unless response.startups.length > 0
+      else
+        $scope.responseStatus = 'queued'
+      stopBar()
+    errorHandler = -> stopBar(); $scope.responseStatus = 'error'
+    dataAccess.startup.getNetwork criteriaObject, successHandler, errorHandler
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->
     value = parseInt(value.substring(0, value.length-1), 10)+1
     progressBar.css('width', "#{value}%") if value <= 100
 
-  startBar = -> setInterval intervalFn, 2000
+  startBar = -> $scope.searching = true; interval = -> setInterval intervalFn, 2000
 
-  stopBar = -> clearInterval(interval); progressBar.css('width', '1%')
+  stopBar = -> $scope.searching = false; clearInterval(interval); progressBar.css('width', '1%')
 ]
 
 # Pagination controller
 module.controller 'tableController', ['$scope', ($scope) ->
   $scope.itemsPerPage = 6
   $scope.currentPage = 1
-
   $scope.setPage = (pageNo) -> $scope.currentPage = pageNo
 ]
 

@@ -6,6 +6,7 @@ import models.DatabaseUpdate
 import org.joda.time.DateTime
 import play.api.libs.json._
 import play.api.mvc.SimpleResult
+import play.api.mvc.Results.Ok
 
 import scala.collection.mutable
 import scala.concurrent.Future
@@ -31,12 +32,17 @@ object RequestSerializer{
     }
   )
 
-  def serialize(key: String, description:String, action: () => Future[SimpleResult]) = {
-    queue enqueue new RealRequest(new DummyRequest(key, description, DateTime.now()), action)
-    nextJob()
+  def serialize(key: String, description:String, action: () => Future[SimpleResult]) : Future[SimpleResult] = {
+    // If the job has already been completed, skip it (we keep the latest result with no duplicates on the list)
+    if(done.dequeueFirst(_.key.equalsIgnoreCase(key)).isEmpty){
+      // If the job wasn't already on the list, we proceed to enqueue the job, and send a signal to process jobs
+      queue enqueue new RealRequest(new DummyRequest(key, description, DateTime.now()), action)
+      nextJob()
+    } //TODO: find a way to save the SimpleResult and return that instead if job is done.
+    Future(Ok(Json.obj("queued" -> true)))  // Finally, return our default result
   }
 
-  private def nextJob() : Unit = if(ready && queue.nonEmpty) work(queue.headOption.get)
+  private def nextJob() : Unit = if(ready && queue.nonEmpty) work(queue.head)
 
   private def work(request : RealRequest) = {
     ready = false

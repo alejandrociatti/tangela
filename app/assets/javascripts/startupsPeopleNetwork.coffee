@@ -7,11 +7,8 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
   dateToHolder = $('#creation-date-to')
   progressBar = $('#progress-bar')
   criteriaObject = {}
-  $scope.extendedSearch = true
-  $scope.responseStatus = true
   $scope.searching = false
   interval = undefined
-  $scope.optionSelectMsg = 'Search first.'
   $scope.startups = []
   $scope.networkRows = []
   $scope.locations = []
@@ -23,35 +20,25 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
     dataAccess.location.getChildren $scope.location, (children) ->
       $scope.locations = children
 
-  # Form submit function
-  $scope.submit = ->
-    $scope.optionSelectMsg = 'Loading results...'
-    $scope.responseStatus = true
-    $scope.searching = true
-    interval = startBar()
-    criteriaObject = {}
-    criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
-    criteriaObject.market = $scope.market
-    dateFrom = dateFromHolder.val()
-    dateTo = dateToHolder.val()
-    criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
-    criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.user.getNetwork criteriaObject, ((response) ->
+  # Form submission handlers:
+  successHandler = (response) ->
+    if(response.queued)
+      $scope.responseStatus = 'queued'
+    else
       $scope.startups = response.startups
       $scope.networkRows = response.rows
       $scope.exportURL = dataAccess.csv.url.peopleNetwork(criteriaObject)
       $scope.searching = false
-      $scope.responseStatus = response.startups.length != 0
-      $scope.optionSelectMsg = 'Select a startup.'
-      stopBar()),                                                 # End successHandler
-      -> $scope.responseStatus = false                            # Error handler
+      $scope.responseStatus = 'empty' unless response.startups.length > 0
+    stopBar()
 
-  # Form submit function (for extended people network)
-  $scope.submit2 = ->
-    $scope.optionSelectMsg = 'Loading results...'
-    $scope.responseStatus = true
-    $scope.searching = true
-    interval = startBar()
+  errorHandler = ->
+    stopBar()
+    $scope.responseStatus = 'error'
+
+  # Form submit function
+  $scope.submit = ->
+    startBar()
     criteriaObject = {}
     criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
     criteriaObject.market = $scope.market
@@ -59,24 +46,28 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.user.getNetwork2 criteriaObject, ((response) ->
-        $scope.startups = response.startups
-        $scope.networkRows = response.rows
-        $scope.exportURL = dataAccess.csv.url.peopleNetwork2(criteriaObject)
-        $scope.searching = false
-        $scope.responseStatus = response.startups.length != 0
-        $scope.optionSelectMsg = 'Select a startup.'
-        stopBar()),                                                 # End successHandler
-      -> $scope.responseStatus = false             # Error handler
+    dataAccess.user.getNetwork criteriaObject, successHandler, errorHandler
+
+  # Form submit function (for extended people network)
+  $scope.submit2 = ->
+    startBar()
+    criteriaObject = {}
+    criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
+    criteriaObject.market = $scope.market
+    dateFrom = dateFromHolder.val()
+    dateTo = dateToHolder.val()
+    criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
+    criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
+    dataAccess.user.getNetwork2 criteriaObject, successHandler, errorHandler
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->
     value = parseInt(value.substring(0, value.length-1), 10)+1
     progressBar.css('width', "#{value}%") if value <= 100
 
-  startBar = -> setInterval intervalFn, 4000
+  startBar = -> $scope.searching = true; interval = -> setInterval intervalFn, 2000
 
-  stopBar = -> clearInterval(interval); progressBar.css('width', '1%')
+  stopBar = -> $scope.searching = false; clearInterval(interval); progressBar.css('width', '1%')
 ]
 
 # Pagination controller
