@@ -53,6 +53,10 @@ object Location {
     Query(Locations).filter( _.id === id).firstOption
   }
 
+  def getByAngelId(id: Long): Option[Location] = DB.withSession { implicit session: Session =>
+    Query(Locations).filter( _.angelId === id).firstOption
+  }
+
   def clearAll() = DB.withSession { implicit  session: Session =>
     Query(Locations).delete
   }

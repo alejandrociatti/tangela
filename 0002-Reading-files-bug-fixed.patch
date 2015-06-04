@@ -1,0 +1,395 @@
+From 52c1416b1ca27b5e8658cb5debcc39f4bee75b6d Mon Sep 17 00:00:00 2001
+From: Javier Isoldi <javierisoldi@hotmail.com>
+Date: Fri, 29 May 2015 21:20:51 -0300
+Subject: [PATCH 2/2] Reading files bug fixed.
+
+---
+ .gitignore                              |  4 ++-
+ app/Global.scala                        | 20 +++++++++++++-
+ app/controllers/AngelListServices.scala | 20 ++++++++++----
+ app/controllers/Networks.scala          | 20 ++++++++------
+ app/controllers/Startups.scala          |  2 +-
+ app/models/AngelRole.scala              |  1 +
+ app/models/AngelTag.scala               |  1 +
+ app/models/Connection.scala             | 10 ++++---
+ app/models/Funding.scala                |  1 +
+ app/models/Startup.scala                |  1 +
+ app/util/CSVManager.scala               | 47 +++++++++++++++++++++++++++++----
+ app/util/DiskSaver.scala                |  2 +-
+ app/util/Requester.scala                |  6 ++---
+ 13 files changed, 106 insertions(+), 29 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 6220eee..c014ec4 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -20,4 +20,6 @@ storedJsons.zip
+ *_jsons
+ *.map
+ *.file
+-.DS_Store
+\ No newline at end of file
++.DS_Store
++db/
++storedCSV*/
+diff --git a/app/Global.scala b/app/Global.scala
+index d6812ce..42106b9 100644
+--- a/app/Global.scala
++++ b/app/Global.scala
+@@ -1,4 +1,5 @@
+ import java.io.File
++import java.net.URLEncoder
+ import java.text.NumberFormat
+ import java.util.UUID
+ 
+@@ -8,10 +9,13 @@ import models._
+ import org.apache.commons.io.FileUtils
+ import org.joda.time.DateTimeConstants.SUNDAY
+ import org.joda.time.{DateTime, LocalDate, LocalTime}
++import play.api.Application
+ import play.api.Play.current
+ import play.api._
+ import play.api.db.slick.Config.driver.simple._
+ import play.api.db.slick._
++import play.api.libs.json.JsValue
++import play.api.mvc.SimpleResult
+ import play.libs.Akka
+ 
+ import scala.concurrent.{Future, Await}
+@@ -35,7 +39,8 @@ object Global extends GlobalSettings {
+     createAdmin()
+     populateCountries()
+     populateMarket()
+-    clearCSVs()
++//    clearCSVs()
++    loadSomeStates()
+     //loadNetworks()
+     //dropTablesCRON()
+   }
+@@ -89,6 +94,19 @@ object Global extends GlobalSettings {
+     Logger.info("Markets Loaded!")
+   }
+ 
++  def loadSomeStates(): Unit = {
++    val ids: Seq[Int] = Seq(1624, 1708, 1699, 1855, 1666, 2071, 1839, 1686, 1699, 1841, 1837)
++    def makeNetwork(id: Int): Unit = {
++      val network = Networks.getStartupsNetworkInternal(id, -1, "", "")
++      Await.ready(network, Duration.Inf)
++      network.onFailure {
++        case e => e.printStackTrace()
++      }
++      Logger.info("Network \"" + id + "\" saved.")
++    }
++    ids foreach makeNetwork
++  }
++
+   def loadNetworks() = {
+     def loadLocation(location: Location) = Future({
+       Await.ready(Networks.getNetworksToLoad(location), Duration.Inf)
+diff --git a/app/controllers/AngelListServices.scala b/app/controllers/AngelListServices.scala
+index c01130b..7473868 100644
+--- a/app/controllers/AngelListServices.scala
++++ b/app/controllers/AngelListServices.scala
+@@ -3,12 +3,14 @@ package controllers
+ import java.io.File
+ 
+ import _root_.util.{DiskSaver, RequestManager}
++import com.fasterxml.jackson.core.JsonParseException
+ import models.DatabaseUpdate
+ import play.api.Logger
+ import play.api.libs.json._
+ 
+ import scala.concurrent.ExecutionContext.Implicits.global
+-import scala.concurrent.Future
++import scala.concurrent.duration.Duration
++import scala.concurrent.{Await, Future}
+ 
+ /**
+  * Created by Javier Isoldi.
+@@ -27,9 +29,8 @@ object AngelListServices {
+     RequestManager.sendRequest(AngelApi + request) map { response =>
+       val jsResponse = Json.parse(response)
+       // Save only if response is successful.
+-      (jsResponse \ "success").asOpt[Boolean].getOrElse(true) match{
+-        case true => Future(getSaver(request).put(request, response))
+-        case false => Logger.warn(s"Request $AngelApi$request failed.")
++      (jsResponse \ "error").asOpt[Boolean].getOrElse(false) match{
++        case false => Future(getSaver(request).put(request, response))
+       }
+       jsResponse
+     }
+@@ -38,7 +39,14 @@ object AngelListServices {
+     getSaver(request).get(request).fold{
+       sendRequestToAngelList(request)
+     }{ futureJsValue =>
+-      futureJsValue.map(Json.parse)
++        Await.ready(futureJsValue, Duration.Inf)
++      futureJsValue.map { value =>
++        try {
++            Json.parse(value.replaceAll("[^\\x00-\\x7F]", ""))
++        } catch {
++          case e: JsonParseException => Json.obj()
++        }
++      }
+     }
+ 
+   def getSaver(request: String) : DiskSaver = request match {
+@@ -80,5 +88,7 @@ object AngelListServices {
+ 
+   def getChildrenOfTagAndPage(id: Long)(page: Int) = sendRequest(s"/tags/$id/children?page=$page")
+ 
++  def getTagById(id: Long) = sendRequest(s"/tags/$id")
++
+   def searchMarketByName(name: String) = sendRequest(s"/search?type=MarketTag&query=$name")
+ }
+diff --git a/app/controllers/Networks.scala b/app/controllers/Networks.scala
+index b2d314a..cb0ccba 100644
+--- a/app/controllers/Networks.scala
++++ b/app/controllers/Networks.scala
+@@ -1,7 +1,7 @@
+ package controllers
+ 
+ import _root_.util.Tupler.toTuple
+-import _root_.util.{DiskSaver, Tupler, CSVManager}
++import _root_.util.{CSVCreator, DiskSaver, Tupler, CSVManager}
+ import controllers.Startups.startupsByCriteriaNonBlocking
+ import controllers.Roles._
+ import models._
+@@ -28,16 +28,20 @@ object Networks extends Controller {
+    * @return A Future of a JsArray that contains all the connections between startups by roles/people
+    */
+   def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
++    getStartupsNetworkInternal(locationId, marketId, quality, creationDate) map { case (startups, connections) =>
++      Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
++    }
++  }
++
++  def getStartupsNetworkInternal(locationId: Int, marketId: Int, quality: String, creationDate: String) = {
+     startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), toTuple(creationDate)) flatMap { startups =>
+       getStartupsNetworkFuture(startups) map { connections =>
+-        Future(
+-          CSVManager.put(
+-            s"startup-net-$locationId-$marketId-$quality-$creationDate",
+-            StartupsConnection.getCSVHeader,
+-            connections.map(_.toCSVRow)
+-          )
++        CSVManager.put(
++          s"startup-net-$locationId-$marketId-$quality-$creationDate",
++          CSVCreator.createRow(StartupsConnection.getCSVHeader),
++          connections.map(connection => CSVCreator.createRow(connection.toCSVRow))
+         )
+-        Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
++        (startups, connections)
+       }
+     }
+   }
+diff --git a/app/controllers/Startups.scala b/app/controllers/Startups.scala
+index f610d56..d141558 100644
+--- a/app/controllers/Startups.scala
++++ b/app/controllers/Startups.scala
+@@ -316,6 +316,6 @@ object Startups extends Controller with Secured {
+   def isStartupFilter(startup: JsValue): Boolean = startup.validate[Startup] match {
+     case role:JsSuccess[Startup] => true
+     case err:JsError => Logger.warn("Failed to read startup json: "+ JsError.toFlatJson(err).toString()); false
+-    case _ => Logger.warn("Failed to read startup json: "+startup.toString()); false
++    case _ => /*Logger.warn("Failed to read startup json: "+startup.toString());*/ false
+   }
+ }
+diff --git a/app/models/AngelRole.scala b/app/models/AngelRole.scala
+index d26d1b3..8801049 100644
+--- a/app/models/AngelRole.scala
++++ b/app/models/AngelRole.scala
+@@ -15,6 +15,7 @@ case class AngelRole(id: Long, role: String, user: AngelUser, startup:Startup,
+                       confirmed:Boolean){
+ 
+   def toCSVRow : Seq[String] = Seq(
++    DatabaseUpdate.getLastAsString,
+     startup.id.toString(), id.toString(), role,
+     created.toString(), started.fold("")(_.toString()), ended.fold("")(_.toString()),
+     confirmed.toString(), user.name, user.id.toString(), user.bio.getOrElse(""),
+diff --git a/app/models/AngelTag.scala b/app/models/AngelTag.scala
+index 69bcc89..8a5f284 100644
+--- a/app/models/AngelTag.scala
++++ b/app/models/AngelTag.scala
+@@ -12,6 +12,7 @@ import play.api.libs.functional.syntax._
+ case class AngelTag(id: Long, name:String, tagType:String, angelURL:Option[String]){
+ 
+   def toCSVRow : Seq[String] = Seq(
++    DatabaseUpdate.getLastAsString,
+     id.toString(), tagType, name, angelURL.getOrElse("")
+   )
+ }
+diff --git a/app/models/Connection.scala b/app/models/Connection.scala
+index 5344923..b5cd6d0 100644
+--- a/app/models/Connection.scala
++++ b/app/models/Connection.scala
+@@ -12,14 +12,15 @@ case class Connection(role1:AngelRole, role2:AngelRole)
+ case class StartupsConnection(role1:AngelRole, role2:AngelRole){
+ 
+   def toCSVRow: Seq[String] = Seq(
++    DatabaseUpdate.getLastAsString,
+     role1.startup.id.toString,
+-    role2.startup.id.toString,
+     role1.startup.name,
+-    role2.startup.name,
+-    role1.created.toString,
+-    role2.created.toString,
+     role1.role,
++    role1.created.toString,
++    role2.startup.id.toString,
++    role2.startup.name,
+     role2.role,
++    role2.created.toString,
+     role1.user.id.toString,
+     role1.user.name
+   )
+@@ -54,6 +55,7 @@ object StartupsConnection {
+ case class UsersConnection(role1:AngelRole, role2:AngelRole){
+ 
+   def toCSVRow:Seq[String] = Seq(
++    DatabaseUpdate.getLastAsString,
+     role1.user.id.toString,
+     role2.user.id.toString,
+     role1.user.name,
+diff --git a/app/models/Funding.scala b/app/models/Funding.scala
+index d652e5e..f0244f5 100644
+--- a/app/models/Funding.scala
++++ b/app/models/Funding.scala
+@@ -15,6 +15,7 @@ case class Funding(id :Long, roundType:Option[String], amount:Long,
+   def toCSVRows(startup:Startup) : Seq[Seq[String]] = {
+     // this function makes a row for a single or empty participant
+     def makeRow(participant: Option[Participant] = None): Seq[String] = Seq(
++      DatabaseUpdate.getLastAsString,
+       startup.id.toString, startup.name, roundType.getOrElse(""), amount.toString,
+       closedAt.fold("")(_.toString), id.toString, sourceUrl.getOrElse(""),
+       participant.fold("")(_.name), participant.fold("")(_.participantType), participant.fold("")(_.id.toString)
+diff --git a/app/models/Startup.scala b/app/models/Startup.scala
+index 6eaf984..a425e7a 100644
+--- a/app/models/Startup.scala
++++ b/app/models/Startup.scala
+@@ -26,6 +26,7 @@ case class Startup(id: Long, name: String, quality: Option[Int],
+   def toTinyJson = Json.obj("id" -> id, "name" -> name)
+ 
+   def toCSVRow :Seq[String] = Seq(
++    DatabaseUpdate.getLastAsString,
+     id.toString(), name,
+     angelURL.getOrElse(""), logoURL.getOrElse(""), thumbURL.getOrElse(""),
+     quality.fold("")(_.toString()), description.getOrElse(""), concept.getOrElse(""),
+diff --git a/app/util/CSVManager.scala b/app/util/CSVManager.scala
+index d4e7fc8..c91fd0e 100644
+--- a/app/util/CSVManager.scala
++++ b/app/util/CSVManager.scala
+@@ -3,10 +3,12 @@ package util
+ import java.io._
+ 
+ import models.DatabaseUpdate
++import play.api.Play
+ import play.api.libs.iteratee.Enumerator
+ 
+ import scala.concurrent.duration.Duration.Inf
+ import scala.concurrent.Await
++import play.api.Play.current
+ 
+ /**
+  * User: Martin Gutierrez
+@@ -17,16 +19,51 @@ object CSVManager {
+ 
+   val csvSaver = DiskSaver(new File("storedCSVs"), "csvs")
+ 
+-  def put(fileName: String, headers: Seq[String], values: Seq[Seq[String]]) {
++  def put(fileName: String, headers: Seq[String], values: Seq[Seq[String]]): Unit =  {
++    val directory: File = Play.application.getFile(s"storedCSVs/")
++    if (directory.exists()) directory.mkdir()
++    val file: File = Play.application.getFile(s"storedCSVs/$fileName.csv")
++    if (file.exists()) file.delete()
++//    val fileOutputStream: FileOutputStream = new FileOutputStream(file)
++    val fileWriter: FileWriter = new FileWriter(file.getAbsoluteFile)
++    val bufferedWriter: BufferedWriter = new BufferedWriter(fileWriter)
++    bufferedWriter.write(CSVCreator.createRow(headers))
++    values foreach { row =>
++      bufferedWriter.write(CSVCreator.createRow(row))
++    }
++    bufferedWriter.close()
++//    fileOutputStream.write(makeCSVString(headers, values).getBytes("UTF-8"))
++
+     csvSaver.get(fileName).getOrElse {
+       csvSaver.put(fileName, makeCSVString(headers, values))
+     }
+   }
+ 
+-  private def makeCSVString(headers: Seq[String], values: Seq[Seq[String]]): String =
+-    CSVCreator.createRow(headers) ++ CSVCreator.createAll(
+-      values.map(row => DatabaseUpdate.getLastAsString +: row) // we add tangela request date to each row
+-    )
++  def put(fileName: String, headers: String, values: Seq[String]): Unit = {
++    val directory: File = Play.application.getFile(s"storedCSVs/")
++    if (directory.exists()) directory.mkdir()
++    val file: File = Play.application.getFile(s"storedCSVs/$fileName.csv")
++    if (file.exists()) file.delete()
++    //    val fileOutputStream: FileOutputStream = new FileOutputStream(file)
++    val fileWriter: FileWriter = new FileWriter(file.getAbsoluteFile)
++    val bufferedWriter: BufferedWriter = new BufferedWriter(fileWriter)
++    bufferedWriter.write(headers)
++    values foreach { row =>
++      bufferedWriter.write(row)
++    }
++    bufferedWriter.close()
++    //    fileOutputStream.write(makeCSVString(headers, values).getBytes("UTF-8"))
++
++    //    csvSaver.get(fileName).getOrElse {
++    //      csvSaver.put(fileName, makeCSVString(headers, values))
++    //    }
++  }
++
++  private def makeCSVString(headers: Seq[String], values: Seq[Seq[String]]): String = {
++    val stringBuilder = new StringBuilder(CSVCreator.createRow(headers))
++    values.foreach(rowValues => stringBuilder.append(CSVCreator.createRow(rowValues)))
++    stringBuilder.toString()
++  }
+ 
+   def get(fileName: String): Option[String] = csvSaver.get(fileName).map(Await.result(_, Inf))
+ 
+diff --git a/app/util/DiskSaver.scala b/app/util/DiskSaver.scala
+index d17fc45..be6aebf 100644
+--- a/app/util/DiskSaver.scala
++++ b/app/util/DiskSaver.scala
+@@ -74,7 +74,7 @@ case class DiskSaver(directory: File, fileName: String) {
+     val positionHandler: AsyncHandler[ByteBuffer] = AsyncHandler { (_, positionBuffer: ByteBuffer) =>
+       val resultBuffer = ByteBuffer.allocate(positionBuffer.getLong(0).toInt * 2)
+       val resultHandler: AsyncHandler[ByteBuffer] = AsyncHandler { (_, resultBuffer: ByteBuffer) =>
+-        val string = new String(resultBuffer.array(), "Unicode")
++        val string = new String(resultBuffer.array(), "UTF-16")
+         resultPromise.success(string)
+         fileChannel.close()
+       }
+diff --git a/app/util/Requester.scala b/app/util/Requester.scala
+index d7ebd15..cf4d284 100644
+--- a/app/util/Requester.scala
++++ b/app/util/Requester.scala
+@@ -61,12 +61,12 @@ class Requester(id: String) extends Actor{
+                     case Failure(e) =>                                    // if string failed to be created
+                       source.close()                                          // close the Source (closes Stream)
+                       Logger.warn(s"Source.mkString error: ${e.getMessage}")  // log the error,
+-                      sender ! "{\"success\":false}"                          // send an error string
++                      sender ! "{\"success\":false, \"error\": true}"         // send an error string
+                   }
+                 case Failure(e) =>                                        // if Source fails to be created
+                   stream.close()                                                // close the Stream
+                   Logger.warn(s"Source.fromInputStream error: ${e.getMessage}") // log the error,
+-                  sender ! "{\"success\":false}"                                // send an error string
++                  sender ! "{\"success\":false, \"error\": true}"               // send an error string
+               }
+             case Failure(e) =>                                            // if InputStream fails to be created
+               val message = e.getMessage
+@@ -76,7 +76,7 @@ class Requester(id: String) extends Actor{
+           }
+         case Failure(e) =>                                                // if Connection fails to open
+           Logger.warn(s"URL.openConnection error: ${e.getMessage}")       // log the error,
+-          sender ! "{\"success\":false}"                                  // send an error string
++          sender ! "{\"success\":false, \"error\": true}"                 // send an error string
+       }
+   }
+ }
+-- 
+1.9.1
+

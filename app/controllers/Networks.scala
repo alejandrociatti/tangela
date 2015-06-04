@@ -1,5 +1,6 @@
 package controllers
 
+import _root_.util.{RequestSerializer, Tupler, CSVManager}
 import _root_.util.Tupler.toTuple
 import _root_.util.{DiskSaver, Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
@@ -28,18 +29,24 @@ object Networks extends Controller {
    * @return A Future of a JsArray that contains all the connections between startups by roles/people
    */
   def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
-    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), toTuple(creationDate)) flatMap { startups =>
-      getStartupsNetworkFuture(startups) map { connections =>
-        Future(
-          CSVManager.put(
-            s"startup-net-$locationId-$marketId-$quality-$creationDate",
-            StartupsConnection.getCSVHeader,
-            connections.map(_.toCSVRow)
+    val key = s"startup-net-$locationId-$marketId-$quality-$creationDate"
+    val qualityT = Tupler.toQualityTuple(quality)
+    val creationDateT = Tupler.toTuple(creationDate)
+    val description = generateDescription("Startup Network", locationId, marketId, qualityT, creationDateT)
+    RequestSerializer.serialize(key, description, () => startupsByCriteriaNonBlocking(locationId, marketId, qualityT, creationDateT) flatMap { startups =>
+        getStartupsNetworkFuture(startups) map { connections =>
+          Future(
+            CSVManager.put(
+              key,
+              StartupsConnection.getCSVHeader,
+              connections.map(_.toCSVRow)
+            )
           )
-        )
-        Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
+          Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
+        }
       }
-    }
+    )
+    Future(Ok("{startups:[],rows:[]}"))
   }
 
   def getNetworksToLoad(location:Location) =
@@ -208,8 +215,6 @@ object Networks extends Controller {
     userRoles.flatMap(roles => getMatches(roles, Seq()))
   }
 
-
-
   private def getStartupNetMatches(startupRoles: Seq[Seq[AngelRole]]): Seq[StartupsConnection] = {
 
     def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]): Seq[StartupsConnection] =
@@ -223,6 +228,15 @@ object Networks extends Controller {
       }
 
     startupRoles.flatMap(roles => getMatches(roles, Seq()))
+  }
+
+  private def generateDescription(kind: String, locID: Int, mktID: Int, qual: (Int,Int), date: (String,String)) :String = {
+    val string = new StringBuilder(s"$kind")
+    Location.getByAngelId(locID).map(location => string.append(" Location: "+location.name))
+    Market.getByAngelId(mktID).map(market=> string.append(" Market: "+market.name))
+    if(qual._1 != -1 || qual._2 != -1) string.append(" Quality range: ("+qual._1+","+qual._2+")")
+    if(date._1 != "" || date._2 != "") string.append(" Date range: ("+date._1+","+date._2+")")
+    string.mkString
   }
 
 }

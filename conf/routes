@@ -3,62 +3,67 @@
 # ~~~~
 
 # Home page
-GET         /                                           controllers.Application.index
-GET         /startups                                   controllers.Application.startupsByLocation
-GET         /startups-info                              controllers.Application.startupsInfo
-GET         /startup-people-info                        controllers.Application.startupsPeopleInfo
-GET         /startup-network                            controllers.Application.startupsNetwork
-GET         /startup-people-network                     controllers.Application.startupsPeopleNetwork
-GET         /startups-search                            controllers.Application.searchStartups
-GET         /startup-funding-info                       controllers.Application.startupsFundingInfo
+GET         /                                                 controllers.Application.index
+GET         /startups                                         controllers.Application.startupsByLocation
+GET         /startups-info                                    controllers.Application.startupsInfo
+GET         /startup-people-info                              controllers.Application.startupsPeopleInfo
+GET         /startup-network                                  controllers.Application.startupsNetwork
+GET         /startup-people-network                           controllers.Application.startupsPeopleNetwork
+GET         /startups-search                                  controllers.Application.searchStartups
+GET         /startup-funding-info                             controllers.Application.startupsFundingInfo
 
 # Log in
-GET         /login                                      controllers.Authentication.login
-POST        /login                                      controllers.Authentication.authenticate
-GET         /logout                                     controllers.Authentication.logout
+GET         /login                                            controllers.Authentication.login
+POST        /login                                            controllers.Authentication.authenticate
+GET         /logout                                           controllers.Authentication.logout
 
 #Locations
-GET         /locations/name/:countryName                controllers.Locations.getCountriesByString(countryName: String)
-GET         /locations/country-list                     controllers.Locations.getCountries
-GET         /locations/children/:countryId              controllers.Locations.getChildrenOf(countryId :Long)
+GET         /locations/name/:countryName                      controllers.Locations.getCountriesByString(countryName: String)
+GET         /locations/country-list                           controllers.Locations.getCountries
+GET         /locations/children/:countryId                    controllers.Locations.getChildrenOf(countryId :Long)
 
 #Startups
-GET         /startups/id/:id                            controllers.Startups.getStartupById(id: Long)
-GET         /startups/founders/:startupId               controllers.Startups.getNumberOfFoundersByStartupId(startupId: Long)
-GET         /startups/roles/:startupId                  controllers.Startups.getRolesOfStartup(startupId: Long)
-GET         /startups/id/min/:id                        controllers.Startups.getStartupNetInfo(id:Long)
-GET         /startups/name/:name                        controllers.Startups.getStartupsByName(name: String)
-GET         /startups/funding/:id                       controllers.Startups.getStartupFunding(id: Long)
-GET         /startups/users                             controllers.Startups.getUsersInfoByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-criteria-search           controllers.Startups.startupCriteriaSearch(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-criteria-search-and-tags  controllers.Startups.startupCriteriaSearchAndTags(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-fundings                  controllers.Startups.startupsFundingByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-roles-csv/:startupId      controllers.CSVs.getStartupRolesCSV(startupId: Long)
-GET         /startups/startup-funding-csv/:startupId    controllers.CSVs.getStartupFundingCSV(startupId: Long)
-GET         /startups/startups-fundings-csv             controllers.CSVs.getStartupsFundingsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startups-csv                      controllers.CSVs.getStartupsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/users-csv                         controllers.CSVs.getUsersCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startups-tags-csv                 controllers.CSVs.getStartupsTagsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/id/:id                                  controllers.Startups.getStartupById(id: Long)
+GET         /startups/founders/:startupId                     controllers.Startups.getNumberOfFoundersByStartupId(startupId: Long)
+GET         /startups/roles/:startupId                        controllers.Startups.getRolesOfStartup(startupId: Long)
+GET         /startups/id/min/:id                              controllers.Startups.getStartupNetInfo(id:Long)
+GET         /startups/name/:name                              controllers.Startups.getStartupsByName(name: String)
+GET         /startups/funding/:id                             controllers.Startups.getStartupFunding(id: Long)
+GET         /startups/users                                   controllers.Startups.getUsersInfoByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-criteria-search                 controllers.Startups.startupCriteriaSearch(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-criteria-search-and-tags        controllers.Startups.startupCriteriaSearchAndTags(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-fundings                        controllers.Startups.startupsFundingByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-roles-csv/:startupId            controllers.CSVs.getStartupRolesCSV(startupId: Long)
+GET         /startups/startup-funding-csv/:startupId          controllers.CSVs.getStartupFundingCSV(startupId: Long)
+GET         /startups/startups-fundings-csv                   controllers.CSVs.getStartupsFundingsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startups-csv                            controllers.CSVs.getStartupsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/users-csv                               controllers.CSVs.getUsersCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startups-tags-csv                       controllers.CSVs.getStartupsTagsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 
 #Networks
-GET         /startups/startup-network                   controllers.Networks.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-network-csv               controllers.CSVs.getStartupsNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-people-network            controllers.Networks.getPeopleNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-people-network2           controllers.Networks.getPeopleNetwork2ndOrder(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-people-network-csv        controllers.CSVs.getPeopleNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
-GET         /startups/startup-people-network2-csv       controllers.CSVs.getPeopleNetwork2ndOrderCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-network                         controllers.Networks.getStartupsNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-network-csv                     controllers.CSVs.getStartupsNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-people-network                  controllers.Networks.getPeopleNetwork(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-people-network2                 controllers.Networks.getPeopleNetwork2ndOrder(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-people-network-csv              controllers.CSVs.getPeopleNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/startup-people-network2-csv             controllers.CSVs.getPeopleNetwork2ndOrderCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 
 # Users
-GET         /user/list                                  controllers.Users.listUsers
-GET         /user/new                                   controllers.Users.newUser
-GET         /user/edit/:id                              controllers.Users.editUser(id: Long)
-GET         /user/save                                  controllers.Users.saveUser
+GET         /user/list                                        controllers.Users.listUsers
+GET         /user/new                                         controllers.Users.newUser
+GET         /user/edit/:id                                    controllers.Users.editUser(id: Long)
+GET         /user/save                                        controllers.Users.saveUser
 
 #Markets
-GET         /markets/market-list                        controllers.Markets.getMarkets
+GET         /markets/market-list                              controllers.Markets.getMarkets
+
+# Pending Jobs
+GET         /jobs                                             controllers.Requests.requests
+GET         /jobs/list                                        controllers.Requests.getRequests
+GET         /jobs/csv/:name                                   controllers.CSVs.getCsv(name: String)
 
 # Javascript routes for AJAX
-GET         /assets/javascripts/routes                  controllers.Application.javascriptRoutes
+GET         /assets/javascripts/routes                        controllers.Application.javascriptRoutes
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                               controllers.Assets.at(path="/public", file)
+GET         /assets/*file                                     controllers.Assets.at(path="/public", file)
