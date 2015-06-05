@@ -316,6 +316,6 @@ object Startups extends Controller with Secured {
   def isStartupFilter(startup: JsValue): Boolean = startup.validate[Startup] match {
     case role:JsSuccess[Startup] => true
     case err:JsError => Logger.warn("Failed to read startup json: "+ JsError.toFlatJson(err).toString()); false
-    case _ => Logger.warn("Failed to read startup json: "+startup.toString()); false
+    case _ => /*Logger.warn("Failed to read startup json: "+startup.toString());*/ false
   }
 }

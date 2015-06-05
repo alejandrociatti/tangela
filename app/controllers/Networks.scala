@@ -2,7 +2,7 @@ package controllers
 
 import _root_.util.{RequestSerializer, Tupler, CSVManager}
 import _root_.util.Tupler.toTuple
-import _root_.util.{DiskSaver, Tupler, CSVManager}
+import _root_.util.{CSVCreator, DiskSaver, Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
 import controllers.Roles._
 import models._
@@ -92,6 +92,7 @@ object Networks extends Controller {
             connections.map(_.toCSVRow)
           )
         )
+        (startups, connections)
         Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> connectionsJson))
       }
     }

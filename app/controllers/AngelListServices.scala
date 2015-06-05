@@ -3,12 +3,14 @@ package controllers
 import java.io.File
 
 import _root_.util.{DiskSaver, RequestManager}
+import com.fasterxml.jackson.core.JsonParseException
 import models.DatabaseUpdate
 import play.api.Logger
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
  * Created by Javier Isoldi.
@@ -27,9 +29,8 @@ object AngelListServices {
     RequestManager.sendRequest(AngelApi + request) map { response =>
       val jsResponse = Json.parse(response)
       // Save only if response is successful.
-      (jsResponse \ "success").asOpt[Boolean].getOrElse(true) match{
-        case true => Future(getSaver(request).put(request, response))
-        case false => Logger.warn(s"Request $AngelApi$request failed.")
+      (jsResponse \ "error").asOpt[Boolean].getOrElse(false) match{
+        case false => Future(getSaver(request).put(request, response))
       }
       jsResponse
     }
@@ -38,7 +39,14 @@ object AngelListServices {
     getSaver(request).get(request).fold{
       sendRequestToAngelList(request)
     }{ futureJsValue =>
-      futureJsValue.map(Json.parse)
+        Await.ready(futureJsValue, Duration.Inf)
+      futureJsValue.map { value =>
+        try {
+            Json.parse(value.replaceAll("[^\\x00-\\x7F]", ""))
+        } catch {
+          case e: JsonParseException => Json.obj()
+        }
+      }
     }
 
   def getSaver(request: String) : DiskSaver = request match {
@@ -79,6 +87,8 @@ object AngelListServices {
   def getChildrenOfTag(id: Long) = sendRequest(s"/tags/$id/children")
 
   def getChildrenOfTagAndPage(id: Long)(page: Int) = sendRequest(s"/tags/$id/children?page=$page")
+
+  def getTagById(id: Long) = sendRequest(s"/tags/$id")
 
   def searchMarketByName(name: String) = sendRequest(s"/search?type=MarketTag&query=$name")
 }

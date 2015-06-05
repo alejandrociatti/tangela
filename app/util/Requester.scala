@@ -61,12 +61,12 @@ class Requester(id: String) extends Actor{
                     case Failure(e) =>                                    // if string failed to be created
                       source.close()                                          // close the Source (closes Stream)
                       Logger.warn(s"Source.mkString error: ${e.getMessage}")  // log the error,
-                      sender ! "{\"success\":false}"                          // send an error string
+                      sender ! "{\"success\":false, \"error\": true}"         // send an error string
                   }
                 case Failure(e) =>                                        // if Source fails to be created
                   stream.close()                                                // close the Stream
                   Logger.warn(s"Source.fromInputStream error: ${e.getMessage}") // log the error,
-                  sender ! "{\"success\":false}"                                // send an error string
+                  sender ! "{\"success\":false, \"error\": true}"               // send an error string
               }
             case Failure(e) =>                                            // if InputStream fails to be created
               val message = e.getMessage
@@ -76,7 +76,7 @@ class Requester(id: String) extends Actor{
           }
         case Failure(e) =>                                                // if Connection fails to open
           Logger.warn(s"URL.openConnection error: ${e.getMessage}")       // log the error,
-          sender ! "{\"success\":false}"                                  // send an error string
+          sender ! "{\"success\":false, \"error\": true}"                 // send an error string
       }
   }
 }

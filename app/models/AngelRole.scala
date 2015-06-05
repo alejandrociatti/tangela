@@ -15,6 +15,7 @@ case class AngelRole(id: Long, role: String, user: AngelUser, startup:Startup,
                       confirmed:Boolean){
 
   def toCSVRow : Seq[String] = Seq(
+    DatabaseUpdate.getLastAsString,
     startup.id.toString(), id.toString(), role,
     created.toString(), started.fold("")(_.toString()), ended.fold("")(_.toString()),
     confirmed.toString(), user.name, user.id.toString(), user.bio.getOrElse(""),

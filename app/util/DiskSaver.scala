@@ -74,7 +74,7 @@ case class DiskSaver(directory: File, fileName: String) {
     val positionHandler: AsyncHandler[ByteBuffer] = AsyncHandler { (_, positionBuffer: ByteBuffer) =>
       val resultBuffer = ByteBuffer.allocate(positionBuffer.getLong(0).toInt * 2)
       val resultHandler: AsyncHandler[ByteBuffer] = AsyncHandler { (_, resultBuffer: ByteBuffer) =>
-        val string = new String(resultBuffer.array(), "Unicode")
+        val string = new String(resultBuffer.array(), "UTF-16")
         resultPromise.success(string)
         fileChannel.close()
       }

@@ -26,6 +26,7 @@ case class Startup(id: Long, name: String, quality: Option[Int],
   def toTinyJson = Json.obj("id" -> id, "name" -> name)
 
   def toCSVRow :Seq[String] = Seq(
+    DatabaseUpdate.getLastAsString,
     id.toString(), name,
     angelURL.getOrElse(""), logoURL.getOrElse(""), thumbURL.getOrElse(""),
     quality.fold("")(_.toString()), description.getOrElse(""), concept.getOrElse(""),
