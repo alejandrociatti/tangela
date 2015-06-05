@@ -41,6 +41,12 @@ case class DiskSaver(directory: File, fileName: String) {
     indexMap.get(key) map readString
   }
 
+//  def delete(key: String): Option[String] = {
+//    checkDirectory()
+//    //TODO: eliminar del File (solo borramos del index)
+//    indexMap.remove(key) map readString
+//  }
+
   def getFile(key: String): Option[(Enumerator[Array[Byte]], Int)] = {
     checkDirectory()
     indexMap.get(key) map {
@@ -91,7 +97,7 @@ case class DiskSaver(directory: File, fileName: String) {
     indexSource.writeUTF(value._1)
     indexSource.writeLong(value._2)
     indexMap += value
-//    Store the size of the map at the beginning of the file
+    //Store the size of the map at the beginning of the file
     indexSource.seek(0)
     indexSource.writeLong(indexMap.size)
     indexSource.close()
@@ -100,7 +106,7 @@ case class DiskSaver(directory: File, fileName: String) {
   def retrieveIndex(): mutable.HashMap[String, Long] = {
     val indexSource = new RandomAccessFile(indexFile, "r")
     indexSource.seek(0)
-//    Retrieves the size of the map
+    //Retrieves the size of the map
     val size = indexSource.readLong()
     val values = (0l until size) map {index => (indexSource.readUTF(), indexSource.readLong())}
     indexSource.close()

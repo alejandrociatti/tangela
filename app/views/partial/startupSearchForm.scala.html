@@ -94,9 +94,21 @@
                         <span class="sr-only">1% Complete</span>
                     </div>
                 </div>
-                <div class="alert alert-danger" ng-if="!responseStatus" >
+                <div class="alert alert-danger" ng-if="responseStatus">
                     <p>
-                        <strong>The results were empty, or the request failed, please try again in a little while.</strong>
+                        <strong ng-if="responseStatus == 'empty'">
+                            The results were empty, your query might have been too narrow.
+                            If you believe it was an error, let us know.
+                        </strong>
+                        <strong ng-if="responseStatus == 'queued'">
+                            Your query has been queued.
+                            You can view queued jobs <a href="@routes.Requests.requests()">here</a>.
+                            Your CSV will be available <a href="{{exportURL}}">here</a> as soon as it's processed.
+                        </strong>
+                        <strong ng-if="responseStatus == 'error'">
+                            The request failed, please try again in a little while, or let us know if this problem persists.
+                        </strong>
+
                     </p>
                 </div>
             </div>

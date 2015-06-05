@@ -39,10 +39,6 @@ object Global extends GlobalSettings {
     createAdmin()
     populateCountries()
     populateMarket()
-//    clearCSVs()
-//    loadSomeStates()
-    //loadNetworks()
-    //dropTablesCRON()
   }
 
   def createAdmin() = {
@@ -112,8 +108,6 @@ object Global extends GlobalSettings {
       Await.ready(Networks.getNetworksToLoad(location), Duration.Inf)
       Logger.info("Location \""+location.name+"\" loaded.")
     })
-
-    //Logger.info("Loading countries.")
     Location.getCountries foreach {
       case country@Location("United States", _, _, _) => country.getChildren.map(_.map{loc =>loadLocation(loc)})
       case country => loadLocation(country)

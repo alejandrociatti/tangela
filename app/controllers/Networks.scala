@@ -35,18 +35,15 @@ object Networks extends Controller {
     val description = generateDescription("Startup Network", locationId, marketId, qualityT, creationDateT)
     RequestSerializer.serialize(key, description, () => startupsByCriteriaNonBlocking(locationId, marketId, qualityT, creationDateT) flatMap { startups =>
         getStartupsNetworkFuture(startups) map { connections =>
-          Future(
-            CSVManager.put(
-              key,
-              StartupsConnection.getCSVHeader,
-              connections.map(_.toCSVRow)
-            )
+          CSVManager.put(
+            key,
+            StartupsConnection.getCSVHeader,
+            connections.map(_.toCSVRow)
           )
           Ok(Json.obj("startups" -> startups.map(_.toTinyJson), "rows" -> Json.toJson(connections)))
         }
       }
     )
-    Future(Ok("{startups:[],rows:[]}"))
   }
 
   def getNetworksToLoad(location:Location) =
@@ -79,23 +76,24 @@ object Networks extends Controller {
    * @param creationDate  date filter.
    * @return A Future of a JsArray that contains all the connections between people by startups in common
    */
-  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
+  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
+    val key = s"people-net-$locationId-$marketId-$quality-$creationDate"
     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
-    val dateT = toTuple(creationDate)      // Same as above for creation date.
-    startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
-      getPeopleNetworkFuture(startups) map { connections =>
-        val connectionsJson = Json.toJson(connections).as[JsArray]
-        Future(
-           CSVManager.put(
-            s"people-net-$locationId-$marketId-$quality-$creationDate",
+    val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
+    val description = generateDescription("People Network", locationId, marketId, qualityT, dateT)
+    RequestSerializer.serialize(key, description, () =>
+      startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
+        getPeopleNetworkFuture(startups) map { connections =>
+          val connectionsJson = Json.toJson(connections).as[JsArray]
+          CSVManager.put(
+            key,
             UsersConnection.getCSVHeader,
             connections.map(_.toCSVRow)
           )
-        )
-        (startups, connections)
-        Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> connectionsJson))
+          Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> connectionsJson))
+        }
       }
-    }
+    )
   }
 
   /**
@@ -107,21 +105,23 @@ object Networks extends Controller {
    * @return A Future of a JsArray that contains all the connections between people by startups in common
    */
   def getPeopleNetwork2ndOrder(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
+    val key = s"people-net-2-$locationId-$marketId-$quality-$creationDate"
     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
-    val dateT = toTuple(creationDate)      // Same as above for creation date.
-    startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
-      getPeopleNetworkFuture2ndOrder(startups) map { connections =>
-        val startupsToSendJson = Json.toJson(connections)
-        Future(
+    val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
+    val description = generateDescription("People Network 2", locationId, marketId, qualityT, dateT)
+    RequestSerializer.serialize(key, description, () =>
+      startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
+        getPeopleNetworkFuture2ndOrder(startups) map { connections =>
+          val startupsToSendJson = Json.toJson(connections)
           CSVManager.put(
-            s"people-net-2-$locationId-$marketId-$quality-$creationDate",
+            key,
             UsersConnection.getCSVHeader,
             connections.map(_.toCSVRow)
           )
-        )
-        Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> startupsToSendJson))
+          Ok(Json.obj("startups" -> Json.toJson(startups), "rows" -> startupsToSendJson))
+        }
       }
-    }
+    )
   }
 
   /**
@@ -233,10 +233,10 @@ object Networks extends Controller {
 
   private def generateDescription(kind: String, locID: Int, mktID: Int, qual: (Int,Int), date: (String,String)) :String = {
     val string = new StringBuilder(s"$kind")
-    Location.getByAngelId(locID).map(location => string.append(" Location: "+location.name))
-    Market.getByAngelId(mktID).map(market=> string.append(" Market: "+market.name))
-    if(qual._1 != -1 || qual._2 != -1) string.append(" Quality range: ("+qual._1+","+qual._2+")")
-    if(date._1 != "" || date._2 != "") string.append(" Date range: ("+date._1+","+date._2+")")
+    Location.getByAngelId(locID).map(location => string.append(" Location: "+location.name+", "))
+    Market.getByAngelId(mktID).map(market=> string.append("Market: "+market.name+", "))
+    if(qual._1 != -1 || qual._2 != -1) string.append("Quality range: ("+qual._1+","+qual._2+") ")
+    if(date._1 != "" || date._2 != "") string.append("Date range: ("+date._1+","+date._2+") ")
     string.mkString
   }
 

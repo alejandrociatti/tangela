@@ -29,7 +29,7 @@ object Locations extends Controller{
     val countriesFile = Source.fromFile("storedJsons/countries-reduced.json", "UTF-8")
     val countries = Json.parse(countriesFile.getLines().mkString)
     countriesFile.close()
-    val responses = countries.as[Seq[JsValue]].map { jsValue =>
+    countries.as[Seq[JsValue]].map { jsValue =>
       val name = (jsValue \ "name").as[String]
       val uriName = URLEncoder.encode(name.replace(" ", "-").toLowerCase, "UTF-8")
       AngelListServices.searchLocationBySlug(uriName).map { jsResponse =>
@@ -40,7 +40,6 @@ object Locations extends Controller{
         }
       }
     }
-    Await.ready(Future.sequence(responses), Duration.Inf)
   }
 
   def getCountriesByString(countryName:String) = Action.async {

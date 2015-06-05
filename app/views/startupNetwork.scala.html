@@ -1,4 +1,4 @@
-@main("Informacion sobre Startups   ")(sidebar()) {
+@main("Información sobre Startups")(sidebar()) {
 
     <div class="row" ng-app="JB3" ng-controller="startupsNetworkCtrl">
         <div class="col-lg-6">
@@ -6,7 +6,7 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="panel panel-default" ng-controller="tableController">
+            <div class="panel panel-default" ng-controller="tableController" ng-if="$parent.startups.length > 0">
                 <div class="panel-heading"><h2 class="panel-title text-center">Startups</h2></div>
                 <div class="panel-body">
                     <table class="table table-bordered">
@@ -33,7 +33,7 @@
         </div>
 
         <div class="col-lg-12">
-            <div class="panel panel-default" ng-controller="tableController">
+            <div class="panel panel-default" ng-controller="tableController" ng-if="$parent.networkRows.length > 0">
                 <div class="panel-heading">
                     <h2 class="panel-title">
                         Startups Network ({{$parent.networkRows.length}})
