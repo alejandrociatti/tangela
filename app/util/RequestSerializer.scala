@@ -28,14 +28,12 @@ object RequestSerializer{
   private var ready = true
 
   // Load previous jobs.
-  Await.ready(Future.sequence(
-    requestSaver.indexMap.keys.map( key =>
-      requestSaver.get(key).get.map(request => Json.parse(request).validate[DummyRequest] match {
-          case r: JsSuccess[DummyRequest] => done enqueue r.get
-        }
-      )
+  requestSaver.indexMap.keys.foreach( key =>
+    requestSaver.get(key).get.map(request => Json.parse(request).validate[DummyRequest] match {
+        case r: JsSuccess[DummyRequest] => done enqueue r.get
+      }
     )
-  ), Inf)
+  )
 
   def serialize(key: String, description:String, action: () => Future[SimpleResult]) : Future[SimpleResult] = {
     // If the job has already been completed, skip it (we keep the latest result with no duplicates on the list)

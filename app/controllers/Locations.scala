@@ -1,9 +1,7 @@
 package controllers
 
-import play.api.Logger
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.{Future, ExecutionContext}
 import ExecutionContext.Implicits.global
 import models.{Kind, Location}
 import play.api.mvc._
@@ -69,6 +67,12 @@ object Locations extends Controller{
       ).map(_.flatten).map(firstPage ++ _)
     }
 
-    childrenFuture.map{children :Seq[JsValue]=> Ok(JsArray(children))}
+    childrenFuture.map{ children :Seq[JsValue] =>
+      // Save used locations to DB so Networks.generateDescription can access their names
+      Future( children.map( locationJs =>
+          Location.save(Location((locationJs \ "name").as[String], (locationJs \ "id").as[Long], Kind.Other.toString()))
+      ))
+      Ok(JsArray(children)) // the Location.save above is wrapped in Future so we instantly respond with the Locations
+    }
   }
 }
