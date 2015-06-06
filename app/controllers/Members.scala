@@ -87,8 +87,8 @@ object Members {
   def isUserFilter(user: JsValue) =
     user.validate[AngelUser] match {
       case role:JsSuccess[AngelUser] => true
-      case err:JsError => Logger.warn("Failed to read user json: "+ JsError.toFlatJson(err).toString()); false
-      case _ => Logger.warn("Failed to read role json: "+user.toString()); false
+      case err:JsError => Logger.warn("Failed to read user json: " + JsError.toFlatJson(err).toString()); false
+      case _ => Logger.warn("Failed to read role json: " + user.toString()); false
     }
 
 }

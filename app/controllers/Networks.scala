@@ -1,6 +1,8 @@
 package controllers
 
 import _root_.util.{RequestSerializer, Tupler, CSVManager}
+import _root_.util.Tupler.toTuple
+import _root_.util.{CSVCreator, DiskSaver, Tupler, CSVManager}
 import controllers.Startups.startupsByCriteriaNonBlocking
 import controllers.Roles._
 import models._
@@ -45,7 +47,7 @@ object Networks extends Controller {
   }
 
   def getNetworksToLoad(location:Location) =
-    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map{ startups =>
+    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map { startups =>
       prepareStartupsNetworkFuture(startups)
       preparePeopleNetworkFuture(startups)
     }
@@ -206,8 +208,8 @@ object Networks extends Controller {
             .map( UsersConnection(_, userRole))
           getMatches(userRolesTail, matches ++ peopleConnections)
         case other =>
-          Logger.warn("This did not match: "+ other.toString)
-          Logger.warn("Length: "+ other.length)
+          Logger.warn("This did not match: " + other.toString)
+          Logger.warn("Length: " + other.length)
           matches
       }
 
@@ -216,13 +218,13 @@ object Networks extends Controller {
 
   private def getStartupNetMatches(startupRoles: Seq[Seq[AngelRole]]): Seq[StartupsConnection] = {
 
-    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]):Seq[StartupsConnection] =
+    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]): Seq[StartupsConnection] =
       roles match {
         case Nil => matches
         case startupRole :: startupRolesTail =>
           val startupConnections = startupRolesTail
             .filter(differentStartupFilter(_, startupRole))
-            .map( StartupsConnection(_, startupRole) )
+            .map(StartupsConnection(_, startupRole))
           getMatches(startupRolesTail, matches ++ startupConnections)
       }
 

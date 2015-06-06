@@ -1,0 +1,279 @@
+From e45753132c9b3dec2e651a0829bde1e857aa5efe Mon Sep 17 00:00:00 2001
+From: Javier Isoldi <javierisoldi@hotmail.com>
+Date: Sun, 12 Apr 2015 13:26:40 -0300
+Subject: [PATCH 1/2] DiskSaver's reading process changed to be async.
+
+---
+ app/controllers/AngelListServices.scala |  4 +--
+ app/controllers/Members.scala           |  4 +--
+ app/controllers/Networks.scala          | 23 +++++++-------
+ app/controllers/Roles.scala             |  2 +-
+ app/models/Connection.scala             |  2 +-
+ app/util/CSVManager.scala               |  5 +++-
+ app/util/DiskSaver.scala                | 53 +++++++++++++++++++++++++--------
+ 7 files changed, 63 insertions(+), 30 deletions(-)
+
+diff --git a/app/controllers/AngelListServices.scala b/app/controllers/AngelListServices.scala
+index 9c0bc69..c01130b 100644
+--- a/app/controllers/AngelListServices.scala
++++ b/app/controllers/AngelListServices.scala
+@@ -37,8 +37,8 @@ object AngelListServices {
+   def sendRequest(request: String): Future[JsValue] =
+     getSaver(request).get(request).fold{
+       sendRequestToAngelList(request)
+-    }{jsValue =>
+-      Future(Json.parse(jsValue))
++    }{ futureJsValue =>
++      futureJsValue.map(Json.parse)
+     }
+ 
+   def getSaver(request: String) : DiskSaver = request match {
+diff --git a/app/controllers/Members.scala b/app/controllers/Members.scala
+index c9b11af..0d6d374 100644
+--- a/app/controllers/Members.scala
++++ b/app/controllers/Members.scala
+@@ -73,8 +73,8 @@ object Members {
+   def isUserFilter(user: JsValue) =
+     user.validate[AngelUser] match {
+       case role:JsSuccess[AngelUser] => true
+-      case err:JsError => Logger.warn("Failed to read user json: "+ JsError.toFlatJson(err).toString()); false
+-      case _ => Logger.warn("Failed to read role json: "+user.toString()); false
++      case err:JsError => Logger.warn("Failed to read user json: " + JsError.toFlatJson(err).toString()); false
++      case _ => Logger.warn("Failed to read role json: " + user.toString()); false
+     }
+ 
+ }
+diff --git a/app/controllers/Networks.scala b/app/controllers/Networks.scala
+index fa26d7e..b2d314a 100644
+--- a/app/controllers/Networks.scala
++++ b/app/controllers/Networks.scala
+@@ -1,6 +1,7 @@
+ package controllers
+ 
+-import _root_.util.{Tupler, CSVManager}
++import _root_.util.Tupler.toTuple
++import _root_.util.{DiskSaver, Tupler, CSVManager}
+ import controllers.Startups.startupsByCriteriaNonBlocking
+ import controllers.Roles._
+ import models._
+@@ -27,7 +28,7 @@ object Networks extends Controller {
+    * @return A Future of a JsArray that contains all the connections between startups by roles/people
+    */
+   def getStartupsNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
+-    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)) flatMap { startups =>
++    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), toTuple(creationDate)) flatMap { startups =>
+       getStartupsNetworkFuture(startups) map { connections =>
+         Future(
+           CSVManager.put(
+@@ -42,7 +43,7 @@ object Networks extends Controller {
+   }
+ 
+   def getNetworksToLoad(location:Location) =
+-    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map{ startups =>
++    startupsByCriteriaNonBlocking(location.angelId.toInt, -1, (-1,-1), ("","")).map { startups =>
+       prepareStartupsNetworkFuture(startups)
+       preparePeopleNetworkFuture(startups)
+     }
+@@ -71,14 +72,14 @@ object Networks extends Controller {
+    * @param creationDate  date filter.
+    * @return A Future of a JsArray that contains all the connections between people by startups in common
+    */
+-  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
++  def getPeopleNetwork(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
+     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
+-    val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
++    val dateT = toTuple(creationDate)      // Same as above for creation date.
+     startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
+       getPeopleNetworkFuture(startups) map { connections =>
+         val connectionsJson = Json.toJson(connections).as[JsArray]
+         Future(
+-          CSVManager.put(
++           CSVManager.put(
+             s"people-net-$locationId-$marketId-$quality-$creationDate",
+             UsersConnection.getCSVHeader,
+             connections.map(_.toCSVRow)
+@@ -99,7 +100,7 @@ object Networks extends Controller {
+    */
+   def getPeopleNetwork2ndOrder(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async{
+     val qualityT = Tupler.toQualityTuple(quality) // We convert the quality string to a tuple representing a range.
+-    val dateT = Tupler.toTuple(creationDate)      // Same as above for creation date.
++    val dateT = toTuple(creationDate)      // Same as above for creation date.
+     startupsByCriteriaNonBlocking(locationId, marketId, qualityT, dateT) flatMap { startups =>
+       getPeopleNetworkFuture2ndOrder(startups) map { connections =>
+         val startupsToSendJson = Json.toJson(connections)
+@@ -199,8 +200,8 @@ object Networks extends Controller {
+             .map( UsersConnection(_, userRole))
+           getMatches(userRolesTail, matches ++ peopleConnections)
+         case other =>
+-          Logger.warn("This did not match: "+ other.toString)
+-          Logger.warn("Length: "+ other.length)
++          Logger.warn("This did not match: " + other.toString)
++          Logger.warn("Length: " + other.length)
+           matches
+       }
+ 
+@@ -211,13 +212,13 @@ object Networks extends Controller {
+ 
+   private def getStartupNetMatches(startupRoles: Seq[Seq[AngelRole]]): Seq[StartupsConnection] = {
+ 
+-    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]):Seq[StartupsConnection] =
++    def getMatches(roles: Seq[AngelRole], matches: Seq[StartupsConnection]): Seq[StartupsConnection] =
+       roles match {
+         case Nil => matches
+         case startupRole :: startupRolesTail =>
+           val startupConnections = startupRolesTail
+             .filter(differentStartupFilter(_, startupRole))
+-            .map( StartupsConnection(_, startupRole) )
++            .map(StartupsConnection(_, startupRole))
+           getMatches(startupRolesTail, matches ++ startupConnections)
+       }
+ 
+diff --git a/app/controllers/Roles.scala b/app/controllers/Roles.scala
+index 75965e7..d987437 100644
+--- a/app/controllers/Roles.scala
++++ b/app/controllers/Roles.scala
+@@ -40,7 +40,7 @@ object Roles extends Controller {
+       (response \ "last_page").asOpt[Int].getOrElse(-1) match {
+         case -1 => Future(Seq[AngelRole]())             // Unexpected response
+         case 1 => Future(responseToAngelRole(response)) // One page response
+-        case pages =>                                   // More tha one page
++        case pages =>                                   // More than one page
+           // Get roles for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)
+           Future.sequence(
+             (2 to pages).map(AngelListServices.getRolesFromUserIdAndPage( id ))
+diff --git a/app/models/Connection.scala b/app/models/Connection.scala
+index 856f4d9..5344923 100644
+--- a/app/models/Connection.scala
++++ b/app/models/Connection.scala
+@@ -11,7 +11,7 @@ case class Connection(role1:AngelRole, role2:AngelRole)
+ 
+ case class StartupsConnection(role1:AngelRole, role2:AngelRole){
+ 
+-  def toCSVRow:Seq[String] = Seq(
++  def toCSVRow: Seq[String] = Seq(
+     role1.startup.id.toString,
+     role2.startup.id.toString,
+     role1.startup.name,
+diff --git a/app/util/CSVManager.scala b/app/util/CSVManager.scala
+index 3f6850f..d4e7fc8 100644
+--- a/app/util/CSVManager.scala
++++ b/app/util/CSVManager.scala
+@@ -5,6 +5,9 @@ import java.io._
+ import models.DatabaseUpdate
+ import play.api.libs.iteratee.Enumerator
+ 
++import scala.concurrent.duration.Duration.Inf
++import scala.concurrent.Await
++
+ /**
+  * User: Martin Gutierrez
+  * Date: 20/11/14
+@@ -25,7 +28,7 @@ object CSVManager {
+       values.map(row => DatabaseUpdate.getLastAsString +: row) // we add tangela request date to each row
+     )
+ 
+-  def get(fileName: String): Option[String] = csvSaver.get(fileName)
++  def get(fileName: String): Option[String] = csvSaver.get(fileName).map(Await.result(_, Inf))
+ 
+   def getFile(fileName: String): Option[(Enumerator[Array[Byte]], Int)] = csvSaver.getFile(fileName)
+ }
+\ No newline at end of file
+diff --git a/app/util/DiskSaver.scala b/app/util/DiskSaver.scala
+index f48b057..d17fc45 100644
+--- a/app/util/DiskSaver.scala
++++ b/app/util/DiskSaver.scala
+@@ -1,9 +1,16 @@
+ package util
+ 
+ import java.io._
++import java.nio.ByteBuffer
++import java.nio.channels.{CompletionHandler, AsynchronousFileChannel, FileChannel}
++import java.nio.file.{Paths, StandardOpenOption}
++import java.nio.file.StandardOpenOption.READ
+ import play.api.libs.iteratee.Enumerator
+ import scala.collection.mutable
+ import scala.concurrent.ExecutionContext.Implicits.global
++import scala.concurrent.duration.Duration
++import scala.concurrent.duration.Duration.Inf
++import scala.concurrent.{Promise, Await, Future}
+ 
+ /**
+  * Created by Javier Isoldi.
+@@ -29,16 +36,16 @@ case class DiskSaver(directory: File, fileName: String) {
+     indexMap.getOrElse(key, { saveNewIndex((key, writeString(value)))})
+   }
+ 
+-  def get(key: String): Option[String] = {
++  def get(key: String): Option[Future[String]] = {
+     checkDirectory()
+     indexMap.get(key) map readString
+   }
+ 
+   def getFile(key: String): Option[(Enumerator[Array[Byte]], Int)] = {
+     checkDirectory()
+-    indexMap.get(key) map{
++    indexMap.get(key) map {
+       value =>
+-        val stringBytes = readString(value).getBytes
++        val stringBytes = Await.result(readString(value), Inf).getBytes
+         (Enumerator.fromStream(new ByteArrayInputStream(stringBytes)), stringBytes.length)
+       }
+   }
+@@ -54,16 +61,30 @@ case class DiskSaver(directory: File, fileName: String) {
+     index
+   }
+ 
+-  def readString(index: Long): String = {
+-    val dataRandomAccessFile = new RandomAccessFile(dataFile, "r")
+-    dataRandomAccessFile.seek(index)
+-    val length: Long = dataRandomAccessFile.readLong()
+-    val string = (0l until length).map { index => dataRandomAccessFile.readChar()}.mkString
+-    dataRandomAccessFile.close()
+-    string
++  def readString(index: Long): Future[String] = {
++//    val dataRandomAccessFile = new RandomAccessFile(dataFile, "r")
++//    dataRandomAccessFile.seek(index)
++//    val length: Long = dataRandomAccessFile.readLong()
++//    val channel: FileChannel = dataRandomAccessFile.getChannel
++//    val buffer = ByteBuffer.allocate(length.toInt * 2)
++//    channel.read(buffer)
++    val resultPromise: Promise[String] = Promise()
++    val fileChannel: AsynchronousFileChannel = AsynchronousFileChannel.open(Paths.get(dataFile.getPath), READ)
++    val positionBuffer = ByteBuffer.allocate(8)
++    val positionHandler: AsyncHandler[ByteBuffer] = AsyncHandler { (_, positionBuffer: ByteBuffer) =>
++      val resultBuffer = ByteBuffer.allocate(positionBuffer.getLong(0).toInt * 2)
++      val resultHandler: AsyncHandler[ByteBuffer] = AsyncHandler { (_, resultBuffer: ByteBuffer) =>
++        val string = new String(resultBuffer.array(), "Unicode")
++        resultPromise.success(string)
++        fileChannel.close()
++      }
++      fileChannel.read(resultBuffer, index + 8, resultBuffer, resultHandler)
++    }
++    fileChannel.read(positionBuffer, index, positionBuffer, positionHandler)
++    resultPromise.future
+   }
+ 
+-  def saveNewIndex(value: (String, Long)): Unit = {
++  def saveNewIndex(value: (String, Long)): Unit = this.synchronized {
+     val indexSource = new RandomAccessFile(indexFile, "rw")
+     if (indexSource.length() == 0)  indexSource.writeLong(0)
+     indexSource.seek(indexSource.length())
+@@ -89,4 +110,12 @@ case class DiskSaver(directory: File, fileName: String) {
+   def checkDirectory() = if(!directory.exists()) directory.mkdir()
+ }
+ 
+-case class NotDirectoryException(message: String) extends Exception(message)
+\ No newline at end of file
++case class NotDirectoryException(message: String) extends Exception(message)
++
++case class AsyncHandler[A]( onSuccess: (Int, A) => Unit,
++                            onFailure: (Throwable, A) => Unit = { (exc: Throwable, a: A) => exc.printStackTrace() })
++  extends CompletionHandler[Integer, A] {
++  override def completed(result: Integer, attachment: A): Unit = onSuccess(result, attachment)
++
++  override def failed(exc: Throwable, attachment: A): Unit = onFailure(exc, attachment)
++}
+\ No newline at end of file
+-- 
+1.9.1
+

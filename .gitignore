@@ -21,3 +21,5 @@ storedJsons.zip
 *.map
 *.file
 .DS_Store
+db/
+storedCSV*/

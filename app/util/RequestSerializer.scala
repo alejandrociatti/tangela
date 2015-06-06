@@ -9,7 +9,9 @@ import play.api.mvc.SimpleResult
 import play.api.mvc.Results.Ok
 
 import scala.collection.mutable
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration.Duration.Inf
+import scala.concurrent.{Await, Future}
 import play.api.libs.functional.syntax._
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -26,11 +28,14 @@ object RequestSerializer{
   private var ready = true
 
   // Load previous jobs.
-  requestSaver.indexMap.keys.foreach( key =>
-    Json.parse(requestSaver.get(key).get).validate[DummyRequest] match {
-      case r: JsSuccess[DummyRequest] => done enqueue r.get
-    }
-  )
+  Await.ready(Future.sequence(
+    requestSaver.indexMap.keys.map( key =>
+      requestSaver.get(key).get.map(request => Json.parse(request).validate[DummyRequest] match {
+          case r: JsSuccess[DummyRequest] => done enqueue r.get
+        }
+      )
+    )
+  ), Inf)
 
   def serialize(key: String, description:String, action: () => Future[SimpleResult]) : Future[SimpleResult] = {
     // If the job has already been completed, skip it (we keep the latest result with no duplicates on the list)

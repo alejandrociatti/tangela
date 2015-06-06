@@ -11,7 +11,8 @@ case class Connection(role1:AngelRole, role2:AngelRole)
 
 case class StartupsConnection(role1:AngelRole, role2:AngelRole){
 
-  def toCSVRow:Seq[String] = Seq(
+  def toCSVRow: Seq[String] = Seq(
+    DatabaseUpdate.getLastAsString,
     role1.startup.id.toString,
     role1.startup.name,
     role1.role,
@@ -54,6 +55,7 @@ object StartupsConnection {
 case class UsersConnection(role1:AngelRole, role2:AngelRole){
 
   def toCSVRow:Seq[String] = Seq(
+    DatabaseUpdate.getLastAsString,
     role1.user.id.toString,
     role1.user.name,
     role1.role,

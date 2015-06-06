@@ -40,7 +40,7 @@ object Roles extends Controller {
       (response \ "last_page").asOpt[Int].getOrElse(-1) match {
         case -1 => Future(Seq[AngelRole]())             // Unexpected response
         case 1 => Future(responseToAngelRole(response)) // One page response
-        case pages =>                                   // More tha one page
+        case pages =>                                   // More than one page
           // Get roles for the rest of the pages (wrapped in Future.sequence to convert Seq of Futures to Future of Seqs)
           Future.sequence(
             (2 to pages).map(AngelListServices.getRolesFromUserIdAndPage( id ))

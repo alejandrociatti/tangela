@@ -1,4 +1,5 @@
 import java.io.File
+import java.net.URLEncoder
 import java.text.NumberFormat
 import java.util.UUID
 
@@ -8,10 +9,13 @@ import models._
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTimeConstants.SUNDAY
 import org.joda.time.{DateTime, LocalDate, LocalTime}
+import play.api.Application
 import play.api.Play.current
 import play.api._
 import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick._
+import play.api.libs.json.JsValue
+import play.api.mvc.SimpleResult
 import play.libs.Akka
 
 import scala.concurrent.{Future, Await}
@@ -85,6 +89,19 @@ object Global extends GlobalSettings {
     Markets.loadMarketsToDB()
     Logger.info("Markets Loaded!")
   }
+//
+//  def loadSomeStates(): Unit = {
+//    val ids: Seq[Int] = Seq(1624, 1708, 1699, 1855, 1666, 2071, 1839, 1686, 1699, 1841, 1837)
+//    def makeNetwork(id: Int): Unit = {
+//      val network = Networks.getStartupsNetworkInternal(id, -1, "", "")
+//      Await.ready(network, Duration.Inf)
+//      network.onFailure {
+//        case e => e.printStackTrace()
+//      }
+//      Logger.info("Network \"" + id + "\" saved.")
+//    }
+//    ids foreach makeNetwork
+//  }
 
   def loadNetworks() = {
     def loadLocation(location: Location) = Future({

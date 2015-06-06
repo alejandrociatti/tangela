@@ -15,6 +15,7 @@ case class Funding(id :Long, roundType:Option[String], amount:Long,
   def toCSVRows(startup:Startup) : Seq[Seq[String]] = {
     // this function makes a row for a single or empty participant
     def makeRow(participant: Option[Participant] = None): Seq[String] = Seq(
+      DatabaseUpdate.getLastAsString,
       startup.id.toString, startup.name, roundType.getOrElse(""), amount.toString,
       closedAt.fold("")(_.toString), id.toString, sourceUrl.getOrElse(""),
       participant.fold("")(_.name), participant.fold("")(_.participantType), participant.fold("")(_.id.toString)

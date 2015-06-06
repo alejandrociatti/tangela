@@ -12,6 +12,7 @@ import play.api.libs.functional.syntax._
 case class AngelTag(id: Long, name:String, tagType:String, angelURL:Option[String]){
 
   def toCSVRow : Seq[String] = Seq(
+    DatabaseUpdate.getLastAsString,
     id.toString(), tagType, name, angelURL.getOrElse("")
   )
 }
