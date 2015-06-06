@@ -86,7 +86,7 @@ object Startups extends Controller with Secured {
       Future(
         CSVManager.put(
           s"startup-roles-$startupId",
-          AngelRole.getCSVHeaders,
+          AngelRole.getCSVHeader,
           roles.map(_.toCSVRow)
         )
       )
@@ -148,8 +148,26 @@ object Startups extends Controller with Secured {
             users.map(_.toCSVRow)
           )
         )
-        Ok( toJsArray(users.map(_.toTinyJson)) )
+        Ok( Json.obj("users" -> Json.toJson(users)) )
       }
+    }
+  }
+
+  def getUserAndRolesByCriteria(locationId: Int, marketId: Int, quality: String, creationDate: String) = Action.async {
+    startupsByCriteriaNonBlocking(locationId, marketId, Tupler.toQualityTuple(quality), Tupler.toTuple(creationDate)).flatMap { startups =>
+      // get the roles for each startup (Future[Seq[Seq[AngelRole]]])
+      Future.sequence( startups.map(startup => Roles.getRolesFromStartupID(startup.id)) ).flatMap( roleArrays =>
+        // with the Seq[AngelRole] we produce a Seq[AngelUserRole] which contains the additional user info
+        Members.getWithRoles(roleArrays.flatten).map{ rolesAndUsers =>
+          Future(
+            CSVManager.put(
+              s"roles+users-$locationId-$marketId-$quality-$creationDate",
+              AngelUserRole.getCSVHeader,
+              rolesAndUsers.map(_.toCSVRow))
+          )
+          Ok(Json.toJson(rolesAndUsers))
+        }
+      )
     }
   }
 

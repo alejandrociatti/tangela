@@ -64,7 +64,6 @@ object RequestSerializer{
   def isWorking = !ready
 }
 
-
 trait Request
 
 case class RealRequest(request: DummyRequest, action: () => Future[SimpleResult]) extends Request

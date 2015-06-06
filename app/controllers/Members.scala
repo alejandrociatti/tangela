@@ -1,6 +1,6 @@
 package controllers
 
-import models.{AngelUser, Startup}
+import models.{AngelUserRole, AngelRole, AngelUser, Startup}
 import play.api.Logger
 import play.api.libs.json._
 
@@ -32,6 +32,20 @@ object Members {
   def getFromStartups(startups: Seq[Startup]): Future[Seq[AngelUser]] =
     Future.sequence(startups map getFromStartup).map(_.flatten.distinct)
 
+  def getFromRole(role: AngelRole): Future[AngelUser] = AngelListServices.getUserById(role.user.id).map( jsValue =>
+      jsValue.validate[AngelUser].get
+    )
+
+  def getFromRoles(roles: Seq[AngelRole]): Future[Seq[AngelUser]] = Future.sequence(roles map getFromRole)
+
+  def getWithRole(role: AngelRole): Future[Option[AngelUserRole]] =
+    AngelListServices.getUserById(role.user.id).map{ jsValue =>
+      if(isUserFilter(jsValue)) jsValue.validate[AngelUser].get + role
+      else None
+    }
+
+  def getWithRoles(roles: Seq[AngelRole]) : Future[Seq[AngelUserRole]] =
+    Future.sequence(roles map getWithRole).map(_.flatten)
 
   def userIDsFromStartup(startup: Startup): Future[Seq[Long]] = {
     AngelListServices.getRolesFromStartupId(startup.id) map { response =>

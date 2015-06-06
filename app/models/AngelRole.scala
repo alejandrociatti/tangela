@@ -23,10 +23,15 @@ case class AngelRole(id: Long, role: String, user: AngelUser, startup:Startup,
 
   def toTinyJson = Json.obj(
     "id" -> id,
-    "name" -> user.name,
-    "follower_count" -> user.followerCount,
-    "role" -> role
+    "role" -> role,
+    "user" -> user.toTinyJson,
+    "startup" -> startup.toTinyJson
   )
+
+  def +(add : AngelUser) : Option[AngelUserRole] = {
+    if(user.id == add.id) Some(AngelUserRole(add, this))
+    else None
+  }
 }
 
 object AngelRole{
@@ -62,7 +67,7 @@ object AngelRole{
     )
   }
 
-  def getCSVHeaders :Seq[String] = Seq(
+  def getCSVHeader :Seq[String] = Seq(
     "tangela request date",
     "startup ID", "id", "role",
     "created at", "started at", "ended at",

@@ -13,13 +13,13 @@ case class StartupsConnection(role1:AngelRole, role2:AngelRole){
 
   def toCSVRow:Seq[String] = Seq(
     role1.startup.id.toString,
-    role2.startup.id.toString,
     role1.startup.name,
-    role2.startup.name,
-    role1.created.toString,
-    role2.created.toString,
     role1.role,
+    role1.created.toString,
+    role2.startup.id.toString,
+    role2.startup.name,
     role2.role,
+    role2.created.toString,
     role1.user.id.toString,
     role1.user.name
   )
@@ -55,13 +55,13 @@ case class UsersConnection(role1:AngelRole, role2:AngelRole){
 
   def toCSVRow:Seq[String] = Seq(
     role1.user.id.toString,
-    role2.user.id.toString,
     role1.user.name,
-    role2.user.name,
+    role1.role,
     role1.created.toString,
+    role2.user.id.toString,
+    role2.user.name,
+    role2.role,
     role2.created.toString,
-    role1.role,
-    role1.role,
     role1.startup.id.toString,
     role1.startup.name
   )

@@ -48,6 +48,11 @@ GET         /startups/startup-people-network2                 controllers.Networ
 GET         /startups/startup-people-network-csv              controllers.CSVs.getPeopleNetworkCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 GET         /startups/startup-people-network2-csv             controllers.CSVs.getPeopleNetwork2ndOrderCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 
+# AngelList Users
+GET         /startups/angel-users                             controllers.Application.startupsPeople
+POST        /startups/angel-users                             controllers.Startups.getUserAndRolesByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/angel-users-csv                         controllers.CSVs.getUsersAndRolesCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+
 # Users
 GET         /user/list                                        controllers.Users.listUsers
 GET         /user/new                                         controllers.Users.newUser

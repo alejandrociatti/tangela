@@ -61,6 +61,11 @@ serviceModule.factory 'dataAccess', ['$http', ($http) ->
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
         )).success(onSuccess).error(onError)
 
+      getWithRoles: (criteriaObj, onSuccess, onError) ->
+        $http(jsRoutes.controllers.Startups.getUserAndRolesByCriteria(
+          criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
+        )).success(onSuccess).error(onError)
+
   # CSV URL getters
     csv:
       url:
@@ -86,6 +91,11 @@ serviceModule.factory 'dataAccess', ['$http', ($http) ->
 
         users: (criteriaObj) ->
           jsRoutes.controllers.CSVs.getUsersCSV(
+            criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
+          ).url
+
+        usersAndRoles: (criteriaObj) ->
+          jsRoutes.controllers.CSVs.getUsersAndRolesCSV(
             criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
           ).url
 

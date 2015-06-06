@@ -21,6 +21,7 @@ case class AngelUser(id: Long, name:String, bio:Option[String], roles:Option[Seq
     twitterURL.getOrElse(""), facebookURL.getOrElse("1"), linkedInURL.getOrElse("")
   )
 
+  def +(add : AngelRole) : Option[AngelUserRole] = add + this
 }
 
 object AngelUser{
@@ -58,7 +59,7 @@ object AngelUser{
     )(unlift(AngelUser.unapply))
 
   def getCSVHeader: Seq[String] = Seq(
-    "id", "name", "bio",
+    "tangela_request_date", "id", "name", "bio",
     "follower_count", "angellist_url", "image",
     "blog_url", "online_bio_url", "twitter_url",
     "facebook_url", "linkedin_url", "investor"

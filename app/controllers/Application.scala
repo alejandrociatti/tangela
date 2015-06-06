@@ -46,7 +46,9 @@ object Application extends Controller with Secured{
         routes.javascript.CSVs.getStartupFundingCSV,
         routes.javascript.CSVs.getStartupsFundingsCSV,
         routes.javascript.Startups.getUsersInfoByCriteria,
-        routes.javascript.Startups.startupsFundingByCriteria
+        routes.javascript.Startups.startupsFundingByCriteria,
+        routes.javascript.Startups.getUserAndRolesByCriteria,
+        routes.javascript.CSVs.getUsersAndRolesCSV
       )
     ).as("text/javascript")
   }
@@ -69,5 +71,9 @@ object Application extends Controller with Secured{
 
   def startupsPeopleNetwork = withAuth(Admin, Researcher) { username => implicit request =>
     Ok(views.html.startupsPeopleNetwork())
+  }
+
+  def startupsPeople = withAuth(Admin, Researcher) { username => implicit request =>
+    Ok(views.html.startupsPeople())
   }
 }
