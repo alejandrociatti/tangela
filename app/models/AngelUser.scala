@@ -16,9 +16,11 @@ case class AngelUser(id: Long, name:String, bio:Option[String], roles:Option[Seq
   def toTinyJson = Json.obj("id" -> id, "name" -> name)
 
   def toCSVRow : Seq[String] = Seq(
-    id.toString(), name, bio.getOrElse(""), followerCount.fold("")(_.toString()), angelURL.getOrElse(""),
-    image.getOrElse(""), blogURL.getOrElse(""), bioURL.getOrElse(""),
-    twitterURL.getOrElse(""), facebookURL.getOrElse("1"), linkedInURL.getOrElse("")
+    DatabaseUpdate.getLastAsString,
+    id.toString(), name, bio.getOrElse(""),
+    followerCount.fold("")(_.toString()), angelURL.getOrElse(""), image.getOrElse(""),
+    blogURL.getOrElse(""), bioURL.getOrElse(""), twitterURL.getOrElse(""),
+    facebookURL.getOrElse("1"), linkedInURL.getOrElse(""), investor.fold("")(_.toString())
   )
 
   def +(add : AngelRole) : Option[AngelUserRole] = add + this
@@ -59,7 +61,8 @@ object AngelUser{
     )(unlift(AngelUser.unapply))
 
   def getCSVHeader: Seq[String] = Seq(
-    "tangela_request_date", "id", "name", "bio",
+    "tangela_request_date",
+    "id", "name", "bio",
     "follower_count", "angellist_url", "image",
     "blog_url", "online_bio_url", "twitter_url",
     "facebook_url", "linkedin_url", "investor"
