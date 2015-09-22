@@ -17,7 +17,6 @@ case class AngelTag(id: Long, name:String, tagType:String, angelURL:Option[Strin
   )
 }
 
-
 object AngelTag{
 
   implicit val tagReads:Reads[AngelTag] = (

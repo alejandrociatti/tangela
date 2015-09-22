@@ -1,7 +1,7 @@
 @main("Información sobre Startups")(sidebar()) {
     <div class="row" ng-app="AAC" ng-controller="startupsPeopleCtrl">
         <div class="col-lg-12">
-        @partial.startupSearchForm()
+            @partial.startupSearchForm()
         </div>
         <div class="col-lg-12" ng-if="rolesUsers && rolesUsers.length > 0">
             <div class="panel panel-default" ng-controller="tableController">
