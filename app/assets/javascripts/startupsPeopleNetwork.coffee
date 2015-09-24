@@ -17,8 +17,7 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.location.getChildren $scope.location, (children) ->
-      $scope.locations = children
+    dataAccess.location.getChildren($scope.location).success((children) -> $scope.locations = children)
 
   # Form submission handlers:
   successHandler = (response) ->
@@ -46,7 +45,7 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.user.getNetwork criteriaObject, successHandler, errorHandler
+    dataAccess.user.getNetwork(criteriaObject).success(successHandler).error(errorHandler)
 
   # Form submit function (for extended people network)
   $scope.submit2 = ->
@@ -58,7 +57,7 @@ module.controller 'startupsPplNetCtrl', ['$scope', 'dataAccess', ($scope, dataAc
     dateTo = dateToHolder.val()
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.user.getNetwork2 criteriaObject, successHandler, errorHandler
+    dataAccess.user.getNetwork2(criteriaObject).success(successHandler).error(errorHandler)
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->

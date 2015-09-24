@@ -19,8 +19,7 @@ module.controller 'startupsFundingInfo', ['$scope', 'dataAccess', ($scope, dataA
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.location.getChildren $scope.location, (children) ->
-      $scope.locations = children
+    dataAccess.location.getChildren($scope.location).success((children) -> $scope.locations = children)
 
   # Form submit function
   $scope.submit = ->
@@ -36,13 +35,12 @@ module.controller 'startupsFundingInfo', ['$scope', 'dataAccess', ($scope, dataA
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
 
-    dataAccess.startup.getFundingsByCriteria criteriaObject, ((fundings) ->
+    dataAccess.startup.getFundingsByCriteria(criteriaObject).success((fundings) ->
       $scope.fundings = sortByKeys(fundings, "name")
       $scope.searching = false
       $scope.optionSelectMsg = 'Select a startup.'
       $scope.exportStartupsFundingCSVURL = dataAccess.csv.url.fundings(criteriaObject)
-      stopBar()),                                                 # End success handler
-      -> $scope.responseStatus = false           # Error handler
+      stopBar()).error(-> $scope.responseStatus = false)
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->

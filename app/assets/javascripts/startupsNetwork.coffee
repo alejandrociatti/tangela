@@ -17,8 +17,7 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.location.getChildren $scope.location, (children) ->
-      $scope.locations = children
+    dataAccess.location.getChildren($scope.location).success((children) -> $scope.locations = children)
 
   # Form submit function
   $scope.submit = ->
@@ -43,7 +42,7 @@ module.controller 'startupsNetworkCtrl', ['$scope', 'dataAccess', ($scope, dataA
         $scope.responseStatus = 'queued'
       stopBar()
     errorHandler = -> stopBar(); $scope.responseStatus = 'error'
-    dataAccess.startup.getNetwork criteriaObject, successHandler, errorHandler
+    dataAccess.startup.getNetwork(criteriaObject).success(successHandler).error(errorHandler)
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->

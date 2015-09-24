@@ -13,6 +13,6 @@ module.controller 'searchCtrl', ['$scope', 'dataAccess',
             quality: -1,
             creationDate: $('#creation-date').val(),
             quality: $scope.quality
-          }, (data) -> console.log data
-        )
+          }
+        ).success((data) -> console.log data)
   ]
