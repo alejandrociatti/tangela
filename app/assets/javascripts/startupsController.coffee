@@ -7,26 +7,18 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
   dateToHolder = $('#creation-date-to')
   progressBar = $('#progress-bar')
   criteriaObject = {}
-  $scope.responseStatus = true
   $scope.searching = false
   interval = undefined
-  $scope.optionSelectMsg = 'Search first.'
-  $scope.startups = []
-  $scope.startupsToShow = []
-  $scope.tags = []
-  $scope.locations = []
   $scope.qualityFrom = ''
   $scope.qualityTo = ''
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.location.getChildren $scope.location, (children) ->
-      $scope.locations = children
+    dataAccess.location.getChildren($scope.location).success((children) -> $scope.locations = children)
 
   # Form submit function
   $scope.submit = ->
     $scope.optionSelectMsg = 'Loading results...'
-    $scope.responseStatus = true
     $scope.searching = true
     interval = startBar()
     criteriaObject.location = if $scope.deepLocation then $scope.deepLocation else $scope.location
@@ -36,16 +28,21 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
     criteriaObject.date = "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
     criteriaObject.quality = "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
 
-    dataAccess.startup.getWithTags criteriaObject, ((response) ->
-      $scope.startups = response.startups
-      $scope.exportStartupsURL = dataAccess.csv.url.startups(criteriaObject)
-      $scope.tags = response.tags
-      $scope.exportStartupsTagsURL = dataAccess.csv.url.tags(criteriaObject)
-      $scope.searching = false
-      $scope.responseStatus = response.startups.length != 0
-      $scope.optionSelectMsg = 'Select a startup.'
-      stopBar()),
-    -> $scope.responseStatus = false           # Error handler
+    dataAccess.startup.getWithTags(criteriaObject).success((response) ->
+      if(response.queued)
+        $scope.responseStatus = 'queued'
+      else
+        $scope.startups = response.startups
+        $scope.exportStartupsURL = dataAccess.csv.url.startups(criteriaObject)
+        $scope.tags = response.tags
+        $scope.exportStartupsTagsURL = dataAccess.csv.url.tags(criteriaObject)
+        $scope.searching = false
+        $scope.responseStatus = 'empty' unless response.startups.length > 0
+        stopBar()
+    ).error( ->
+      stopBar()
+      $scope.responseStatus = 'error'
+    )
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->
@@ -59,7 +56,7 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
 
 # Pagination controller
 module.controller 'tableController', ['$scope', ($scope) ->
-  $scope.itemsPerPage = 6
+  $scope.itemsPerPage = 5
   $scope.currentPage = 1
   $scope.setPage = (pageNo) -> $scope.currentPage = pageNo
 ]

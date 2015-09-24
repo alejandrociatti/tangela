@@ -234,9 +234,9 @@ object Startups extends Controller with Secured {
         val key: String = s"startups-$locationId-$marketId-$quality-$creationDate"
         CSVManager.put(key, Startup.getCSVHeader, startups.map(_.toCSVRow))
         val tagsKey: String = s"startups-tags-$locationId-$marketId-$quality-$creationDate"
-        CSVManager.put(tagsKey, AngelTag.getCSVHeader, startups.map(_.getTagsCSVRows))
+        CSVManager.put(tagsKey, Startup.getTagsCSVHeader, startups.flatMap(_.getTagsCSVRows))
       }
-      Ok(Json.obj("startups" -> startupsJson, "tags" -> startups.map(_.getTagsJsons)))
+      Ok(Json.obj("startups" -> startupsJson, "tags" -> startups.flatMap(_.getTagsJsons)))
     }
   }
 

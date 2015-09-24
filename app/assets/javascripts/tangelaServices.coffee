@@ -4,67 +4,61 @@ serviceModule.factory 'dataAccess', ['$http', ($http) ->
   declaration =
     # Location related getters
     location:
-      getChildren: (locationId, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Locations.getChildrenOf(locationId)).success(onSuccess).error(onError)
+      getChildren: (locationId) -> $http(jsRoutes.controllers.Locations.getChildrenOf(locationId))
 
-      getByName: (locationName, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Locations.getCountriesByString(locationName)).success(onSuccess).error(onError)
+      getByName: (locationName) -> $http(jsRoutes.controllers.Locations.getCountriesByString(locationName))
 
     # Startup related getters
     startup:
-      getByLocation: (locationId, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Locations.getStartupsByLocationId(locationId)).success(onSuccess).error(onError)
+      getByLocation: (locationId) -> $http(jsRoutes.controllers.Locations.getStartupsByLocationId(locationId))
 
-      getByCriteria: (criteriaObj, onSuccess, onError) ->
+      getByCriteria: (criteriaObj) ->
         $http(jsRoutes.controllers.Startups.startupsCriteriaSearch(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)
+        ))
 
-      getByName: (startupName, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Startups.getStartupsByName(startupName)).success(onSuccess).error(onError)
+      getByName: (startupName) -> $http(jsRoutes.controllers.Startups.getStartupsByName(startupName))
 
-      getWithTags: (criteriaObj, onSuccess, onError) ->
+      getWithTags: (criteriaObj) ->
         $http(jsRoutes.controllers.Startups.startupCriteriaSearchAndTags(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)
+        ))
 
-      getFounderAmount: (startupId, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Startups.getNumberOfFoundersByStartupId(startupId)).success(onSuccess).error(onError)
+      getFounderAmount: (startupId) -> $http(jsRoutes.controllers.Startups.getNumberOfFoundersByStartupId(startupId))
 
-      getFunding: (startupId, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Startups.getStartupFunding(startupId)).success(onSuccess).error(onError)
+      getFunding: (startupId) -> $http(jsRoutes.controllers.Startups.getStartupFunding(startupId))
 
-      getFundingsByCriteria: (criteriaObj, onSuccess, onError) ->
+      getFundingsByCriteria: (criteriaObj) ->
         $http(jsRoutes.controllers.Startups.startupsFundingByCriteria(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)
+        ))
 
-      getNetwork: (criteriaObj, onSuccess, onError) ->
+      getNetwork: (criteriaObj) ->
         $http(jsRoutes.controllers.Networks.getStartupsNetwork(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)  
+        ))
 
     # User/People related getters
     user:
-      getByStartupCriteria: (criteriaObj, onSuccess, onError) ->
+      getByStartupCriteria: (criteriaObj) ->
         $http(jsRoutes.controllers.Startups.getUsersInfoByCriteria(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-          )).success(onSuccess).error(onError)
+          ))
 
-      getNetwork: (criteriaObj, onSuccess, onError) ->
+      getNetwork: (criteriaObj) ->
         $http(jsRoutes.controllers.Networks.getPeopleNetwork(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)
+        ))
 
-      getNetwork2: (criteriaObj, onSuccess, onError) ->
+      getNetwork2: (criteriaObj) ->
         $http(jsRoutes.controllers.Networks.getPeopleNetwork2ndOrder(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)
+        ))
 
-      getWithRoles: (criteriaObj, onSuccess, onError) ->
+      getWithRoles: (criteriaObj) ->
         $http(jsRoutes.controllers.Startups.getUserAndRolesByCriteria(
           criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
-        )).success(onSuccess).error(onError)
+        ))
 
   # CSV URL getters
     csv:
@@ -115,11 +109,11 @@ serviceModule.factory 'dataAccess', ['$http', ($http) ->
 
     # Getters for graph making
     graph:
-      getStartup: (startupId, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Startups.getStartupNetInfo(startupId)).success(onSuccess).error(onError)
+      getStartup: (startupId) ->
+        $http(jsRoutes.controllers.Startups.getStartupNetInfo(startupId))
 
-      getStartupRoles: (startupId, onSuccess, onError) ->
-        $http(jsRoutes.controllers.Startups.getRolesOfStartup(startupId)).success(onSuccess).error(onError)
+      getStartupRoles: (startupId) ->
+        $http(jsRoutes.controllers.Startups.getRolesOfStartup(startupId))
 
   declaration # We return the created object, which is indeed the so called 'service'
 ]

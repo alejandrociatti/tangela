@@ -35,13 +35,13 @@ case class Startup(id: Long, name: String, quality: Option[Int],
     blogURL.getOrElse(""), videoURL.getOrElse("")
   )
 
-  def getTagsCSVRows : Seq[String] =
-    markets.fold(Seq[String]())(_.flatMap(Seq(id.toString())++_.toCSVRow)) ++
-    locations.fold(Seq[String]())(_.flatMap(Seq(id.toString())++_.toCSVRow))
+  def getTagsCSVRows : Seq[Seq[String]] =
+    markets.fold(Seq[Seq[String]]())(_.map(Seq(id.toString(), name)++_.toCSVRow)) ++
+    locations.fold(Seq[Seq[String]]())(_.map(Seq(id.toString(), name)++_.toCSVRow))
 
   def getTagsJsons : Seq[JsValue] =
-    markets.fold(Seq[JsValue]())(_.map(Json.obj("id" -> id.toString()) ++ Json.toJson(_).as[JsObject])) ++
-    locations.fold(Seq[JsValue]())(_.map(Json.obj("id" -> id.toString()) ++ Json.toJson(_).as[JsObject]))
+    markets.fold(Seq[JsValue]())(_.map(Json.obj("startup" -> id.toString()) ++ Json.toJson(_).as[JsObject])) ++
+    locations.fold(Seq[JsValue]())(_.map(Json.obj("startup" -> id.toString()) ++ Json.toJson(_).as[JsObject]))
 }
 
 object Startup{
@@ -113,4 +113,6 @@ object Startup{
     "product_desc","high_concept","follower_count","company_url","created_at","updated_at",
     "twitter_url","blog_url","video_url"
   )
+
+  def getTagsCSVHeader : Seq[String] = Seq("startup_id", "startup_name") ++ AngelTag.getCSVHeader
 }

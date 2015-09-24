@@ -15,8 +15,7 @@ module.controller 'startupPeopleInfoCtrl', ['$scope', 'dataAccess', ($scope, dat
 
   # Locations loader function
   $scope.getLocations = ->
-    dataAccess.location.getChildren $scope.location, (children) ->
-      $scope.locations = children
+    dataAccess.location.getChildren($scope.location).success((children) -> $scope.locations = children)
 
   # Form submission handlers:
   successHandler = (response) ->
@@ -42,7 +41,7 @@ module.controller 'startupPeopleInfoCtrl', ['$scope', 'dataAccess', ($scope, dat
       market: $scope.market
       date: "(#{dateFrom},#{dateTo})" if dateFrom || dateTo
       quality: "(#{$scope.qualityFrom},#{$scope.qualityTo})" if $scope.qualityFrom || $scope.qualityTo
-    dataAccess.user.getByStartupCriteria(criteriaObject, successHandler, errorHandler)
+    dataAccess.user.getByStartupCriteria(criteriaObject).success(successHandler).error(errorHandler)
 
   # Progress bar functions
   intervalFn = -> progressBar.css 'width', (index, value) ->

@@ -1,14 +1,16 @@
 @main("Startups")(sidebar()) {
-
     <div ng-app="AAC" ng-controller="startupsCtrl">
         @partial.startupSearchForm()
         <div class="row">
-            <div class="col-lg-12 " ng-show="startups.length">
+            <div class="col-lg-12 " ng-if="startups && startups.length > 0">
                 <div class="panel panel-default" ng-controller="tableController">
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             Startups ({{startups.length}})
-                            <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{exportStartupsURL}}">Export</a>
+                            <div class="btn-group pull-right" role="group">
+                                <a class="btn btn-primary btn-xs btn-export" ng-href="{{exportStartupsURL}}">Export</a>
+                                <a class="btn btn-primary btn-xs btn-export" ng-href="{{exportStartupsTagsURL}}">Export Tags</a>
+                            </div>
                         </h2>
                     </div>
                     <div class="panel-body" style="overflow-x: scroll">
@@ -34,12 +36,10 @@
                                     <th>Twitter_url</th>
                                     <th>Blog_url</th>
                                     <th>Video_url</th>
-                                    @*<th class="icon-spacer"></th>*@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="startup in $parent.startups | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-
+                                <tr ng-repeat="startup in $parent.startups | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
                                     <td>{{startup.id}}</td>
                                     <td>{{startup.hidden}}</td>
                                     <td>{{startup.community_profile}}</td>
@@ -57,16 +57,11 @@
                                     <td>{{startup.twitter_url}}</td>
                                     <td>{{startup.blog_url}}</td>
                                     <td>{{startup.video_url}}</td>
-                                    @*<td>*@
-                                        @*<a href="#network-container" data="{{startup.id}}" ng-click="showNetwork(startup.id)">*@
-                                            @*<span class="glyphicon glyphicon-eye-open" tooltip="View relations"></span>*@
-                                        @*</a>*@
-                                    @*</td>*@
                                 </tr>
                             </tbody>
                         </table>
-                        <pagination ng-model="currentPage" total-items="$parent.startups.length" max-size="15"
-                        boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
+                        <pagination ng-model="currentPage" total-items="$parent.startups.length" boundary-links="true"
+                        previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
                         </pagination>
                     </div>
                 </div>
@@ -74,7 +69,7 @@
         </div><!-- /.row -->
 
         <div class="row">
-            <div class="col-lg-12" ng-show="tags.length">
+            <div class="col-lg-12" ng-if="tags && tags.length > 0">
                 <div class="panel panel-default" ng-controller="tableController">
                     <div class="panel-heading">
                         <h2 class="panel-title">
@@ -82,10 +77,8 @@
                             <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{exportStartupsTagsURL}}">Export</a>
                         </h2>
                     </div>
-                    <div class="panel-body" style="overflow-x: scroll">
-                        <div class="alert alert-info" ng-show="startupsMsg">{{$parent.startupsMsg}}</div>
-
-                        <table class="table table-bordered" ng-show="tags.length">
+                    <div class="panel-body">
+                        <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>Id</th>
@@ -97,8 +90,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="tag in $parent.tags | offset:currentPage*itemsPerPage | limitTo:itemsPerPage">
-
+                                <tr ng-repeat="tag in $parent.tags | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
                                     <td>{{tag.startup}}</td>
                                     <td>{{tag.id}}</td>
                                     <td>{{tag.tag_type}}</td>
@@ -108,8 +100,8 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <pagination ng-model="currentPage" total-items="$parent.tags.length" max-size="15"
-                        boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
+                        <pagination ng-model="currentPage" total-items="$parent.tags.length" boundary-links="true"
+                        previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
                         </pagination>
                     </div>
                 </div>
@@ -117,24 +109,10 @@
 
         </div><!-- /.row -->
     </div>
-
-    @*<div class="row">*@
-        @*<div class="col-lg-12">*@
-            @*<div class="panel panel-default">*@
-                @*<div class="panel-body network-wrapper">*@
-                    @*<div id="network-container">*@
-
-                    @*</div>*@
-                @*</div>*@
-            @*</div>*@
-        @*</div>*@
-    @*</div>*@
 }{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>
     <script src="@routes.Assets.at("javascripts/angular/ui-bootstrap-tpls-0.11.2.min.js")"></script>
-    @*<script src="@routes.Assets.at("javascripts/sigma/sigma.min.js")"></script>*@
-    @*<script src="@routes.Assets.at("javascripts/sigma/plugins/sigma.layout.forceAtlas2.min.js")"></script>*@
     <script src="@routes.Assets.at("javascripts/tangelaServices.js")"></script>
     <script src="@routes.Assets.at("javascripts/startupsController.js")"></script>
 }
