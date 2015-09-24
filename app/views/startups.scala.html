@@ -19,23 +19,22 @@
                         <table class="table table-bordered" ng-show="startups.length">
                             <thead>
                                 <tr>
-                                    <th>Id</th>
-                                    <th>Hidden</th>
-                                    <th>Community_profile</th>
-                                    <th>Name</th>
-                                    <th>Angellist_url</th>
-                                    <th>Logo_url</th>
-                                    <th>Thumb_url</th>
-                                    <th>Quality</th>
-                                    <th>Product_desc</th>
-                                    <th>High_concept</th>
-                                    <th>Follower_count</th>
-                                    <th>Company_url</th>
-                                    <th>Created_at</th>
-                                    <th>Updated_at</th>
-                                    <th>Twitter_url</th>
-                                    <th>Blog_url</th>
-                                    <th>Video_url</th>
+                                    <th>id</th>
+                                    <th>hidden</th>
+                                    <th>community profile</th>
+                                    <th>name</th>
+                                    <th>AngelList URL</th>
+                                    <th>logo</th>
+                                    <th>quality</th>
+                                    <th>product description</th>
+                                    <th>high concept</th>
+                                    <th>followers</th>
+                                    <th>company URL</th>
+                                    <th>created at</th>
+                                    <th>updated at</th>
+                                    <th>Twitter URL</th>
+                                    <th>blog URL</th>
+                                    <th>video URL</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -45,8 +44,7 @@
                                     <td>{{startup.community_profile}}</td>
                                     <td>{{startup.name}}</td>
                                     <td>{{startup.angellist_url}}</td>
-                                    <td>{{startup.logo_url}}</td>
-                                    <td>{{startup.thumb_url}}</td>
+                                    <td><img ng-src="{{startup.thumb_url}}" class="img-responsive img-circle" alt="startup logo"/></td>
                                     <td>{{startup.quality}}</td>
                                     <td>{{startup.product_desc}}</td>
                                     <td>{{startup.high_concept}}</td>

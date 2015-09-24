@@ -142,12 +142,12 @@ object Startups extends Controller with Secured {
           getAllInfoOfPeopleInStartup(startup.id)
         }               //We end up with Future[Seq[Seq[JsValue]]] so we flatten both Seq and then map the resulting Seq
       ).map(_.flatten).map{ users =>
-        Future(
-          CSVManager.put(s"users-$locationId-$marketId-$quality-$creationDate",
-            AngelUser.getCSVHeader,
-            users.map(_.toCSVRow)
-          )
-        )
+        Future {
+          val key = s"users-$locationId-$marketId-$quality-$creationDate"
+          CSVManager.put(key, AngelUser.getCSVHeader, users.map(_.toCSVRow))
+          val tagsKey = s"users-tags-$locationId-$marketId-$quality-$creationDate"
+          CSVManager.put(tagsKey, AngelUser.getTagsCSVHeader, users.flatMap(_.getTagsCSVRows))
+        }
         Ok( Json.obj("users" -> Json.toJson(users)) )
       }
     }

@@ -8,8 +8,9 @@ import play.api.libs.functional.syntax._
  * Date: 16/02/15
  * Time: 20:57
  */
-case class AngelUser(id: Long, name:String, bio:Option[String], roles:Option[Seq[AngelRole]], followerCount:Option[Int],
-                      angelURL:Option[String], blogURL:Option[String], bioURL:Option[String], twitterURL:Option[String],
+case class AngelUser(id: Long, name:String, bio:Option[String], roles:Option[Seq[AngelRole]],
+                      locations:Option[Seq[AngelTag]], followerCount:Option[Int], angelURL:Option[String],
+                      blogURL:Option[String], bioURL:Option[String], twitterURL:Option[String],
                       facebookURL:Option[String], linkedInURL:Option[String], image:Option[String],
                       investor:Option[Boolean]){
 
@@ -23,6 +24,10 @@ case class AngelUser(id: Long, name:String, bio:Option[String], roles:Option[Seq
     facebookURL.getOrElse("1"), linkedInURL.getOrElse(""), investor.fold("")(_.toString())
   )
 
+  def getTagsCSVRows : Seq[Seq[String]] =
+      roles.fold(Seq[Seq[String]]())(_.map(Seq(id.toString(), name)++_.toAngelTagCSVRow)) ++
+      locations.fold(Seq[Seq[String]]())(_.map(Seq(id.toString(), name)++_.toCSVRow))
+
   def +(add : AngelRole) : Option[AngelUserRole] = add + this
 }
 
@@ -33,6 +38,7 @@ object AngelUser{
       (__ \ "name").read[String] and
       (__ \ "bio").readNullable[String] and
       (__ \ "roles").readNullable[Seq[AngelRole]] and
+      (__ \ "locations").readNullable[Seq[AngelTag]] and
       (__ \ "follower_count").readNullable[Int] and
       (__ \ "angellist_url").readNullable[String] and
       (__ \ "blog_url").readNullable[String] and
@@ -49,6 +55,7 @@ object AngelUser{
       (__ \ "name").write[String] and
       (__ \ "bio").writeNullable[String] and
       (__ \ "roles").writeNullable[Seq[AngelRole]] and
+      (__ \ "locations").writeNullable[Seq[AngelTag]] and
       (__ \ "follower_count").writeNullable[Int] and
       (__ \ "angellist_url").writeNullable[String] and
       (__ \ "blog_url").writeNullable[String] and
@@ -68,4 +75,5 @@ object AngelUser{
     "facebook_url", "linkedin_url", "investor"
   )
 
+  def getTagsCSVHeader : Seq[String] = Seq("user_id", "user_name") ++ AngelTag.getCSVHeader
 }

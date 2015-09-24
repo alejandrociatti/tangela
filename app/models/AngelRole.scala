@@ -22,6 +22,11 @@ case class AngelRole(id: Long, role: String, user: AngelUser, startup:Startup,
     user.followerCount.fold("")(_.toString()), user.angelURL.getOrElse(""), user.image.getOrElse("")
   )
 
+  def toAngelTagCSVRow : Seq[String] = Seq(
+    DatabaseUpdate.getLastAsString,
+    id.toString(), "RoleTag", role, ""
+  )
+
   def toTinyJson = Json.obj(
     "id" -> id,
     "role" -> role,

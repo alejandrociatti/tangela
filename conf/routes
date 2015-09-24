@@ -52,6 +52,7 @@ GET         /startups/startup-people-network2-csv             controllers.CSVs.g
 GET         /startups/angel-users                             controllers.Application.startupsPeople
 POST        /startups/angel-users                             controllers.Startups.getUserAndRolesByCriteria(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 GET         /startups/angel-users-csv                         controllers.CSVs.getUsersAndRolesCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
+GET         /startups/angel-users-tags-csv                    controllers.CSVs.getPeopleTagsCSV(locationId: Int ?= -1, marketId: Int ?= -1, quality: String ?= "(,)", creationDate: String ?= "(,)")
 
 # Users
 GET         /user/list                                        controllers.Users.listUsers

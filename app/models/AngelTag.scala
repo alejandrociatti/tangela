@@ -36,7 +36,6 @@ object AngelTag{
 
   def getCSVHeader: Seq[String] = Seq(
     "Tangela Request Date",
-    "startup ID", "Tag Id", "Tag Type",
-    "Name", "AngelList Url"
+    "Tag Id", "Tag Type", "Name", "AngelList Url"
   )
 }

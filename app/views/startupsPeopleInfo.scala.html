@@ -1,68 +1,69 @@
 @main("Informacion sobre Startups")(sidebar()) {
-
-    <div class="row" ng-app="JB2" ng-controller="startupPeopleInfoCtrl">
-        <div class="col-lg-12">
-            @partial.startupSearchForm()
-        </div>
+    <div ng-app="JB2" ng-controller="startupPeopleInfoCtrl">
+        @partial.startupSearchForm()
+        <div class="row">
             <div class="col-lg-12" ng-if="people && people.length > 0">
                 <div class="panel panel-default" ng-controller="tableController">
                     <div class="panel-heading">
                         <h2 class="panel-title">
                             People ({{$parent.people.length}})
-                            <a class="btn btn-primary btn-xs btn-export pull-right" ng-href="{{$parent.exportURL}}">Export</a>
+                            <div class="btn-group pull-right">
+                                <a class="btn btn-primary btn-xs btn-export" ng-href="{{$parent.exportURL}}">Export</a>
+                                <a class="btn btn-primary btn-xs btn-export" ng-href="{{$parent.exportTagsURL}}">Export Tags</a>
+                            </div>
                         </h2>
                     </div>
-                    <div class="panel-body" style="overflow-x: scroll;">
-                        <table class="table table-bordered table-responsive">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Name</th>
-                                    <th>Bio</th>
-                                    <th>Role</th>
-                                    <th>Followers</th>
-                                    <th>AngelList</th>
-                                    <th>Image</th>
-                                    <th>Blog</th>
-                                    <th>Online Bio</th>
-                                    <th>Twitter</th>
-                                    <th>Facebook</th>
-                                    <th>Linkedin</th>
-                                    <th>What He'd Built</th>
-                                    <th>What He Does</th>
-                                    <th>Investor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="person in $parent.people | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
-                                    <td>{{person.id}}</td>
-                                    <td>{{person.name}}</td>
-                                    <td>{{person.bio}}</td>
-                                    <td>{{person.role}}</td>
-                                    <td>{{person.follower_count}}</td>
-                                    <td>{{person.angellist_url}}</td>
-                                    <td>{{person.image}}</td>
-                                    <td>{{person.blog_url}}</td>
-                                    <td>{{person.online_bio_url}}</td>
-                                    <td>{{person.twitter_url}}</td>
-                                    <td>{{person.facebook_url}}</td>
-                                    <td>{{person.linkedin_url}}</td>
-                                    <td>{{person.what_ive_built}}</td>
-                                    <td>{{person.what_i_do}}</td>
-                                    <td>{{person.investor}}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <pagination ng-model="currentPage" total-items="$parent.rolesUsers.length" max-size="15"
-                        boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
+                    <div class="panel-body">
+                        <div class="col-lg-12 table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Name</th>
+                                        <th>Bio</th>
+                                        <th>Role</th>
+                                        <th>Followers</th>
+                                        <th>AngelList</th>
+                                        <th>Image</th>
+                                        <th>Blog</th>
+                                        <th>Online Bio</th>
+                                        <th>Twitter</th>
+                                        <th>Facebook</th>
+                                        <th>Linkedin</th>
+                                        <th>What He'd Built</th>
+                                        <th>What He Does</th>
+                                        <th>Investor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="person in $parent.people | offset:(currentPage-1)*itemsPerPage | limitTo:itemsPerPage">
+                                        <td>{{person.id}}</td>
+                                        <td>{{person.name}}</td>
+                                        <td>{{person.bio}}</td>
+                                        <td>{{person.role}}</td>
+                                        <td>{{person.follower_count}}</td>
+                                        <td>{{person.angellist_url}}</td>
+                                        <td>{{person.image}}</td>
+                                        <td>{{person.blog_url}}</td>
+                                        <td>{{person.online_bio_url}}</td>
+                                        <td>{{person.twitter_url}}</td>
+                                        <td>{{person.facebook_url}}</td>
+                                        <td>{{person.linkedin_url}}</td>
+                                        <td>{{person.what_ive_built}}</td>
+                                        <td>{{person.what_i_do}}</td>
+                                        <td>{{person.investor}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <pagination ng-model="currentPage" total-items="$parent.rolesUsers.length" boundary-links="true"
+                        previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
                         </pagination>
                     </div>
                 </div>
             </div>
-
-
-    </div><!-- /.row -->
-
+        </div>
+    </div>
 }{
     <script src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.at("javascripts/angular/angular.min.js")"></script>

@@ -35,7 +35,7 @@ module.controller 'startupsCtrl', ['$scope', 'dataAccess', ($scope, dataAccess) 
         $scope.startups = response.startups
         $scope.exportStartupsURL = dataAccess.csv.url.startups(criteriaObject)
         $scope.tags = response.tags
-        $scope.exportStartupsTagsURL = dataAccess.csv.url.tags(criteriaObject)
+        $scope.exportStartupsTagsURL = dataAccess.csv.url.startupsTags(criteriaObject)
         $scope.searching = false
         $scope.responseStatus = 'empty' unless response.startups.length > 0
         stopBar()

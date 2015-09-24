@@ -93,8 +93,13 @@ serviceModule.factory 'dataAccess', ['$http', ($http) ->
             criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
           ).url
 
-        tags: (criteriaObj) ->
+        startupsTags: (criteriaObj) ->
           jsRoutes.controllers.CSVs.getStartupsTagsCSV(
+            criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
+          ).url
+
+        usersTags: (criteriaObj) ->
+          jsRoutes.controllers.CSVs.getPeopleTagsCSV(
             criteriaObj.location, criteriaObj.market, criteriaObj.quality, criteriaObj.date
           ).url
 

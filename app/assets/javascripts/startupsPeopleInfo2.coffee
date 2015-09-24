@@ -24,6 +24,7 @@ module.controller 'startupPeopleInfoCtrl', ['$scope', 'dataAccess', ($scope, dat
     else
       $scope.people = response.users
       $scope.exportURL = dataAccess.csv.url.users(criteriaObject)
+      $scope.exportTagsURL = dataAccess.csv.url.usersTags(criteriaObject)
       $scope.searching = false
       $scope.responseStatus = 'empty' unless response.users.length > 0
     stopBar()

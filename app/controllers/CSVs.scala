@@ -47,6 +47,9 @@ object CSVs extends Controller{
   def getStartupsTagsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
     getCsv(s"startups-tags-$locationId-$marketId-$quality-$creationDate")
 
+  /* People Tags CSV ********************************************************************************************************/
+  def getPeopleTagsCSV(locationId: Int, marketId: Int, quality: String, creationDate: String) =
+    getCsv(s"users-tags-$locationId-$marketId-$quality-$creationDate")
 
   /* Roles CSV ********************************************************************************************************/
 
